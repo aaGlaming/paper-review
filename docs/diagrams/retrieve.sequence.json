@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "一维检索时序",
+    "subtitle": "先过滤子块，再按 parent_id 取回父块全文，最后送入选档；模型调用在信任边界外",
+    "locale": "zh-CN",
+    "output": "docs/diagrams/retrieve.sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "graph", "type": "backend", "label": "评审编排", "sublabel": "LangGraph 状态图" },
+    { "id": "retrieve", "type": "backend", "label": "检索", "sublabel": "parent_child" },
+    { "id": "chroma", "type": "database", "label": "Chroma", "sublabel": "子块向量" },
+    { "id": "mysql", "type": "database", "label": "MySQL", "sublabel": "paper_parent 父块全文" },
+    { "id": "rerank", "type": "backend", "label": "重排", "sublabel": "P4 占位" },
+    { "id": "scoring", "type": "backend", "label": "选档", "sublabel": "五维档位" },
+    { "id": "gate", "type": "backend", "label": "子串校验", "sublabel": "原句须是切片子串" },
+    { "id": "llmapi", "type": "external", "label": "模型兼容接口", "sublabel": "信任边界外" }
+  ],
+  "segments": [
+    { "from": 150, "to": 250, "label": "生成查询与过滤" },
+    { "from": 260, "to": 350, "label": "召回与取父块" },
+    { "from": 360, "to": 440, "label": "重排（P4）" },
+    { "from": 450, "to": 690, "label": "送入选档与回传" }
+  ],
+  "messages": [
+    { "id": "build-query", "from": "graph", "to": "retrieve", "y": 160, "label": "生成一维查询", "variant": "emphasis", "note": "evidence_prompts + section_types" },
+    { "id": "filter-children", "from": "retrieve", "to": "chroma", "y": 214, "label": "过滤子块", "variant": "emphasis", "note": "过滤先于排序与截断" },
+    { "id": "hit-children", "from": "chroma", "to": "retrieve", "y": 270, "label": "命中子块", "variant": "return" },
+    { "id": "fetch-parents", "from": "retrieve", "to": "mysql", "y": 304, "label": "按 parent_id 取父块", "variant": "emphasis" },
+    { "id": "parent-text", "from": "mysql", "to": "retrieve", "y": 336, "label": "父块全文", "variant": "return" },
+    { "id": "candidate-order", "from": "retrieve", "to": "rerank", "y": 370, "label": "候选顺序", "variant": "dashed", "note": "P4 才接真重排" },
+    { "id": "reordered", "from": "rerank", "to": "retrieve", "y": 420, "label": "只改顺序", "variant": "return" },
+    { "id": "to-scoring", "from": "retrieve", "to": "scoring", "y": 456, "label": "送入父块全文", "variant": "emphasis", "note": "每维最多 4 段" },
+    { "id": "chat", "from": "scoring", "to": "llmapi", "y": 510, "label": "chat() 选档", "variant": "security", "note": "跨信任边界：只发父块全文与原句" },
+    { "id": "chat-reply", "from": "llmapi", "to": "scoring", "y": 566, "label": "只读 choices[0].message.content", "variant": "return" },
+    { "id": "to-gate", "from": "scoring", "to": "gate", "y": 600, "label": "档位 + 原句" },
+    { "id": "gate-reply", "from": "gate", "to": "scoring", "y": 632, "label": "引用校验结果", "variant": "return" },
+    { "id": "back-to-graph", "from": "scoring", "to": "graph", "y": 666, "label": "档位与校验结果", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "graph", "from": 155, "to": 672, "type": "backend" },
+    { "participant": "retrieve", "from": 160, "to": 462, "type": "backend" },
+    { "participant": "chroma", "from": 208, "to": 276, "type": "database" },
+    { "participant": "mysql", "from": 298, "to": 342, "type": "database" },
+    { "participant": "rerank", "from": 364, "to": 426, "type": "backend" },
+    { "participant": "scoring", "from": 450, "to": 672, "type": "backend" },
+    { "participant": "gate", "from": 594, "to": 638, "type": "backend" },
+    { "participant": "llmapi", "from": 504, "to": 572, "type": "external" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "主流程只有一条",
+      "items": [
+        "生成查询 → 过滤子块 → 召回 → 按 parent_id 取回父块 → 送入选档",
+        "过滤条件交给向量库：contest_id、rubric_id、section_type $in",
+        "先过滤，再排序与截断；每维最多 4 段父块进模型"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "父子块分工",
+      "items": [
+        "子块片段、元数据与向量进 Chroma；父块全文只在 MySQL 的 paper_parent",
+        "送入模型的是父块全文，不是子块碎片",
+        "命中的 chunk_ids 随父块带回，供后续溯源"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "信任边界与重排位置",
+      "items": [
+        "模型调用在信任边界外：选档的 chat() 是界内唯一出口",
+        "本版不调用 chat() 与 embed()，向量由调用方显式传入",
+        "重排属 P4：只改顺序，不能把被过滤掉的片段加回来"
+      ]
+    }
+  ]
+}

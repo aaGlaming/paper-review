@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-12",
+  "contest_id": "cumcm-2025-A",
+  "title": "自建评测样例 12 · 遮蔽时长与无人机航路的联合优化",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "基本" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "不足" }
+  ],
+  "expected_findings": ["模型未写出云团下沉与航路的耦合项", "结果只有区间，没有可复核的数值表", "图表缺少单位"]
+}

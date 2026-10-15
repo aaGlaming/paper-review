@@ -1,0 +1,8 @@
+{
+  "contest_id": "fixture-extra",
+  "year": 2026,
+  "problem_code": "F",
+  "title": "自建第四道题（导入夹具）",
+  "statement": "本题是本项目自建的导入夹具，不属于任何公开赛事，也不对应任何真实赛题。题面要求：给定一组自建数据，建立模型并给出结果，结果需说明数据来源与计算口径。题目含一条数量区间约束与两种自建情形，两种情形的结果分别对应 result_fixture_a 与 result_fixture_b。",
+  "status": "draft"
+}

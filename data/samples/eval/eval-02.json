@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-02",
+  "contest_id": "cumcm-2024-A",
+  "title": "自建评测样例 02 · 板凳龙调头段的几何关系",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "基本" },
+    { "dimension_code": "modeling", "band": "充分" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "充分" }
+  ],
+  "expected_findings": ["假设只写了两条，未说明初始条件", "只给了前 5 s 的结果"]
+}

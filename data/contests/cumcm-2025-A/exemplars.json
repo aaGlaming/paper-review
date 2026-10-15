@@ -1,0 +1,33 @@
+{
+  "contest_id": "cumcm-2025-A",
+  "exemplars": [
+    {
+      "exemplar_id": "cumcm-2025-A-e1",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "assumption",
+      "band": "充分",
+      "excerpt": "把云团处理成以 3 m/s 匀速下沉的球体，说明导弹与无人机在遮蔽窗口内近似匀速直线运动，并给出该近似的适用条件。"
+    },
+    {
+      "exemplar_id": "cumcm-2025-A-e2",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "modeling",
+      "band": "充分",
+      "excerpt": "写出云团球心随时间的下沉方程，按云团中心 10 m 与起爆后 20 s 两个条件写出有效遮蔽判据，并把无人机速度限制在 70～140 m/s。"
+    },
+    {
+      "exemplar_id": "cumcm-2025-A-e3",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "constraint_check",
+      "band": "不足",
+      "excerpt": "给出了遮蔽时长曲线，但没有核对无人机速度是否落在题目给出的区间内。"
+    },
+    {
+      "exemplar_id": "cumcm-2025-A-e4",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "solution",
+      "band": "基本",
+      "excerpt": "给出了最优投放与起爆时刻，但搜索范围与步长的说明只有一句话，缺少复核用的中间结果。"
+    }
+  ]
+}

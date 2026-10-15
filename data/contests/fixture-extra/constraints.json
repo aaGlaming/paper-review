@@ -1,0 +1,33 @@
+{
+  "contest_id": "fixture-extra",
+  "constraints": [
+    {
+      "constraint_id": "fixture-extra-source-note",
+      "name": "需说明数据来源与计算口径",
+      "check_type": "mention",
+      "params": { "keywords": ["数据来源", "计算口径"] },
+      "section_types": ["假设", "模型", "结果"]
+    },
+    {
+      "constraint_id": "fixture-extra-count-range",
+      "name": "自建数量落在 1～5 次之间",
+      "check_type": "numeric_range",
+      "params": { "min": 1, "max": 5, "unit": "次" },
+      "section_types": ["模型", "求解", "检验"]
+    },
+    {
+      "constraint_id": "fixture-extra-case-a",
+      "name": "自建情形 A",
+      "check_type": "required_case",
+      "params": { "label": "自建情形A", "artifact": "result_fixture_a" },
+      "section_types": ["模型", "结果"]
+    },
+    {
+      "constraint_id": "fixture-extra-case-b",
+      "name": "自建情形 B",
+      "check_type": "required_case",
+      "params": { "label": "自建情形B", "artifact": "result_fixture_b" },
+      "section_types": ["模型", "结果"]
+    }
+  ]
+}

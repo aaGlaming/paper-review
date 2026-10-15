@@ -1,0 +1,13 @@
+.env
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+# Chroma 持久化数据目录，本地向量库落盘位置，不入库
+chroma_data/
+.chroma/
+chroma/
+# WorkBuddy 工作区数据（记忆日志、临时探针脚本），本地专用，不进仓库
+.workbuddy/

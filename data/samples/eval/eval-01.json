@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-01",
+  "contest_id": "cumcm-2024-A",
+  "title": "自建评测样例 01 · 板凳龙盘入过程的速度分析",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "充分" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "基本" }
+  ],
+  "expected_findings": ["结果只给出曲线与最大值，缺少可复核的数值表", "检验一节只作定性说明"]
+}

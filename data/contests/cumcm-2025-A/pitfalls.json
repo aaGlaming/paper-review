@@ -1,0 +1,45 @@
+{
+  "contest_id": "cumcm-2025-A",
+  "pitfalls": [
+    {
+      "pitfall_id": "cumcm-2025-A-p1",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "assumption",
+      "phenomenon": "把烟幕云团写成静止不动，没有 3 m/s 的下沉",
+      "action": "在运动方程里补上云团 3 m/s 的下沉项，并说明该速度对遮蔽窗口的影响",
+      "section_types": ["假设", "模型"]
+    },
+    {
+      "pitfall_id": "cumcm-2025-A-p2",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "constraint_check",
+      "phenomenon": "无人机速度取到了 70～140 m/s 之外",
+      "action": "把速度限制写进可行域，并在检验一节逐条核对取值落在题目区间内",
+      "section_types": ["模型", "检验", "结果"]
+    },
+    {
+      "pitfall_id": "cumcm-2025-A-p3",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "constraint_check",
+      "phenomenon": "未按云团中心 10 m 与起爆后 20 s 判定有效遮蔽",
+      "action": "写出有效遮蔽的判据，并在结果里给出满足判据的时间区间",
+      "section_types": ["模型", "检验"]
+    },
+    {
+      "pitfall_id": "cumcm-2025-A-p4",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "solution",
+      "phenomenon": "只讨论一次投放，未给出使遮蔽时间最长的投放策略",
+      "action": "补上参数搜索或优化过程，给出投放时刻、起爆时刻与速度的取值",
+      "section_types": ["求解", "结果"]
+    },
+    {
+      "pitfall_id": "cumcm-2025-A-p5",
+      "contest_id": "cumcm-2025-A",
+      "dimension_code": "presentation",
+      "phenomenon": "摘要给出的遮蔽时长与正文计算结果不一致",
+      "action": "统一摘要与正文的数值口径，并在表格中标明单位",
+      "section_types": ["结果", "参考文献"]
+    }
+  ]
+}

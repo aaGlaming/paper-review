@@ -1,0 +1,33 @@
+{
+  "contest_id": "cumcm-2024-C",
+  "constraints": [
+    {
+      "constraint_id": "cumcm-2024-C-no-repeat-crop",
+      "name": "同一地块不能连续重茬",
+      "check_type": "mention",
+      "params": { "keywords": ["重茬", "连作", "连续种植"] },
+      "section_types": ["假设", "模型", "求解", "检验"]
+    },
+    {
+      "constraint_id": "cumcm-2024-C-legume-three-years",
+      "name": "每块地三年内至少种植一次豆类",
+      "check_type": "mention",
+      "params": { "keywords": ["豆类", "三年内至少一次"] },
+      "section_types": ["假设", "模型", "结果", "检验"]
+    },
+    {
+      "constraint_id": "cumcm-2024-C-unsold",
+      "name": "超额产量滞销情形",
+      "check_type": "required_case",
+      "params": { "label": "滞销", "artifact": "result1_1" },
+      "section_types": ["假设", "模型", "求解", "结果"]
+    },
+    {
+      "constraint_id": "cumcm-2024-C-half-price",
+      "name": "超额产量按 50% 降价出售情形",
+      "check_type": "required_case",
+      "params": { "label": "50%降价", "artifact": "result1_2" },
+      "section_types": ["假设", "模型", "求解", "结果"]
+    }
+  ]
+}

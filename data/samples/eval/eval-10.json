@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-10",
+  "contest_id": "cumcm-2025-A",
+  "title": "自建评测样例 10 · 多枚干扰弹的协同投放",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "充分" },
+    { "dimension_code": "solution", "band": "充分" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "充分" }
+  ],
+  "expected_findings": ["未逐条对照无人机速度范围的取值依据"]
+}

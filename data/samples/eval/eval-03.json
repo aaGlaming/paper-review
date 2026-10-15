@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-03",
+  "contest_id": "cumcm-2024-A",
+  "title": "自建评测样例 03 · 板凳龙全过程速度约束讨论",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "基本" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "不足" },
+    { "dimension_code": "presentation", "band": "不足" }
+  ],
+  "expected_findings": ["模型未写出调头段路径的完整约束", "正文没有逐条对照题目条件", "结果只有曲线，没有表格与单位"]
+}

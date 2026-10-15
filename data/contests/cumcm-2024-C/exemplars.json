@@ -1,0 +1,33 @@
+{
+  "contest_id": "cumcm-2024-C",
+  "exemplars": [
+    {
+      "exemplar_id": "cumcm-2024-C-e1",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "modeling",
+      "band": "充分",
+      "excerpt": "把不能连续重茬写成逐地块逐年的硬约束，并把每块地三年内至少一次豆类写成滑动窗口约束，两种销售情形各写一份目标函数。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-C-e2",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "constraint_check",
+      "band": "充分",
+      "excerpt": "逐块列出 2024～2030 年的种植序列，标出豆类出现的年份，并核对没有相邻年份种植同一类作物。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-C-e3",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "constraint_check",
+      "band": "不足",
+      "excerpt": "只给出总收益最大的方案，没有对照题目的豆类约束与两种销售情形。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-C-e4",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "presentation",
+      "band": "基本",
+      "excerpt": "方案表按年份给出，地块编号连续，但金额一栏没有标明单位，摘要与正文的收益口径未对齐。"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "评审单状态机",
+    "subtitle": "状态词表只有五个",
+    "locale": "zh-CN",
+    "output": "docs/diagrams/review.lifecycle.html",
+    "quality_profile": "showcase"
+  },
+  "mainPath": ["drafting", "pending", "scoring", "done"],
+  "states": [
+    { "id": "drafting", "type": "start", "label": "草稿解析", "sublabel": "按标题规则切章节", "tag": "parse", "step": "01" },
+    { "id": "pending", "type": "waiting", "label": "待确认", "sublabel": "interrupt 交出章节树", "tag": "等待人工", "step": "02" },
+    { "id": "scoring", "type": "active", "label": "评分中", "sublabel": "逐维检索与选档", "tag": "运行中", "step": "03" },
+    { "id": "done", "type": "success", "label": "完成", "sublabel": "档位与清单已生成", "tag": "终态", "step": "04" },
+    { "id": "failed", "type": "failure", "label": "失败", "sublabel": "停在当前步骤", "tag": "可重试" }
+  ],
+  "transitions": [
+    { "id": "drafting-pending", "from": "drafting", "to": "pending", "label": "章节树产出" },
+    { "id": "pending-scoring", "from": "pending", "to": "scoring", "label": "人工确认", "note": "Command(resume=...) 覆盖章节类型，不重新解析" },
+    { "id": "scoring-done", "from": "scoring", "to": "done", "label": "档位齐备", "variant": "emphasis" },
+    { "id": "scoring-failed", "from": "scoring", "to": "failed", "label": "步骤失败", "variant": "security" },
+    { "id": "failed-scoring", "from": "failed", "to": "scoring", "label": "同一 review_id 重试" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "五个状态",
+      "items": [
+        "草稿解析、待确认、评分中、完成、失败",
+        "状态词表封闭，不新增其他状态",
+        "空文档不创建评审，不产生 review_id"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "暂停点",
+      "items": [
+        "待确认由 LangGraph 的 interrupt() 停住",
+        "检查点按 review_id 保存，重启后从暂停点继续",
+        "未 resume 时评分节点调用次数为 0"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "失败与重试",
+      "items": [
+        "失败停在当前步骤，不补写评语",
+        "检查点仍在，可用同一 review_id 重新推进",
+        "引用失败与证据不足记为完成，不记为失败"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "contest_id": "cumcm-2024-A",
+  "exemplars": [
+    {
+      "exemplar_id": "cumcm-2024-A-e1",
+      "contest_id": "cumcm-2024-A",
+      "dimension_code": "assumption",
+      "band": "充分",
+      "excerpt": "把板凳宽度保留在几何模型里，把手简化为孔中心点，并说明该简化只影响连接处的松紧、不改变碰撞判定。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-A-e2",
+      "contest_id": "cumcm-2024-A",
+      "dimension_code": "modeling",
+      "band": "充分",
+      "excerpt": "按盘入螺距 1.7 m 写出螺线的参数方程，把调头段拆成两段相切的圆弧，并写出半径 2 倍的约束式。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-A-e3",
+      "contest_id": "cumcm-2024-A",
+      "dimension_code": "constraint_check",
+      "band": "不足",
+      "excerpt": "结果给出了各把手速度曲线，但没有逐条对照题目给出的碰撞与速度上限条件。"
+    },
+    {
+      "exemplar_id": "cumcm-2024-A-e4",
+      "contest_id": "cumcm-2024-A",
+      "dimension_code": "presentation",
+      "band": "基本",
+      "excerpt": "结果按问题顺序排列，公式编号连续，但两张速度表缺少时刻列与单位说明。"
+    }
+  ]
+}

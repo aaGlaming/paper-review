@@ -1,0 +1,26 @@
+{
+  "contest_id": "cumcm-2025-A",
+  "constraints": [
+    {
+      "constraint_id": "cumcm-2025-A-smoke-sink",
+      "name": "烟幕云团以 3 m/s 下沉",
+      "check_type": "numeric_range",
+      "params": { "min": 3, "max": 3, "unit": "m/s" },
+      "section_types": ["假设", "模型", "求解"]
+    },
+    {
+      "constraint_id": "cumcm-2025-A-effective-range",
+      "name": "云团中心 10 m 范围内、起爆后 20 s 内可有效遮蔽",
+      "check_type": "mention",
+      "params": { "keywords": ["10 m", "20 s"] },
+      "section_types": ["假设", "模型", "求解", "检验"]
+    },
+    {
+      "constraint_id": "cumcm-2025-A-uav-speed",
+      "name": "无人机速度范围为 70～140 m/s",
+      "check_type": "numeric_range",
+      "params": { "min": 70, "max": 140, "unit": "m/s" },
+      "section_types": ["假设", "模型", "求解", "结果"]
+    }
+  ]
+}

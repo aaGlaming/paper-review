@@ -1,0 +1,19 @@
+{
+  "contest_id": "fixture-extra",
+  "exemplars": [
+    {
+      "exemplar_id": "fixture-extra-e1",
+      "contest_id": "fixture-extra",
+      "dimension_code": "constraint_check",
+      "band": "充分",
+      "excerpt": "逐条核对数量区间并说明两种自建情形都已给出，附上校验用的中间结果。"
+    },
+    {
+      "exemplar_id": "fixture-extra-e2",
+      "contest_id": "fixture-extra",
+      "dimension_code": "presentation",
+      "band": "基本",
+      "excerpt": "结果按问题顺序排列，但表格缺少单位说明。"
+    }
+  ]
+}

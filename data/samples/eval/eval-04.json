@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-04",
+  "contest_id": "cumcm-2024-A",
+  "title": "自建评测样例 04 · 板凳龙盘入时间的快速估算",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "不足" },
+    { "dimension_code": "modeling", "band": "不足" },
+    { "dimension_code": "solution", "band": "不足" },
+    { "dimension_code": "constraint_check", "band": "证据不足" },
+    { "dimension_code": "presentation", "band": "不足" }
+  ],
+  "expected_findings": ["假设未说明适用条件", "模型过于简化，未针对题目结构", "没有检验一节"]
+}

@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-08",
+  "contest_id": "cumcm-2024-C",
+  "title": "自建评测样例 08 · 地块异质性下的种植安排",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "基本" },
+    { "dimension_code": "modeling", "band": "基本" },
+    { "dimension_code": "solution", "band": "充分" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "充分" }
+  ],
+  "expected_findings": ["假设未说明土壤分类的数据来源", "合并方案时未讨论子问题解的最优性"]
+}

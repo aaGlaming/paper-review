@@ -1,0 +1,72 @@
+{
+  "contest_id": "fixture-extra",
+  "version": 1,
+  "status": "draft",
+  "dimensions": [
+    {
+      "code": "assumption",
+      "name": "假设的合理性",
+      "weight": 20,
+      "evidence_prompts": ["是否说明自建数据的来源", "是否交代计算口径的简化"],
+      "section_types": ["假设", "模型"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "假设逐条给出并说明适用条件" },
+        { "band": "基本", "score": 12, "description": "主要假设已给出，个别缺依据" },
+        { "band": "不足", "score": 5, "description": "假设笼统，未说明数据来源" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到与假设有关的表述" }
+      ]
+    },
+    {
+      "code": "modeling",
+      "name": "建模是否针对本题",
+      "weight": 20,
+      "evidence_prompts": ["是否把数量区间写进约束", "是否分别建立两种自建情形"],
+      "section_types": ["模型", "求解"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "模型针对本题数据与两种情形建立" },
+        { "band": "基本", "score": 12, "description": "模型基本针对本题，遗漏一种情形" },
+        { "band": "不足", "score": 5, "description": "只写通用形式，未体现本题约束" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到建模过程" }
+      ]
+    },
+    {
+      "code": "solution",
+      "name": "求解与结果",
+      "weight": 20,
+      "evidence_prompts": ["是否给出可复核的结果数值", "是否说明求解方法"],
+      "section_types": ["求解", "结果"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "给出可复核的结果并说明方法" },
+        { "band": "基本", "score": 12, "description": "结果已给出，说明不完整" },
+        { "band": "不足", "score": 5, "description": "只有结论，无法复核" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到求解结果" }
+      ]
+    },
+    {
+      "code": "constraint_check",
+      "name": "检验与题目约束",
+      "weight": 20,
+      "evidence_prompts": ["是否核对数量落在 1～5 次内", "是否两种情形都已给出"],
+      "section_types": ["检验", "结果"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "逐条对照约束并给出校验依据" },
+        { "band": "基本", "score": 12, "description": "对照了部分约束" },
+        { "band": "不足", "score": 5, "description": "未做约束检验" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到约束检验" }
+      ]
+    },
+    {
+      "code": "presentation",
+      "name": "表述与结构",
+      "weight": 20,
+      "evidence_prompts": ["是否按问题顺序组织结果", "单位是否标注完整"],
+      "section_types": ["结果", "参考文献"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "结构清晰，单位完整" },
+        { "band": "基本", "score": 12, "description": "结构大致清楚，个别缺标注" },
+        { "band": "不足", "score": 5, "description": "结果堆砌，难以对应问题" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到可判断结构的正文" }
+      ]
+    }
+  ]
+}

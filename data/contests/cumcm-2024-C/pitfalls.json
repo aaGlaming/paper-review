@@ -1,0 +1,45 @@
+{
+  "contest_id": "cumcm-2024-C",
+  "pitfalls": [
+    {
+      "pitfall_id": "cumcm-2024-C-p1",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "constraint_check",
+      "phenomenon": "约束里没有写「每块地三年内至少种植一次豆类」",
+      "action": "补上豆类三年约束，并在结果中逐块列出最近三年是否种过豆类",
+      "section_types": ["假设", "模型", "检验"]
+    },
+    {
+      "pitfall_id": "cumcm-2024-C-p2",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "constraint_check",
+      "phenomenon": "只给出滞销情形的结果，缺少按 50% 降价的 result1_2 情形",
+      "action": "按题目要求分别求解两种情形，给出与 result1_1、result1_2 对应的方案表",
+      "section_types": ["模型", "结果"]
+    },
+    {
+      "pitfall_id": "cumcm-2024-C-p3",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "modeling",
+      "phenomenon": "模型允许同一地块连续种植同一类作物",
+      "action": "把不能连续重茬写成逐地块逐年的硬约束",
+      "section_types": ["模型"]
+    },
+    {
+      "pitfall_id": "cumcm-2024-C-p4",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "solution",
+      "phenomenon": "未区分两种销售情形就给出七年总收益",
+      "action": "分情形给出目标值与方案，并在结果表里标明对应文件",
+      "section_types": ["求解", "结果"]
+    },
+    {
+      "pitfall_id": "cumcm-2024-C-p5",
+      "contest_id": "cumcm-2024-C",
+      "dimension_code": "assumption",
+      "phenomenon": "假设未说明地块差异与作物替代性的处理方式",
+      "action": "补写地块分类依据与替代性、价格波动的处理假设",
+      "section_types": ["假设"]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "contest_id": "fixture-extra",
+  "pitfalls": [
+    {
+      "pitfall_id": "fixture-extra-p1",
+      "contest_id": "fixture-extra",
+      "dimension_code": "constraint_check",
+      "phenomenon": "只给出情形 A 的结果，缺少情形 B",
+      "action": "按题面补齐两种自建情形的结果文件",
+      "section_types": ["模型", "结果"]
+    },
+    {
+      "pitfall_id": "fixture-extra-p2",
+      "contest_id": "fixture-extra",
+      "dimension_code": "assumption",
+      "phenomenon": "未说明自建数据的来源",
+      "action": "在假设一节写清数据来源与计算口径",
+      "section_types": ["假设"]
+    }
+  ]
+}

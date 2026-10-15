@@ -1,0 +1,92 @@
+{
+  "contest_id": "cumcm-2025-A",
+  "version": 1,
+  "status": "draft",
+  "dimensions": [
+    {
+      "code": "assumption",
+      "name": "假设的合理性",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否说明云团下沉与遮蔽判据的处理方式",
+        "是否说明导弹与无人机的运动简化",
+        "是否交代起爆时刻与投放时刻的关系假设"
+      ],
+      "section_types": ["假设", "模型"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "假设逐条给出，云团下沉、遮蔽判据与双方运动简化都有依据" },
+        { "band": "基本", "score": 12, "description": "主要假设已给出，个别假设缺少依据，例如未说明云团形状" },
+        { "band": "不足", "score": 5, "description": "假设笼统，未说明遮蔽判据与运动简化" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到与假设有关的表述" }
+      ]
+    },
+    {
+      "code": "modeling",
+      "name": "建模是否针对本题",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否把云团 3 m/s 下沉写进运动方程",
+        "是否按云团中心 10 m 与起爆后 20 s 建立有效遮蔽判据",
+        "是否把无人机速度限制在 70～140 m/s"
+      ],
+      "section_types": ["模型", "求解"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "模型给出云团、导弹、无人机的运动方程与遮蔽判据，速度约束写进可行域" },
+        { "band": "基本", "score": 12, "description": "模型基本针对本题，遗漏下沉速度或有效遮蔽判据" },
+        { "band": "不足", "score": 5, "description": "只写通用几何关系，未体现云团下沉与遮蔽判据" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到建模过程" }
+      ]
+    },
+    {
+      "code": "solution",
+      "name": "求解与结果",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否给出问题 1 的有效遮蔽时长",
+        "是否给出优化后的投放与起爆参数",
+        "是否说明求解方法与搜索范围"
+      ],
+      "section_types": ["求解", "结果"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "给出可复核的遮蔽时长与优化参数，说明搜索方法与范围" },
+        { "band": "基本", "score": 12, "description": "结果已给出，但缺少优化过程的说明或部分情形" },
+        { "band": "不足", "score": 5, "description": "只给结论数值，无法复核" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到求解结果" }
+      ]
+    },
+    {
+      "code": "constraint_check",
+      "name": "检验与题目约束",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否核对云团下沉速度取 3 m/s",
+        "是否核对无人机速度落在 70～140 m/s 内",
+        "是否按 10 m 与 20 s 判定有效遮蔽"
+      ],
+      "section_types": ["检验", "结果"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "逐条对照下沉速度、速度范围与有效遮蔽判据，并给出校验依据" },
+        { "band": "基本", "score": 12, "description": "对照了部分条件，遗漏速度范围或遮蔽判据的校验" },
+        { "band": "不足", "score": 5, "description": "未回到题目条件做检验" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到针对本题约束的检验" }
+      ]
+    },
+    {
+      "code": "presentation",
+      "name": "表述与结构",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否按问题顺序组织结果",
+        "遮蔽时长与速度是否标注单位",
+        "引用与图表编号是否一致"
+      ],
+      "section_types": ["结果", "参考文献"],
+      "bands": [
+        { "band": "充分", "score": 20, "description": "结构清晰，时长与速度单位统一，图表编号与正文一致" },
+        { "band": "基本", "score": 12, "description": "结构大致清楚，个别数值缺单位或口径不一致" },
+        { "band": "不足", "score": 5, "description": "结果堆砌，单位与口径混乱" },
+        { "band": "证据不足", "score": null, "description": "检索到的切片里找不到可判断表述与结构的正文" }
+      ]
+    }
+  ]
+}

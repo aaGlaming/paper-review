@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-09",
+  "contest_id": "cumcm-2025-A",
+  "title": "自建评测样例 09 · 烟幕云团下沉对遮蔽时长的影响",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "充分" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "充分" },
+    { "dimension_code": "presentation", "band": "基本" }
+  ],
+  "expected_findings": ["求解一节未说明搜索范围与步长"]
+}

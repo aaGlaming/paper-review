@@ -1,0 +1,9 @@
+# 预审平台的四个服务：frontend、backend、mysql、chroma。
+# 不部署本地模型，不挂载模型权重。
+# 镜像、端口、卷和健康检查留到后续里程碑，此处不写可运行配置。
+
+services:
+  frontend: {}
+  backend: {}
+  mysql: {}
+  chroma: {}

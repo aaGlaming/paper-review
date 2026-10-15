@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-11",
+  "contest_id": "cumcm-2025-A",
+  "title": "自建评测样例 11 · 遮蔽判据的简化处理",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "不足" },
+    { "dimension_code": "modeling", "band": "基本" },
+    { "dimension_code": "solution", "band": "不足" },
+    { "dimension_code": "constraint_check", "band": "证据不足" },
+    { "dimension_code": "presentation", "band": "基本" }
+  ],
+  "expected_findings": ["假设把云团写成位置固定，没有下沉过程", "没有约束检验一节", "时间步长过大且未做误差估计"]
+}

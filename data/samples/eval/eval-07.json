@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-07",
+  "contest_id": "cumcm-2024-C",
+  "title": "自建评测样例 07 · 种植方案的贪心启发式求解",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "不足" },
+    { "dimension_code": "modeling", "band": "不足" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "不足" },
+    { "dimension_code": "presentation", "band": "基本" }
+  ],
+  "expected_findings": ["模型没有写出重茬约束", "未讨论豆类轮作要求", "求解方法未说明最优性依据"]
+}

@@ -1,0 +1,14 @@
+{
+  "paper_id": "eval-06",
+  "contest_id": "cumcm-2024-C",
+  "title": "自建评测样例 06 · 考虑价格波动的种植策略",
+  "is_demo": false,
+  "gold": [
+    { "dimension_code": "assumption", "band": "充分" },
+    { "dimension_code": "modeling", "band": "基本" },
+    { "dimension_code": "solution", "band": "基本" },
+    { "dimension_code": "constraint_check", "band": "基本" },
+    { "dimension_code": "presentation", "band": "基本" }
+  ],
+  "expected_findings": ["模型未说明价格情景的取值依据", "缺少逐年逐地块的完整方案表"]
+}

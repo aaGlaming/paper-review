@@ -1,0 +1,5 @@
+{
+  "name": "paper-review",
+  "private": true,
+  "description": "竞赛论文预审工作台。页面、依赖和测试命令在前端里程碑再写入。"
+}
