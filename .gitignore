@@ -11,3 +11,6 @@ chroma_data/
 chroma/
 # WorkBuddy 工作区数据（记忆日志、临时探针脚本），本地专用，不进仓库
 .workbuddy/
+# Playwright 报告与失败产物（本机生成，不入库）
+playwright-report/
+test-results/

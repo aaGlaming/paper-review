@@ -1,0 +1,75 @@
+/*
+手稿风格（Sketch / Hand-drawn）——本文件只做三件事：
+1) 引入纸张颗粒做全局极淡底纹（opacity ≤ 0.035）；
+2) 定义 .sk-underline / .sk-card-frame / .sk-tape 三个复用类；
+3) 声明手绘元素的三条绘制约定。
+新颜色一律走 tokens.css，本文件不写任何十六进制色值、不加任何动效。
+*/
+
+/* 1. 纸张颗粒：全局极淡底纹，叠在纸底之上（pointer-events 穿透、不挡交互、不产生滚动） */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  background-image: url('../assets/sketch/sketch-paper-grain.svg');
+  background-repeat: repeat;
+  opacity: 0.035;
+}
+
+/* 2. 复用类 */
+
+/* 手绘下划线：横跨元素底部（元素需 position: relative，本类已声明） */
+.sk-underline {
+  position: relative;
+}
+
+.sk-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 12px;
+  background-image: url('../assets/sketch/sketch-underline.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 手绘卡片边框：用 ::before 覆盖整张卡（元素需 position: relative，本类已声明）。
+   用 border-image + round（边段重复、四角固定），**不横向/纵向拉伸**——
+   preserveAspectRatio="none" 的整幅拉伸会在异高卡片上把双线拉变形，round 不会。
+   SVG 是透明填充 + 边缘描边，叠加在卡面之上不影响正文可读。 */
+.sk-card-frame {
+  position: relative;
+}
+
+.sk-card-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 12px solid transparent;
+  border-image: url('../assets/sketch/sketch-card-border.svg') 12 round;
+}
+
+/* 胶带：贴在卡片顶部中央（作为卡内子元素使用，卡需 position: relative） */
+.sk-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 72px;
+  height: 26px;
+  margin-left: -36px;
+  background-image: url('../assets/sketch/sketch-tape.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 3. 手绘元素的绘制约定（新增 SVG 时遵守）：
+   ① 线条 stroke="currentColor"、stroke-width 1.2–1.8、stroke-linecap/linejoin="round"、fill="none"；
+   ② 路径一律微弯不取直；
+   ③ 重点形状描两遍，第二遍 opacity 0.45–0.55 且略偏移。 */

@@ -1,5 +1,30 @@
 {
   "name": "paper-review",
   "private": true,
-  "description": "竞赛论文预审工作台。页面、依赖和测试命令在前端里程碑再写入。"
+  "version": "0.9.0",
+  "type": "module",
+  "description": "竞赛论文预审工作台。P8 分六个阶段实现，本阶段只搭工程与门禁。",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "element-plus": "2.14.7",
+    "vue": "3.5.44",
+    "vue-router": "5.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.5",
+    "@vitejs/plugin-vue": "6.0.10",
+    "@vue/test-utils": "2.5.1",
+    "jsdom": "30.1.3",
+    "typescript": "6.0.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.5",
+    "vue-tsc": "3.3.13"
+  }
 }

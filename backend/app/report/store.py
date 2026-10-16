@@ -4,6 +4,9 @@
 信息原样还在。**旧记录一律不回写**：同一 `review_id` 再次保存时，身份字段（赛题、量规、版本、
 模型名、创建时间）与当时各维的档位 / 切片编号 / 原句都保持不变——发布新版量规只影响之后新建的
 评审单，要改旧记录就换一个新的 `review_id`。
+
+`save_session` / `load_session` 读写的是章节确认之前的会话快照，与上面不同：同一 `review_id`
+再次保存会**覆盖**上一次的快照（确认时以调用方给的章节树为准），因为没有第二处存档可依据。
 """
 
 from __future__ import annotations
@@ -15,7 +18,7 @@ from typing import Any, Iterator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import Review, ReviewDimension, utc_now
+from .models import Review, ReviewDimension, ReviewSession, utc_now
 
 _DIMENSION_FIELDS = ("dimension_code", "band", "chunk_ids", "quote", "status")
 
@@ -139,3 +142,50 @@ def load_review(review_id: str, *, session: Session | None = None) -> dict[str, 
         if row is None:
             return None
         return _load_with(work, row)
+
+
+def _session_to_dict(row: ReviewSession) -> dict[str, Any]:
+    return {
+        "review_id": row.review_id,
+        "paper_text": row.paper_text,
+        "sections": [dict(section) for section in (row.sections or [])],
+        "confirmed": bool(row.confirmed),
+        "status": row.status,
+        "contest_id": row.contest_id,
+        "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+    }
+
+
+def save_session(
+    review_id: str,
+    *,
+    paper_text: str = "",
+    sections: Iterable[Mapping[str, Any]] | None = None,
+    confirmed: bool = False,
+    status: str = "",
+    contest_id: str = "",
+    session: Session | None = None,
+) -> dict[str, Any]:
+    """写一份评审会话快照。同一 `review_id` 再次调用是覆盖，不是新增。"""
+    with _session(session) as work:
+        row = work.get(ReviewSession, review_id)
+        if row is None:
+            row = ReviewSession(review_id=review_id)
+            work.add(row)
+        row.paper_text = str(paper_text)
+        row.sections = [dict(section) for section in (sections or ())]
+        row.confirmed = bool(confirmed)
+        row.status = str(status)
+        row.contest_id = str(contest_id)
+        row.updated_at = utc_now()
+        work.flush()
+        return _session_to_dict(row)
+
+
+def load_session(review_id: str, *, session: Session | None = None) -> dict[str, Any] | None:
+    """按 review_id 取回会话快照；找不到返回 None。"""
+    with _session(session) as work:
+        row = work.get(ReviewSession, review_id)
+        if row is None:
+            return None
+        return _session_to_dict(row)

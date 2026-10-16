@@ -1,0 +1,180 @@
+/*
+设计令牌：本文件是**唯一**允许出现颜色字面量的地方，其余 .css 与 .vue 一律走变量。
+方向是「校样稿（proof sheet）」——评审在论文上做批注的工作台，不是营销页，也不是后台管理模板。
+*/
+
+:root {
+  /* 底色：偏冷的近白。不用暖奶油色（近 #F4F1EA 那一类一律不用）。 */
+  --pr-paper: #f6f7f9;
+  --pr-surface: #ffffff;
+  --pr-surface-sunken: #eceff3;
+  --pr-rule: #d6dbe2;
+  --pr-rule-strong: #b3bcc6;
+
+  /* 墨色：深灰蓝黑，不用纯黑。 */
+  --pr-ink: #1b2430;
+  --pr-ink-muted: #4a5563;
+  --pr-ink-faint: #6d7885;
+
+  /* 主色：只承载「可操作」，不做装饰性渐变。 */
+  --pr-primary: #2b5797;
+  --pr-primary-strong: #224679;
+  --pr-primary-soft: #e8edf5;
+
+  /* 三个语义色：证据不足 / 冲突 / 越界，各自可辨，不互相借用。 */
+  --pr-insufficient: #64707d;
+  --pr-insufficient-soft: #e9ecf0;
+  --pr-conflict: #a93b2b;
+  --pr-conflict-soft: #f6e6e3;
+  --pr-range: #7a5a12;
+  --pr-range-soft: #f4edda;
+
+  /* 字体：界面无衬线；论文原句引用用衬线（引文来自论文本身）；等宽只给真正的数据字段。 */
+  --pr-font-ui: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+  --pr-font-quote: Georgia, 'Songti SC', 'SimSun', serif;
+  --pr-font-data: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+
+  /* 字号与行高：引文行高放宽，便于对照批注。 */
+  --pr-text-xs: 12px;
+  --pr-text-sm: 13px;
+  --pr-text-base: 14px;
+  --pr-text-lg: 16px;
+  --pr-text-title: 20px;
+  --pr-leading-tight: 1.4;
+  --pr-leading-base: 1.6;
+  --pr-leading-quote: 1.85;
+
+  /* 间距：单一 4px 基数，不逐级递增。 */
+  --pr-space-1: 4px;
+  --pr-space-2: 8px;
+  --pr-space-3: 12px;
+  --pr-space-4: 16px;
+  --pr-space-6: 24px;
+  --pr-space-8: 32px;
+
+  /* 形状：圆角统一一个小值；阴影只给浮层，普通卡片不加。 */
+  --pr-radius: 4px;
+  --pr-shadow-overlay: 0 10px 28px rgba(27, 36, 48, 0.16);
+  --pr-focus-ring: 0 0 0 2px rgba(43, 87, 151, 0.32);
+
+  /* 动效只留一处：章节确认这个不可逆动作的状态过渡。别处不做入场与位移。 */
+  --pr-motion-confirm: 220ms cubic-bezier(0.2, 0, 0, 1);
+
+  /* 版心：校样稿是纵向长条，正文宽度收窄便于逐行比对。 */
+  --pr-measure: 1040px;
+
+  /* --- Element Plus 主题覆盖 ------------------------------------------------- */
+  /* 不覆盖的话，五个页面会长成标准后台模板，与上面的方向直接冲突。 */
+  --el-color-primary: var(--pr-primary);
+  --el-color-primary-dark-2: var(--pr-primary-strong);
+  --el-color-primary-light-3: #6b89b6;
+  --el-color-primary-light-5: #95abcb;
+  --el-color-primary-light-7: #bfcde0;
+  --el-color-primary-light-8: #d5ddea;
+  --el-color-primary-light-9: #eaeef5;
+
+  /* 语义色映射到本工作台的三个语义，不另引第四个强调色。 */
+  --el-color-danger: var(--pr-conflict);
+  --el-color-warning: var(--pr-range);
+  --el-color-info: var(--pr-insufficient);
+  /* 本工作台没有「成功」语义，成功色借用主色，避免多出一个装饰色。 */
+  --el-color-success: var(--pr-primary);
+
+  --el-border-radius-base: var(--pr-radius);
+  --el-border-radius-small: var(--pr-radius);
+  --el-border-radius-round: var(--pr-radius);
+  --el-font-family: var(--pr-font-ui);
+  --el-font-size-base: var(--pr-text-base);
+  --el-text-color-primary: var(--pr-ink);
+  --el-text-color-regular: var(--pr-ink-muted);
+  --el-text-color-secondary: var(--pr-ink-faint);
+  --el-border-color: var(--pr-rule);
+  --el-border-color-light: var(--pr-rule);
+  --el-border-color-lighter: var(--pr-rule);
+  --el-bg-color: var(--pr-surface);
+  --el-bg-color-page: var(--pr-paper);
+  --el-fill-color-blank: var(--pr-surface);
+  --el-box-shadow-light: none;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--pr-paper);
+  color: var(--pr-ink);
+  font-family: var(--pr-font-ui);
+  font-size: var(--pr-text-base);
+  line-height: var(--pr-leading-base);
+}
+
+/* 论文原句：引文用衬线，和界面本身区分开。 */
+.pr-quote {
+  margin: 0;
+  padding-left: var(--pr-space-3);
+  border-left: 2px solid var(--pr-rule-strong);
+  color: var(--pr-ink);
+  font-family: var(--pr-font-quote);
+  line-height: var(--pr-leading-quote);
+}
+
+/* 字符偏移、切片编号这类真正的数据字段才用等宽。 */
+.pr-data {
+  font-family: var(--pr-font-data);
+  font-size: var(--pr-text-sm);
+}
+
+/* 章节层级用缩进表达，不用装饰性编号。 */
+.pr-indent-1 {
+  padding-left: var(--pr-space-4);
+}
+
+.pr-indent-2 {
+  padding-left: var(--pr-space-8);
+}
+
+/* --- 阶段 2/6 追加：解析页的两栏骨架、章节树缩进与步骤徽标 --------------------
+   只追加，既有的令牌与值一行未动。新颜色仍然只出现在这个文件里。 */
+:root {
+  /* 章节树的层级缩进：每深一级加一份，量在这里而层级由行内 --pr-depth 给出 */
+  --pr-indent: 14px;
+  --pr-tree-width: 300px;
+  --pr-row-hover: #eef1f5;
+  --pr-row-selected: #e4eaf4;
+
+  /* 步骤徽标：未开始 / 处理中 / 已完成 / 停在 */
+  --pr-badge-idle-bg: #eceff3;
+  --pr-badge-idle-ink: #4a5563;
+  --pr-badge-running-bg: #f4edda;
+  --pr-badge-running-ink: #7a5a12;
+  --pr-badge-done-bg: #e8edf5;
+  --pr-badge-done-ink: #224679;
+  --pr-badge-stopped-bg: #f6e6e3;
+  --pr-badge-stopped-ink: #a93b2b;
+
+  /* 预留位（主张 / 表格 / 引用）与浅底区块 */
+  --pr-slot-bg: #f6f7f9;
+}
+
+/* --- 阶段 7/7 追加：手稿风格 -------------------------------------------------
+   只追加，既有的令牌与值一行未动。 */
+:root {
+  /* 纸影：按钮 / 重点卡的硬纸切影（offset-x 2px、offset-y 3px、无模糊），
+     替代通用阴影，营造"贴纸"感。 */
+  --pr-shadow-paper: 2px 3px 0 rgba(27, 36, 48, 0.08);
+}
+
+/* --- 阶段 8/8 追加：手稿风修复的统密度令牌 -----------------------------------
+   只追加，既有的令牌与值一行未动。五页的卡片共用这一组间距。 */
+:root {
+  /* 卡片内边距：五页统一 */
+  --pr-card-pad: var(--pr-space-4);
+  /* 卡片间距：五页统一 */
+  --pr-card-gap: var(--pr-space-6);
+  /* 卡片标题与正文间距：五页统一 */
+  --pr-card-title-gap: var(--pr-space-3);
+}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 90" fill="none" aria-hidden="true">
+  <!-- 手绘圈：绕一圈后越过起笔点形成重叠，两遍笔触略有偏移，像钢笔描出来 -->
+  <path d="M70 11 C99 8 125 23 131 46 C137 69 110 85 71 84 C33 83 9 66 11 43 C13 21 41 14 70 11 C83 10 94 11 101 13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M72 14.5 C98 12 122 26 127 47 C132 68 108 81 72 80.5 C36 80 13 64 15 44 C17 24 43 17 72 14.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.55"/>
+</svg>
