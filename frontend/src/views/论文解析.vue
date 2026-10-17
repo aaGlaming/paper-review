@@ -4,9 +4,13 @@ import { RouterLink } from 'vue-router'
 
 import { ApiError, createReview, listContests, listSamples, resumeReview } from '../api'
 import type { ContestSummary, PaperSection, ReviewReport, SampleItem } from '../api/types'
+import artUrl from '../assets/sketch/sketch-bg-parse.svg'
+import spotUrl from '../assets/sketch/sketch-spot-parse.svg'
+import PageArt from '../components/PageArt.vue'
 import SectionReader from '../components/SectionReader.vue'
 import SectionTree from '../components/SectionTree.vue'
 import StageTracker from '../components/StageTracker.vue'
+import ParseEmptyIllustration from '../components/illustrations/ParseEmptyIllustration.vue'
 import { REVIEW_STAGES, type StagePhase } from '../composables/reviewVocabulary'
 import { readReviewFlow, setConfirmedReport, setReviewCreated } from '../composables/useReviewFlow'
 
@@ -208,15 +212,22 @@ onMounted(() => {
 
 <template>
   <article class="parse" data-testid="parse-page">
-    <header class="parse__head">
-      <span class="parse__num" aria-hidden="true">01</span>
-      <h1 class="parse__title">论文解析</h1>
-    </header>
-    <p class="parse__lead">
-      选一道已发布赛题，再填一篇稿子：解析出章节树，确认之后才进入分项评分。
-    </p>
+    <PageArt :art="artUrl" :spot="spotUrl" layout="right" />
+    <div class="parse__hero">
+      <header class="ed-head parse__hero-head">
+        <span class="ed-head__num" aria-hidden="true">01</span>
+        <p class="ed-head__kicker">稿源 · 章节树 · 确认</p>
+        <h1 class="ed-head__title">论文解析</h1>
+      </header>
+      <p class="ed-lede parse__hero-lede">
+        选一道已发布赛题，再填一篇稿子：解析出章节树，确认之后才进入分项评分。
+      </p>
+      <ParseEmptyIllustration class="parse__hero-illo" />
+    </div>
 
     <section class="inputs" data-testid="inputs">
+      <p class="ed-kicker">第一步 · 绑定赛题与稿源</p>
+      <p class="inputs__intro-text">两条路线二选一：演示样例最快，粘贴正文最自由。解析出章节树后，确认才进入评分。</p>
       <div class="inputs__row">
         <label class="inputs__label" for="parse-contest">赛题</label>
         <select
@@ -234,7 +245,8 @@ onMounted(() => {
       </div>
 
       <div class="inputs__pair">
-        <div class="inputs__block" data-testid="sample-block">
+        <div class="inputs__block inputs__block--primary ed-focus" data-testid="sample-block">
+          <p class="ed-kicker">路线 A · 推荐</p>
           <h2 class="inputs__block-title">用演示样例</h2>
           <div class="inputs__demos">
             <button
@@ -260,7 +272,8 @@ onMounted(() => {
           </button>
         </div>
 
-        <div class="inputs__block" data-testid="text-block">
+        <div class="inputs__block inputs__block--secondary" data-testid="text-block">
+          <p class="ed-kicker">路线 B</p>
           <h2 class="inputs__block-title">或粘贴正文</h2>
           <textarea
             v-model="paperText"
@@ -288,13 +301,19 @@ onMounted(() => {
     <StageTracker :phase="phase" :reached-index="reachedIndex" />
 
     <section v-if="sections.length > 0" class="workspace" data-testid="workspace">
-      <SectionTree
-        :sections="sections"
-        :selected-index="selectedIndex"
-        @select="selectSection"
-        @change-type="changeSectionType"
-      />
-      <SectionReader :section="selectedSection" />
+      <div class="workspace__tree">
+        <p class="ed-kicker">第二步 · 章节树（点一条看正文）</p>
+        <SectionTree
+          :sections="sections"
+          :selected-index="selectedIndex"
+          @select="selectSection"
+          @change-type="changeSectionType"
+        />
+      </div>
+      <div class="workspace__reader">
+        <p class="ed-kicker">正文原文</p>
+        <SectionReader :section="selectedSection" />
+      </div>
     </section>
 
     <div v-if="sections.length > 0" class="actions">
@@ -325,7 +344,8 @@ onMounted(() => {
         <dd class="confirmed__value" data-testid="confirmed-source">{{ report.source }}</dd>
       </dl>
       <p class="confirmed__next">
-        <RouterLink to="/scoring">去分项评分页</RouterLink>（该页在下一版实现）
+        <RouterLink class="ed-action-link" to="/scoring">去分项评分页</RouterLink>
+        <span class="confirmed__next-note">报告已就绪，后面三页会接着用它。</span>
       </p>
     </section>
   </article>
@@ -336,30 +356,34 @@ onMounted(() => {
   max-width: var(--pr-measure);
 }
 
-.parse__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
-  margin: 0 0 var(--pr-space-2);
+/* 首页 hero：标题占 7、插画占 5 的非对称组合，插画是"等稿子进来"的叙事，
+   不是装饰角标；窄屏时插画退到标题下方，不挤表单。 */
+.parse__hero {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  grid-template-areas:
+    'head illo'
+    'lede illo';
+  gap: 0 var(--pr-space-6);
+  align-items: center;
+  margin-bottom: var(--pr-space-6);
 }
 
-.parse__num {
-  font-family: var(--pr-font-data);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--pr-ink-faint);
+.parse__hero-head {
+  grid-area: head;
+  margin-bottom: 0;
 }
 
-.parse__title {
-  margin: 0;
-  font-size: var(--pr-text-title);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+.parse__hero-lede {
+  grid-area: lede;
+  margin: var(--pr-space-2) 0 0;
 }
 
-.parse__lead {
-  margin: 0 0 var(--pr-space-6);
-  color: var(--pr-ink-muted);
+.parse__hero-illo {
+  grid-area: illo;
+  width: 100%;
+  max-width: 300px;
+  justify-self: end;
 }
 
 .inputs {
@@ -369,8 +393,35 @@ onMounted(() => {
   background: var(--pr-surface);
 }
 
+.inputs__kicker {
+  margin: 0 0 var(--pr-space-3);
+}
+
+.inputs__intro-text {
+  margin: 0 0 var(--pr-space-4);
+  padding-bottom: var(--pr-space-4);
+  border-bottom: 1px dashed var(--pr-rule);
+  color: var(--pr-ink-muted);
+  font-size: var(--pr-text-base);
+  line-height: var(--pr-leading-base);
+}
+
+@media (max-width: 900px) {
+  .parse__hero {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'head' 'lede' 'illo';
+  }
+
+  .parse__hero-illo {
+    justify-self: start;
+    max-width: 240px;
+    margin-top: var(--pr-space-4);
+  }
+}
+
 .inputs__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--pr-space-3);
 }
@@ -391,15 +442,23 @@ onMounted(() => {
 }
 
 .inputs__select {
-  min-width: 240px;
+  min-width: 0;
+  max-width: 100%;
   padding: var(--pr-space-1) var(--pr-space-2);
 }
 
-/* focus 用批注色下划线式描边，不用浏览器默认蓝描边 */
-.inputs__select:focus,
-.inputs__text:focus {
+@media (min-width: 901px) {
+  .inputs__select {
+    min-width: 240px;
+  }
+}
+
+/* focus 用批注色边框 + 全局 focus 环，不用浏览器默认蓝描边 */
+.inputs__select:focus-visible,
+.inputs__text:focus-visible {
   outline: none;
   border-color: var(--pr-primary);
+  box-shadow: var(--pr-focus-ring);
 }
 
 .inputs__meta {
@@ -408,14 +467,14 @@ onMounted(() => {
 }
 
 .inputs__pair {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 7fr 5fr;
   gap: var(--pr-space-6);
+  align-items: start;
   margin-top: var(--pr-space-4);
 }
 
 .inputs__block {
-  flex: 1 1 320px;
   min-height: 200px;
   padding: var(--pr-space-3);
   border: 1px solid var(--pr-rule);
@@ -423,11 +482,26 @@ onMounted(() => {
   background: var(--pr-slot-bg);
 }
 
+.inputs__block--primary {
+  padding: var(--pr-space-4);
+  background: var(--pr-surface);
+}
+
+.inputs__block--secondary {
+  border-style: dashed;
+}
+
 .inputs__block-title {
   margin: 0 0 var(--pr-space-2);
-  font-size: var(--pr-text-sm);
+  font-size: var(--pr-text-lg);
   font-weight: 600;
-  color: var(--pr-ink-muted);
+  color: var(--pr-ink);
+}
+
+@media (max-width: 900px) {
+  .inputs__pair {
+    grid-template-columns: 1fr;
+  }
 }
 
 .inputs__demos {
@@ -482,7 +556,7 @@ onMounted(() => {
 
 .inputs__hint {
   margin: var(--pr-space-3) 0 0;
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
 
@@ -496,11 +570,24 @@ onMounted(() => {
 }
 
 .workspace {
-  display: flex;
+  display: grid;
+  grid-template-columns: 7fr 5fr;
   gap: var(--pr-space-6);
+  align-items: start;
   margin-top: var(--pr-space-6);
   padding-top: var(--pr-space-4);
   border-top: 1px solid var(--pr-rule);
+}
+
+.workspace__tree,
+.workspace__reader {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
 }
 
 .actions {
@@ -529,7 +616,7 @@ onMounted(() => {
 }
 
 .actions__note {
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
 
@@ -564,7 +651,15 @@ onMounted(() => {
 }
 
 .confirmed__next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pr-space-3);
   margin: var(--pr-space-3) 0 0;
   font-size: var(--pr-text-sm);
+}
+
+.confirmed__next-note {
+  color: var(--pr-ink-muted);
 }
 </style>

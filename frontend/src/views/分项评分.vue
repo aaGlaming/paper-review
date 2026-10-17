@@ -5,6 +5,10 @@ import { RouterLink } from 'vue-router'
 import { getReview } from '../api'
 import type { ArchivedReview, DimensionResult, PaperSection, ReviewReport } from '../api/types'
 import DimensionCard from '../components/DimensionCard.vue'
+import PageArt from '../components/PageArt.vue'
+import artUrl from '../assets/sketch/sketch-bg-scoring.svg'
+import spotUrl from '../assets/sketch/sketch-spot-scoring.svg'
+import ScoringEmptyIllustration from '../components/illustrations/ScoringEmptyIllustration.vue'
 import StageTracker from '../components/StageTracker.vue'
 import { isArchivedReview } from '../composables/reviewShape'
 import { readReviewFlow } from '../composables/useReviewFlow'
@@ -105,14 +109,18 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 
 <template>
   <article class="scoring" data-testid="scoring-page">
-    <header class="scoring__head">
-      <span class="scoring__num" aria-hidden="true">02</span>
-      <h1 class="scoring__title">分项评分</h1>
+    <PageArt :art="artUrl" :spot="spotUrl" layout="left" />
+    <header class="ed-head">
+      <span class="ed-head__num" aria-hidden="true">02</span>
+      <p class="ed-head__kicker">逐维取证 · 原句定位</p>
+      <h1 class="ed-head__title">分项评分</h1>
     </header>
+    <p class="ed-lede">五个维度各自取证、各自选档；原句点一下就能回到论文里核对。</p>
 
     <StageTracker :phase="stagePhase" :reached-index="report ? 5 : -1" />
 
     <template v-if="report || archive">
+      <p class="ed-kicker">评审单 · {{ contestId || '未绑定赛题' }}</p>
       <header class="scoring__bar" data-testid="scoring-bar">
         <dl class="scoring__meta">
           <div class="scoring__meta-item">
@@ -144,16 +152,20 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
       </header>
 
       <section v-if="dimensions.length > 0" class="scoring__cards" data-testid="dimensions">
+        <p class="ed-kicker scoring__cards-kicker">五维结果 · 按后端顺序</p>
         <DimensionCard
-          v-for="dimension in dimensions"
+          v-for="(dimension, index) in dimensions"
           :key="dimension.dimension_code"
           :dimension="dimension"
           :data-located="located?.dimensionCode === dimension.dimension_code ? 'true' : null"
+          :class="index === 0 ? 'scoring__card--lead' : null"
           @locate="locateQuote"
         />
       </section>
 
+      <hr class="ed-rule" />
       <section v-if="score" class="scoring__score" data-testid="score">
+        <p class="ed-kicker">加权收尾 · 只转写后端原始值</p>
         <p v-if="weightProduced" class="scoring__weighted">
           加权 <strong data-testid="weighted">{{ score.weighted }}</strong>
         </p>
@@ -192,7 +204,8 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
       </section>
 
       <section v-if="located" class="scoring__located" data-testid="located-content">
-        <h2 class="scoring__subtitle">原文定位：{{ sections[located.sectionIndex]?.title }}</h2>
+        <p class="ed-kicker">原文定位 · 三段对照</p>
+        <h2 class="scoring__subtitle">命中处前后文</h2>
         <pre class="scoring__located-body">{{ sections[located.sectionIndex]?.content.slice(0, located.start) }}<mark ref="locatedEl" data-testid="located-mark">{{ located.quote }}</mark>{{ sections[located.sectionIndex]?.content.slice(located.start + located.quote.length) }}</pre>
       </section>
       <p v-if="locateError" class="scoring__locate-error" data-testid="locate-error">{{ locateError }}</p>
@@ -200,13 +213,14 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 
     <template v-else>
       <section class="scoring__empty" data-testid="scoring-empty">
+        <ScoringEmptyIllustration class="scoring__empty-illo" />
         <h2 class="scoring__empty-title">还没有分项结果</h2>
         <p class="scoring__empty-note">
           需要先在论文解析页选定赛题并确认章节树，这里才会逐维给出结果。
         </p>
         <p v-if="loading" class="scoring__loading">正在读取评审存档…</p>
         <p v-if="loadError" class="scoring__load-error" data-testid="load-error">{{ loadError }}</p>
-        <p class="scoring__empty-link"><RouterLink to="/parse">去论文解析页</RouterLink></p>
+        <p class="scoring__empty-link"><RouterLink class="ed-action-link" to="/parse">去论文解析页</RouterLink></p>
       </section>
     </template>
   </article>
@@ -217,33 +231,10 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
   max-width: var(--pr-measure);
 }
 
-.scoring__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
-  margin: 0 0 var(--pr-space-2);
-}
-
-.scoring__num {
-  font-family: var(--pr-font-data);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--pr-ink-faint);
-}
-
-.scoring__title {
-  margin: 0;
-  font-size: var(--pr-text-title);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 .scoring__bar {
-  margin: var(--pr-space-4) 0;
-  padding: var(--pr-space-3) var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  margin: var(--pr-space-3) 0 var(--pr-space-6);
+  padding: 0 0 var(--pr-space-3);
+  border-bottom: 1px solid var(--pr-rule);
 }
 
 .scoring__meta {
@@ -268,22 +259,31 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 
 .scoring__archive-note {
   margin: var(--pr-space-3) 0 0;
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
 
 .scoring__cards {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 7fr 5fr;
   gap: var(--pr-card-gap);
+  align-items: start;
+}
+
+/* 首张维度卡跨整行做视觉焦点：它是读者进入五维的第一眼。 */
+.scoring__cards-kicker,
+.scoring__card--lead {
+  grid-column: 1 / -1;
 }
 
 .scoring__score {
-  margin-top: var(--pr-space-6);
-  padding: var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  padding: var(--pr-space-4) 0 0;
+}
+
+@media (max-width: 900px) {
+  .scoring__cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 .scoring__weighted,
@@ -318,20 +318,19 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 
 .scoring__noexcluded {
   margin: 0;
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
 
 .scoring__located {
-  margin-top: var(--pr-space-6);
-  padding: var(--pr-space-4);
-  border: 1px solid var(--pr-primary);
-  border-radius: var(--pr-radius);
-  background: var(--pr-primary-soft);
+  padding: var(--pr-space-4) 0 0;
+  border-top: 2px solid var(--pr-primary);
 }
 
 .scoring__located-body {
   margin: 0;
+  padding-left: var(--pr-space-3);
+  border-left: 2px solid var(--pr-rule-strong);
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--pr-font-quote);
@@ -355,6 +354,10 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
   padding: var(--pr-space-6) var(--pr-space-4);
   border: 1px dashed var(--pr-rule-strong);
   border-radius: var(--pr-radius);
+}
+
+.scoring__empty-illo {
+  margin-bottom: var(--pr-space-4);
 }
 
 .scoring__empty-title {

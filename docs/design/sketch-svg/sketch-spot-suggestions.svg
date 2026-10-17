@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+  <!-- 建议小图：铅笔改稿 -->
+  <path d="M40 40 C80 38 120 39 158 40" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  <path d="M40 62 C90 60 130 61 158 62" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+  <path d="M40 84 C70 82 100 83 120 84" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+  <path d="M92 118 C110 108 130 96 148 82" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M148 82 L160 72 L154 68 Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M60 108 C75 100 90 94 100 92" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.65"/>
+  <ellipse cx="80" cy="41" rx="48" ry="14" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+</svg>

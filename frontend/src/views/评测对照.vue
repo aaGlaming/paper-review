@@ -5,6 +5,10 @@ import { RouterLink, useRoute } from 'vue-router'
 import { getEvalSummary, listSamples } from '../api'
 import type { EvalSummary, SampleItem } from '../api/types'
 import MetricCard from '../components/MetricCard.vue'
+import PageArt from '../components/PageArt.vue'
+import artUrl from '../assets/sketch/sketch-bg-eval.svg'
+import spotUrl from '../assets/sketch/sketch-spot-eval.svg'
+import EvalSingleIllustration from '../components/illustrations/EvalSingleIllustration.vue'
 
 /**
  * 评测对照页（P8 阶段 6/6，最后一页）。
@@ -70,17 +74,22 @@ async function load(): Promise<void> {
 
 <template>
   <article class="eval" data-testid="eval-page">
-    <header class="eval__head">
-      <span class="eval__num" aria-hidden="true">05</span>
-      <h1 class="eval__title">评测对照</h1>
+    <PageArt :art="artUrl" :spot="spotUrl" layout="right" />
+    <header class="ed-head">
+      <span class="ed-head__num" aria-hidden="true">05</span>
+      <p class="ed-head__kicker">三项指标 · 口径与来源</p>
+      <h1 class="ed-head__title">评测对照</h1>
     </header>
+    <p class="ed-lede">三项指标各自独立成卡：先看走势，再读口径；数字是脚本自检，不是成果。</p>
 
     <template v-if="isSinglePaper">
       <section class="eval__single" data-testid="single-paper-placeholder">
+        <EvalSingleIllustration class="eval__single-illo" />
         <h2 class="eval__single-title">单篇评测</h2>
         <p class="eval__single-note">
           单篇的系统档位与 gold 差异需要后端提供单篇接口，当前接口未提供；请回汇总页查看三项指标。
         </p>
+        <p class="eval__single-link"><RouterLink class="ed-action-link" to="/eval">回汇总页</RouterLink></p>
       </section>
     </template>
 
@@ -92,6 +101,7 @@ async function load(): Promise<void> {
     </template>
 
     <template v-else-if="summary">
+      <p class="ed-kicker">语料 · {{ summary.corpus_papers }} 篇 / 可算 {{ summary.gradable_papers }} 篇</p>
       <header class="eval__bar" data-testid="eval-bar">
         <dl class="eval__meta">
           <div class="eval__meta-item">
@@ -122,16 +132,20 @@ async function load(): Promise<void> {
       </p>
 
       <section class="eval__metrics" data-testid="metrics">
+        <p class="ed-kicker eval__metrics-kicker">三项指标 · 走势由本卡数据实时生成</p>
         <MetricCard
-          v-for="card in metricCards"
+          v-for="(card, index) in metricCards"
           :key="card.code"
           :code="card.code"
           :name="card.name"
           :metric="card.metric"
+          :class="index === 1 ? 'eval__metric--shift' : null"
         />
       </section>
 
+      <hr class="ed-rule" />
       <section class="eval__source" data-testid="source-note">
+        <p class="ed-kicker">口径 · 非模型评测结果时明确标注</p>
         <h2 class="eval__subtitle">指标口径与来源</h2>
         <p class="eval__note" data-testid="eval-note">{{ summary.note }}</p>
         <p v-if="summary.source === 'deterministic'" class="eval__deterministic" data-testid="deterministic-note">
@@ -141,6 +155,7 @@ async function load(): Promise<void> {
 
       <section v-if="samples.length > 0" class="eval__samples">
         <h2 class="eval__subtitle">样例列表</h2>
+        <p class="eval__samples-note">点一篇看单篇缺口说明（单篇接口缺口，汇总数字不受影响）。</p>
         <ul class="eval__sample-list">
           <li v-for="sample in samples" :key="sample.sample_id" class="eval__sample-row" data-testid="sample-row">
             <RouterLink :to="`/eval/${sample.sample_id}`" class="eval__sample-link">
@@ -164,33 +179,10 @@ async function load(): Promise<void> {
   max-width: var(--pr-measure);
 }
 
-.eval__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
-  margin: 0 0 var(--pr-space-2);
-}
-
-.eval__num {
-  font-family: var(--pr-font-data);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--pr-ink-faint);
-}
-
-.eval__title {
-  margin: 0;
-  font-size: var(--pr-text-title);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 .eval__bar {
-  margin: var(--pr-space-4) 0;
-  padding: var(--pr-space-3) var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  margin: var(--pr-space-3) 0 var(--pr-space-4);
+  padding: 0 0 var(--pr-space-3);
+  border-bottom: 1px solid var(--pr-rule);
 }
 
 .eval__meta {
@@ -221,18 +213,44 @@ async function load(): Promise<void> {
 
 .eval__metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--pr-card-gap);
+  align-items: start;
   margin-top: var(--pr-space-6);
-  padding-top: var(--pr-space-2);
+}
+
+.eval__metrics-kicker {
+  grid-column: 1 / -1;
+}
+
+/* 中间卡下沉半格：三卡不再是机械三等分，走势各自独立可读。 */
+.eval__metric--shift {
+  margin-top: var(--pr-space-6);
 }
 
 .eval__source {
-  margin-top: var(--pr-space-6);
-  padding: var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  max-width: 720px;
+  padding: var(--pr-space-4) 0 0;
+}
+
+.eval__single-illo {
+  margin-bottom: var(--pr-space-4);
+}
+
+.eval__samples-note {
+  margin: 0 0 var(--pr-space-3);
+  color: var(--pr-ink-muted);
+  font-size: var(--pr-text-sm);
+}
+
+@media (max-width: 900px) {
+  .eval__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .eval__metric--shift {
+    margin-top: 0;
+  }
 }
 
 .eval__subtitle {
@@ -314,6 +332,10 @@ async function load(): Promise<void> {
 .eval__single-note {
   margin: 0;
   color: var(--pr-ink-muted);
+}
+
+.eval__single-link {
+  margin: var(--pr-space-3) 0 0;
 }
 
 .eval__loading {

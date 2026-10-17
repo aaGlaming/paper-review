@@ -4,6 +4,10 @@ import { RouterLink } from 'vue-router'
 
 import type { ChangeEvidence, ChangeListItem, PaperSection, ReviewReport } from '../api/types'
 import ConflictItem from '../components/ConflictItem.vue'
+import PageArt from '../components/PageArt.vue'
+import artUrl from '../assets/sketch/sketch-bg-consistency.svg'
+import spotUrl from '../assets/sketch/sketch-spot-consistency.svg'
+import ConsistencyEmptyIllustration from '../components/illustrations/ConsistencyEmptyIllustration.vue'
 import StageTracker from '../components/StageTracker.vue'
 import { concatSections, locateEvidence, type EvidenceLocation } from '../composables/useOffsetLocator'
 import { readReviewFlow } from '../composables/useReviewFlow'
@@ -63,14 +67,18 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 
 <template>
   <article class="consistency" data-testid="consistency-page">
-    <header class="consistency__head">
-      <span class="consistency__num" aria-hidden="true">03</span>
-      <h1 class="consistency__title">一致性审查</h1>
+    <PageArt :art="artUrl" :spot="spotUrl" layout="right" />
+    <header class="ed-head">
+      <span class="ed-head__num" aria-hidden="true">03</span>
+      <p class="ed-head__kicker">硬伤核对 · 逐条定位</p>
+      <h1 class="ed-head__title">一致性审查</h1>
     </header>
+    <p v-if="report" class="ed-lede">只看硬伤：数字打架、引用失联、数值越界，一条一条点定位核对。</p>
 
     <StageTracker :phase="stagePhase" :reached-index="report ? 5 : -1" />
 
     <template v-if="report">
+      <p class="ed-kicker">审查单 · {{ conflicts.length > 0 ? `硬伤 ${conflicts.length} 条` : '无冲突' }}</p>
       <header class="consistency__bar" data-testid="consistency-bar">
         <dl class="consistency__meta">
           <div class="consistency__meta-item">
@@ -98,13 +106,16 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
           :key="item.upstream_id || index"
           :item="item"
           :located-key="located?.key ?? null"
+          :class="index % 2 === 1 ? 'consistency__item--shift' : null"
           @locate="handleLocate"
         />
       </section>
       <p v-else class="consistency__none">本次审查没有冲突条目。</p>
 
+      <hr v-if="located" class="ed-rule" />
       <section v-if="located" class="consistency__located" data-testid="located-content">
-        <h2 class="consistency__subtitle">原文定位</h2>
+        <p class="ed-kicker">原文定位 · 三段对照</p>
+        <h2 class="consistency__subtitle">命中处前后文</h2>
         <!-- 文本节点三段拼接（前段 / mark 命中段 / 后段），禁 v-html：正文是用户可控输入。 -->
         <pre class="consistency__located-body">{{ body.slice(0, located.start) }}<mark ref="locatedEl" data-testid="located-mark">{{ located.text }}</mark>{{ body.slice(located.start + located.text.length) }}</pre>
         <p v-if="!located.exact" class="consistency__approx" data-testid="approximate-note">
@@ -115,8 +126,9 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 
     <template v-else>
       <section class="consistency__empty" data-testid="consistency-empty">
+        <ConsistencyEmptyIllustration class="consistency__empty-illo" />
         <h2 class="consistency__empty-title">还没有审查结果</h2>
-        <p class="consistency__empty-link"><RouterLink to="/parse">去论文解析页</RouterLink></p>
+        <p class="consistency__empty-link"><RouterLink class="ed-action-link" to="/parse">去论文解析页</RouterLink></p>
       </section>
     </template>
   </article>
@@ -127,33 +139,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   max-width: var(--pr-measure);
 }
 
-.consistency__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
-  margin: 0 0 var(--pr-space-2);
-}
-
-.consistency__num {
-  font-family: var(--pr-font-data);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--pr-ink-faint);
-}
-
-.consistency__title {
-  margin: 0;
-  font-size: var(--pr-text-title);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 .consistency__bar {
-  margin: var(--pr-space-4) 0;
-  padding: var(--pr-space-3) var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  margin: var(--pr-space-3) 0 var(--pr-space-6);
+  padding: 0 0 var(--pr-space-3);
+  border-bottom: 1px solid var(--pr-rule);
 }
 
 .consistency__meta {
@@ -180,19 +169,28 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   display: flex;
   flex-direction: column;
   gap: var(--pr-card-gap);
+  max-width: 880px;
+}
+
+/* 偶数条轻微右错：长串冲突条的阅读节奏不断，又不破坏对齐。 */
+.consistency__item--shift {
+  margin-left: var(--pr-space-6);
+}
+
+@media (max-width: 900px) {
+  .consistency__item--shift {
+    margin-left: 0;
+  }
 }
 
 .consistency__none {
   margin: 0;
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
 }
 
 .consistency__located {
-  margin-top: var(--pr-space-6);
-  padding: var(--pr-space-4);
-  border: 1px solid var(--pr-primary);
-  border-radius: var(--pr-radius);
-  background: var(--pr-primary-soft);
+  padding: var(--pr-space-4) 0 0;
+  border-top: 2px solid var(--pr-primary);
 }
 
 .consistency__subtitle {
@@ -205,6 +203,8 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   margin: 0;
   max-height: 320px;
   overflow: auto;
+  padding-left: var(--pr-space-3);
+  border-left: 2px solid var(--pr-rule-strong);
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--pr-font-quote);
@@ -228,6 +228,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   padding: var(--pr-space-6) var(--pr-space-4);
   border: 1px dashed var(--pr-rule-strong);
   border-radius: var(--pr-radius);
+}
+
+.consistency__empty-illo {
+  margin-bottom: var(--pr-space-4);
 }
 
 .consistency__empty-title {

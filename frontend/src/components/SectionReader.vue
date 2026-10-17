@@ -40,7 +40,6 @@ defineProps<{ section: PaperSection | null }>()
 
 <style scoped>
 .reader {
-  flex: 5 5 0;
   min-width: 0;
 }
 

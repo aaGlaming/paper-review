@@ -61,10 +61,18 @@ function onChange(index: number, event: Event): void {
 
 <style scoped>
 .tree {
-  flex: 7 7 0;
   min-width: 0;
   border-right: 1px solid var(--pr-rule);
   padding-right: var(--pr-space-4);
+}
+
+@media (max-width: 900px) {
+  .tree {
+    border-right: 0;
+    border-bottom: 1px solid var(--pr-rule);
+    padding-right: 0;
+    padding-bottom: var(--pr-space-4);
+  }
 }
 
 .tree__title {

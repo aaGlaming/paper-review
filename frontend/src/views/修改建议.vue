@@ -5,7 +5,11 @@ import { RouterLink } from 'vue-router'
 import arrowRightUrl from '../assets/sketch/sketch-arrow-right.svg'
 import type { ChangeEvidence, PaperSection, ReviewReport } from '../api/types'
 import StageTracker from '../components/StageTracker.vue'
+import PageArt from '../components/PageArt.vue'
+import artUrl from '../assets/sketch/sketch-bg-suggestions.svg'
+import spotUrl from '../assets/sketch/sketch-spot-suggestions.svg'
 import SuggestionItem from '../components/SuggestionItem.vue'
+import SuggestionsEmptyIllustration from '../components/illustrations/SuggestionsEmptyIllustration.vue'
 import { concatSections, locateEvidence, type EvidenceLocation } from '../composables/useOffsetLocator'
 import { readReviewFlow } from '../composables/useReviewFlow'
 
@@ -68,14 +72,18 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 
 <template>
   <article class="suggestions" data-testid="suggestions-page">
-    <header class="suggestions__head">
-      <span class="suggestions__num" aria-hidden="true">04</span>
-      <h1 class="suggestions__title">修改建议</h1>
+    <PageArt :art="artUrl" :spot="spotUrl" layout="left" />
+    <header class="ed-head">
+      <span class="ed-head__num" aria-hidden="true">04</span>
+      <p class="ed-head__kicker">三段式 · 按序修改</p>
+      <h1 class="ed-head__title">修改建议</h1>
     </header>
+    <p v-if="report" class="ed-lede">三段就是修改顺序：后端已排好，页面按序呈现，一段都不缺席。</p>
 
     <StageTracker :phase="stagePhase" :reached-index="report ? 5 : -1" />
 
     <template v-if="report">
+      <p class="ed-kicker">建议单 · {{ contestId || '未绑定赛题' }}</p>
       <header class="suggestions__bar" data-testid="suggestions-bar">
         <dl class="suggestions__meta">
           <div class="suggestions__meta-item">
@@ -109,6 +117,9 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
             {{ String(index + 1).padStart(2, '0') }}
           </span>
           <span class="suggestions__section-name">{{ group.section }}</span>
+          <span class="suggestions__section-count" aria-hidden="true">
+            {{ group.items.length > 0 ? `${group.items.length} 条` : '空' }}
+          </span>
         </h2>
         <div v-if="group.items.length > 0" class="suggestions__list">
           <SuggestionItem
@@ -129,8 +140,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
         />
       </section>
 
+      <hr v-if="located" class="ed-rule" />
       <section v-if="located" class="suggestions__located" data-testid="located-content">
-        <h2 class="suggestions__subtitle">原文定位</h2>
+        <p class="ed-kicker">原文定位 · 三段对照</p>
+        <h2 class="suggestions__subtitle">命中处前后文</h2>
         <!-- 文本节点三段拼接（前段 / mark 命中段 / 后段），禁 v-html：正文是用户可控输入。 -->
         <pre class="suggestions__located-body">{{ body.slice(0, located.start) }}<mark ref="locatedEl" data-testid="located-mark">{{ located.text }}</mark>{{ body.slice(located.start + located.text.length) }}</pre>
         <p v-if="!located.exact" class="suggestions__approx" data-testid="approximate-note">
@@ -141,8 +154,9 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 
     <template v-else>
       <section class="suggestions__empty" data-testid="suggestions-empty">
+        <SuggestionsEmptyIllustration class="suggestions__empty-illo" />
         <h2 class="suggestions__empty-title">还没有修改建议</h2>
-        <p class="suggestions__empty-link"><RouterLink to="/parse">去论文解析页</RouterLink></p>
+        <p class="suggestions__empty-link"><RouterLink class="ed-action-link" to="/parse">去论文解析页</RouterLink></p>
       </section>
     </template>
   </article>
@@ -153,33 +167,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   max-width: var(--pr-measure);
 }
 
-.suggestions__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
-  margin: 0 0 var(--pr-space-2);
-}
-
-.suggestions__num {
-  font-family: var(--pr-font-data);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--pr-ink-faint);
-}
-
-.suggestions__title {
-  margin: 0;
-  font-size: var(--pr-text-title);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 .suggestions__bar {
-  margin: var(--pr-space-4) 0;
-  padding: var(--pr-space-3) var(--pr-space-4);
-  border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius);
-  background: var(--pr-surface);
+  margin: var(--pr-space-3) 0 var(--pr-space-4);
+  padding: 0 0 var(--pr-space-3);
+  border-bottom: 1px solid var(--pr-rule);
 }
 
 .suggestions__meta {
@@ -203,32 +194,36 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 }
 
 .suggestions__section {
+  margin-top: var(--pr-space-8);
+}
+
+.suggestions__section:first-of-type {
   margin-top: var(--pr-space-6);
 }
 
 .suggestions__section-title {
   display: flex;
   align-items: baseline;
-  gap: var(--pr-space-2);
+  gap: var(--pr-space-3);
   margin: 0 0 var(--pr-space-3);
   padding-bottom: var(--pr-space-2);
-  border-bottom: 1px solid var(--pr-rule);
-  font-size: var(--pr-text-lg);
-  font-weight: 600;
+  border-bottom: 2px solid var(--pr-ink);
+  font-size: var(--pr-text-title);
+  font-weight: 700;
 }
 
 .suggestions__section-num {
   font-family: var(--pr-font-data);
-  font-size: var(--pr-text-base);
+  font-size: var(--pr-text-lg);
   color: var(--pr-ink-faint);
-  letter-spacing: 0.02em;
+  transform: rotate(-2deg);
 }
 
 .suggestions__section-arrow {
   display: block;
-  width: 40px;
-  height: 18px;
-  margin: var(--pr-space-3) 0 0;
+  width: 56px;
+  height: 24px;
+  margin: var(--pr-space-6) 0 0 var(--pr-space-8);
   color: var(--pr-ink-faint);
 }
 
@@ -240,16 +235,14 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 
 .suggestions__empty-section {
   margin: 0;
-  color: var(--pr-ink-faint);
+  color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
 
 .suggestions__located {
   margin-top: var(--pr-space-6);
-  padding: var(--pr-space-4);
-  border: 1px solid var(--pr-primary);
-  border-radius: var(--pr-radius);
-  background: var(--pr-primary-soft);
+  padding: var(--pr-space-4) 0 0;
+  border-top: 2px solid var(--pr-primary);
 }
 
 .suggestions__subtitle {
@@ -262,6 +255,8 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   margin: 0;
   max-height: 320px;
   overflow: auto;
+  padding-left: var(--pr-space-3);
+  border-left: 2px solid var(--pr-rule-strong);
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--pr-font-quote);
@@ -285,6 +280,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   padding: var(--pr-space-6) var(--pr-space-4);
   border: 1px dashed var(--pr-rule-strong);
   border-radius: var(--pr-radius);
+}
+
+.suggestions__empty-illo {
+  margin-bottom: var(--pr-space-4);
 }
 
 .suggestions__empty-title {

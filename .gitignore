@@ -14,3 +14,5 @@ chroma/
 # Playwright 报告与失败产物（本机生成，不入库）
 playwright-report/
 test-results/
+# pytest 临时根（PYTEST_DEBUG_TEMPROOT 指向的项目内目录，本机生成，不入库）
+.pytest_tmp/
