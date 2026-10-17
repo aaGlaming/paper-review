@@ -178,3 +178,129 @@ body {
   /* 卡片标题与正文间距：五页统一 */
   --pr-card-title-gap: var(--pr-space-3);
 }
+
+/* --- 昼夜主题追加：sketch.md §2 语义 Token 的双主题取值 -------------------------
+   白天 = :root 缺省（上面既有的令牌一行未动）；黑夜 = [data-theme='dark'] 覆盖。
+   两套主题共享同一套语义命名，只换色值，不换结构、字体、边框与手绘风格。
+   黑夜不是黑白反色：纸底用深石墨、墨色用暖纸白，批注色降饱和、soft 底反转为深底。
+   新增的语义 Token（sketch-line / guide / annotation / shadow / grain、
+   primary-hover / active / subtle / border、link / focus、accent、status-subtle）
+   在白天侧用现有令牌回填，保证单套变量名在两主题下都可解析。 */
+:root {
+  /* 手绘线条三件套：白天直接复用墨与分隔线，不新增视觉 */
+  --pr-sketch-line: var(--pr-ink);
+  --pr-sketch-guide: var(--pr-rule);
+  --pr-sketch-annotation: var(--pr-conflict);
+  --pr-pencil-shadow: rgba(27, 36, 48, 0.08);
+  --pr-paper-grain: var(--pr-ink);
+
+  /* 主色交互态：白天由既有主色派生 */
+  --pr-primary-hover: var(--pr-primary-strong);
+  --pr-primary-active: var(--pr-primary-strong);
+  --pr-primary-subtle: var(--pr-primary-soft);
+  --pr-primary-border: var(--pr-primary);
+  --pr-link: var(--pr-primary);
+  --pr-focus: rgba(43, 87, 151, 0.32);
+
+  /* 辅助强调：低饱和赭石与青绿，只做批注与图表点缀 */
+  --pr-accent: var(--pr-range);
+  --pr-accent-secondary: var(--pr-insufficient);
+
+  /* 状态 subtle：白天沿用既有 soft 底 */
+  --pr-success-subtle: var(--pr-primary-soft);
+  --pr-info-subtle: var(--pr-insufficient-soft);
+
+  /* 语义正色：白天沿用既有三色 + 主色 */
+  --pr-success: var(--pr-primary);
+  --pr-warning: var(--pr-range);
+  --pr-danger: var(--pr-conflict);
+  --pr-info: var(--pr-insufficient);
+}
+
+/* 黑夜：石墨纸 + 暖纸墨，纸纹与硬纸影随之反转但保持克制。 */
+[data-theme='dark'] {
+  --pr-paper: #232a33;
+  --pr-surface: #2c343f;
+  --pr-surface-sunken: #1c222b;
+  --pr-rule: #46505e;
+  --pr-rule-strong: #68738a;
+
+  --pr-ink: #ece7db;
+  --pr-ink-muted: #bfb9aa;
+  --pr-ink-faint: #98917f;
+
+  --pr-primary: #9db6dd;
+  --pr-primary-strong: #c2d2ec;
+  --pr-primary-soft: #333e52;
+
+  --pr-insufficient: #a8adb5;
+  --pr-insufficient-soft: #33373e;
+  --pr-conflict: #d9907f;
+  --pr-conflict-soft: #45302c;
+  --pr-range: #cfa64e;
+  --pr-range-soft: #453b24;
+
+  --pr-row-hover: #343d4a;
+  --pr-row-selected: #39465c;
+
+  --pr-badge-idle-bg: #33373e;
+  --pr-badge-idle-ink: #a8adb5;
+  --pr-badge-running-bg: #453b24;
+  --pr-badge-running-ink: #cfa64e;
+  --pr-badge-done-bg: #333e52;
+  --pr-badge-done-ink: #c2d2ec;
+  --pr-badge-stopped-bg: #45302c;
+  --pr-badge-stopped-ink: #d9907f;
+
+  --pr-slot-bg: #1c222b;
+
+  --pr-shadow-paper: 2px 3px 0 rgba(0, 0, 0, 0.35);
+  --pr-shadow-overlay: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --pr-focus-ring: 0 0 0 2px rgba(157, 182, 221, 0.45);
+
+  --pr-sketch-line: var(--pr-ink);
+  --pr-sketch-guide: var(--pr-rule);
+  --pr-sketch-annotation: var(--pr-conflict);
+  --pr-pencil-shadow: rgba(0, 0, 0, 0.35);
+  --pr-paper-grain: var(--pr-ink);
+
+  --pr-primary-hover: var(--pr-primary-strong);
+  --pr-primary-active: var(--pr-primary-strong);
+  --pr-primary-subtle: var(--pr-primary-soft);
+  --pr-primary-border: var(--pr-primary);
+  --pr-link: var(--pr-primary);
+  --pr-focus: rgba(157, 182, 221, 0.45);
+
+  --pr-accent: var(--pr-range);
+  --pr-accent-secondary: var(--pr-insufficient);
+
+  --pr-success-subtle: var(--pr-primary-soft);
+  --pr-info-subtle: var(--pr-insufficient-soft);
+
+  --pr-success: var(--pr-primary);
+  --pr-warning: var(--pr-range);
+  --pr-danger: var(--pr-conflict);
+  --pr-info: var(--pr-insufficient);
+
+  /* Element Plus 跟随黑夜：只映射已有语义，不另引色 */
+  --el-color-primary: var(--pr-primary);
+  --el-color-primary-dark-2: var(--pr-primary-strong);
+  --el-color-primary-light-3: #7d95ba;
+  --el-color-primary-light-5: #5d718f;
+  --el-color-primary-light-7: #475569;
+  --el-color-primary-light-8: #3a4657;
+  --el-color-primary-light-9: #333e52;
+  --el-color-danger: var(--pr-conflict);
+  --el-color-warning: var(--pr-range);
+  --el-color-info: var(--pr-insufficient);
+  --el-color-success: var(--pr-primary);
+  --el-text-color-primary: var(--pr-ink);
+  --el-text-color-regular: var(--pr-ink-muted);
+  --el-text-color-secondary: var(--pr-ink-faint);
+  --el-border-color: var(--pr-rule);
+  --el-border-color-light: var(--pr-rule);
+  --el-border-color-lighter: var(--pr-rule);
+  --el-bg-color: var(--pr-surface);
+  --el-bg-color-page: var(--pr-paper);
+  --el-fill-color-blank: var(--pr-surface);
+}

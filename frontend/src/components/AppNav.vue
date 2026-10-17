@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 
+import ThemeToggle from './ThemeToggle.vue'
+
 // 五个页面入口。顺序即评审流程的顺序：先解析、再评分、再审查、再改、最后对照评测。
 const items = [
   { label: '论文解析', to: '/parse' },
@@ -28,6 +30,8 @@ const items = [
         {{ item.label }}
       </RouterLink>
     </nav>
+    <div class="nav__spacer" aria-hidden="true"></div>
+    <ThemeToggle />
   </header>
 </template>
 
@@ -65,6 +69,10 @@ const items = [
   display: flex;
   flex-wrap: wrap;
   gap: var(--pr-space-4);
+}
+
+.nav__spacer {
+  flex: 1;
 }
 
 .nav__link {

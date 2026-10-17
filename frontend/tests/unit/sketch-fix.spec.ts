@@ -219,7 +219,7 @@ describe('手稿风修复', () => {
     }
   })
 
-  it('8. 86 个 data-testid 一个不少', () => {
+  it('8. 87 个 data-testid 一个不少（86 + theme-toggle）', () => {
     const ids = new Set<string>()
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -234,6 +234,7 @@ describe('手稿风修复', () => {
       }
     }
     walk(SRC)
-    expect(ids.size).toBe(86)
+    expect(ids.size).toBe(87)
+    expect(ids.has('theme-toggle')).toBe(true)
   })
 })
