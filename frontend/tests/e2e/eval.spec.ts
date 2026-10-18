@@ -27,7 +27,7 @@ test('进 /eval：三张指标卡、43.3%、确定性回退标注、100%', async
   await expect(page.getByTestId('deterministic-note')).toContainText('非模型评测结果')
 })
 
-test('点一行样例 → /eval/:paperId：看到单篇缺口说明，不含 gold 假数据', async ({ page }) => {
+test('点一行样例 → /eval/:paperId：无 gold 演示稿明确说明不能计算差异', async ({ page }) => {
   await page.goto('/eval')
   await expect(page.getByTestId('sample-row').first()).toBeVisible()
 
@@ -35,9 +35,9 @@ test('点一行样例 → /eval/:paperId：看到单篇缺口说明，不含 gol
   await page.getByTestId('sample-row').first().getByRole('link').click()
   await expect(page).toHaveURL(/\/eval\/[^/]+$/)
 
-  // 单篇缺口说明
+  // 该演示稿没有 gold；说明不可计算差异，不将空表伪装成无差异。
   await expect(page.getByTestId('single-paper-placeholder')).toBeVisible()
-  await expect(page.getByTestId('single-paper-placeholder')).toContainText('当前接口未提供')
+  await expect(page.getByTestId('single-paper-placeholder')).toContainText('没有 gold 档位')
 
   // 不含 gold 假数据（没有指标卡）
   await expect(page.getByTestId('metric-card')).toHaveCount(0)

@@ -1,0 +1,62 @@
+﻿{
+    "step":  "23-create-fixture-review",
+    "at":  "2026-10-18T18:38:53.1811234+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/reviews",
+                    "body":  {
+                                 "contest_id":  "fixture-extra",
+                                 "paper_text":  "# 摘要\n本文使用一组自建的 100 条记录作为输入，分别报告两种情形的计算结果。\n# 假设\n假设数据来自自建记录表，字段含义已核对；同一记录的计数口径保持一致。\n# 模型\n设决策数量 x 为整数，满足 1≤x≤5；分别建立 result_fixture_a 与 result_fixture_b 两种情形。\n# 求解\n按固定的计数程序求解，逐条读取 100 条输入记录，并输出每种情形的结果。\n# 结果\n情形 result_fixture_a 的结果为 42，情形 result_fixture_b 的结果为 37。\n# 检验\n检查 x 落在 1～5 范围内，并分别复核两种情形的输出。\n# 表述\n表中给出输入来源、计数口径与各情形结果，便于复核。"
+                             }
+                },
+    "response_status":  201,
+    "response_body":  {
+                          "review_id":  "ba7d6b28ad7a495aa0cd57cffd55e5d7",
+                          "status":  "待确认",
+                          "sections":  [
+                                           {
+                                               "title":  "摘要",
+                                               "section_type":  "未分类",
+                                               "level":  1,
+                                               "content":  "本文使用一组自建的 100 条记录作为输入，分别报告两种情形的计算结果。"
+                                           },
+                                           {
+                                               "title":  "假设",
+                                               "section_type":  "假设",
+                                               "level":  1,
+                                               "content":  "假设数据来自自建记录表，字段含义已核对；同一记录的计数口径保持一致。"
+                                           },
+                                           {
+                                               "title":  "模型",
+                                               "section_type":  "模型",
+                                               "level":  1,
+                                               "content":  "设决策数量 x 为整数，满足 1≤x≤5；分别建立 result_fixture_a 与 result_fixture_b 两种情形。"
+                                           },
+                                           {
+                                               "title":  "求解",
+                                               "section_type":  "求解",
+                                               "level":  1,
+                                               "content":  "按固定的计数程序求解，逐条读取 100 条输入记录，并输出每种情形的结果。"
+                                           },
+                                           {
+                                               "title":  "结果",
+                                               "section_type":  "结果",
+                                               "level":  1,
+                                               "content":  "情形 result_fixture_a 的结果为 42，情形 result_fixture_b 的结果为 37。"
+                                           },
+                                           {
+                                               "title":  "检验",
+                                               "section_type":  "检验",
+                                               "level":  1,
+                                               "content":  "检查 x 落在 1～5 范围内，并分别复核两种情形的输出。"
+                                           },
+                                           {
+                                               "title":  "表述",
+                                               "section_type":  "未分类",
+                                               "level":  1,
+                                               "content":  "表中给出输入来源、计数口径与各情形结果，便于复核。"
+                                           }
+                                       ]
+                      },
+    "notes":  "Create a real review against the newly published fixture-extra rubric."
+}

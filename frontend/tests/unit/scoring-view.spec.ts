@@ -13,7 +13,7 @@ import ScoringView from '../../src/views/分项评分.vue'
 
 vi.mock('../../src/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/api')>()
-  return { ...actual, getReview: vi.fn(), createReview: vi.fn(), resumeReview: vi.fn() }
+  return { ...actual, getReview: vi.fn(), getContestRubric: vi.fn(), createReview: vi.fn(), resumeReview: vi.fn() }
 })
 
 const QUOTE_IN_SECTION = '本文忽略板凳宽度'
@@ -55,6 +55,21 @@ const ARCHIVED: ArchivedReview = {
   model_name: 'deterministic',
   created_at: '2026-10-16T00:00:00',
   dimensions: DIMENSIONS,
+  change_list: [],
+  change_list_note: '该记录为旧数据，未保存审查清单',
+}
+
+const RUBRIC = {
+  contest_id: 'contest-demo-a', rubric_id: 'contest-demo-a-v1', version: 1,
+  dimensions: [{
+    dimension_code: 'assumption', name: '假设合理性', weight: 20,
+    bands: [
+      { band: '充分', score: 4, description: '依据完整' },
+      { band: '基本', score: 3, description: '基本合理' },
+      { band: '不足', score: 2, description: '论证较弱' },
+      { band: '证据不足', score: null, description: '没有可核对证据' },
+    ],
+  }],
 }
 
 function makeReport(overrides: Partial<ReviewReport>): ReviewReport {
@@ -84,6 +99,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   sessionStorage.clear()
   vi.mocked(api.getReview).mockResolvedValue(ARCHIVED)
+  vi.mocked(api.getContestRubric).mockRejectedValue(new Error('not found'))
 })
 
 describe('分项评分页', () => {
@@ -254,13 +270,13 @@ describe('分项评分页', () => {
     expect(api.resumeReview).not.toHaveBeenCalled()
   })
 
-  it('14. 只有 reviewId 没有 report：兜底取档，渲染维度并标注「加权与修改清单未随存档返回」', async () => {
+  it('14. 只有 reviewId 没有 report：兜底取档，渲染维度并标注旧存档未保存审查清单', async () => {
     writeFlow({ reviewId: 'review-1', sections: SECTIONS, report: null })
     const wrapper = await mountView()
 
     expect(api.getReview).toHaveBeenCalledWith('review-1')
     expect(wrapper.findAll('[data-testid="dimension-card"]')).toHaveLength(DIMENSIONS.length)
-    expect(wrapper.text()).toContain('加权与修改清单未随存档返回')
+    expect(wrapper.text()).toContain('该记录为旧数据，未保存审查清单')
     expect(wrapper.find('[data-testid="score"]').exists()).toBe(false)
   })
 
@@ -276,5 +292,38 @@ describe('分项评分页', () => {
 
     expect(wrapper.find('[data-testid="scoring-empty"]').exists()).toBe(true)
     expect(wrapper.findAll('[data-testid="dimension-card"]')).toHaveLength(0)
+  })
+
+  it('16. 读取到量规时显示维度中文名、权重和四档说明', async () => {
+    vi.mocked(api.getContestRubric).mockResolvedValue(RUBRIC)
+    writeFlow({ report: REPORT, sections: SECTIONS })
+    const wrapper = await mountView()
+
+    expect(api.getContestRubric).toHaveBeenCalledWith('contest-demo-a')
+    expect(wrapper.text()).toContain('假设合理性')
+    expect(wrapper.text()).toContain('权重 20')
+    expect(wrapper.text()).toContain('充分 · 4 · 依据完整')
+    expect(wrapper.text()).toContain('证据不足 · 没有可核对证据')
+  })
+
+  it('17. 量规接口不可用时保留诚实占位；旧存档显示清单缺失说明', async () => {
+    writeFlow({ reviewId: 'review-1', sections: SECTIONS, report: null })
+    const wrapper = await mountView()
+
+    expect(wrapper.text()).toContain('当前接口未给出')
+    expect(wrapper.text()).toContain('该记录为旧数据，未保存审查清单')
+  })
+
+  it('18. 历史存档有审查清单时展示条目与上游编号', async () => {
+    vi.mocked(api.getReview).mockResolvedValue({
+      ...ARCHIVED,
+      change_list: [{ section: '证据不足', kind: '证据不足', upstream_id: 'dimension:assumption', evidence: [], action: '补充论证材料' }],
+      change_list_note: null,
+    })
+    writeFlow({ reviewId: 'review-1', sections: SECTIONS, report: null })
+    const wrapper = await mountView()
+
+    expect(wrapper.text()).toContain('补充论证材料')
+    expect(wrapper.text()).toContain('dimension:assumption')
   })
 })

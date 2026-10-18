@@ -87,3 +87,56 @@ def load_review_inputs(contest_id: str | None, *, session: Session | None = None
         "dimensions": dimensions,
         "constraints": constraints,
     }
+
+
+def load_rubric_dimensions(rubric_id: str, *, session: Session | None = None) -> list[dict[str, Any]]:
+    """按已选 rubric 版本读取图与评测使用的完整维度数据。"""
+    with _session(session) as work:
+        return [
+            {
+                "dimension_code": one.code,
+                "name": one.name,
+                "weight": int(one.weight),
+                "section_types": [str(item) for item in (one.section_types or ())],
+                "evidence_prompts": [str(item) for item in (one.evidence_prompts or ())],
+            }
+            for one in work.scalars(
+                select(Dimension)
+                .where(Dimension.rubric_id == str(rubric_id))
+                .order_by(Dimension.dimension_id)
+            )
+        ]
+
+
+def load_published_rubric(contest_id: str, *, session: Session | None = None) -> dict[str, Any] | None:
+    """读取赛题当前 published 量规及维度条文；没有 published 量规则返回 None。"""
+    name = str(contest_id or "").strip()
+    if not name:
+        return None
+    with _session(session) as work:
+        chosen = work.scalars(
+            select(Rubric)
+            .where(Rubric.contest_id == name, Rubric.status == PUBLISHED)
+            .order_by(Rubric.version.desc())
+        ).first()
+        if chosen is None:
+            return None
+        dimensions = [
+            {
+                "dimension_code": one.code,
+                "name": one.name,
+                "weight": int(one.weight),
+                "bands": [dict(item) for item in (one.bands or ())],
+            }
+            for one in work.scalars(
+                select(Dimension)
+                .where(Dimension.rubric_id == chosen.rubric_id)
+                .order_by(Dimension.dimension_id)
+            )
+        ]
+        return {
+            "contest_id": name,
+            "rubric_id": chosen.rubric_id,
+            "version": int(chosen.version),
+            "dimensions": dimensions,
+        }

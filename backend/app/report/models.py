@@ -16,7 +16,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -39,6 +39,7 @@ class Review(ReportBase):
     rubric_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     model_name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
+    change_list: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON, nullable=True)
 
 
 class ReviewDimension(ReportBase):
@@ -73,9 +74,13 @@ class ReviewSession(ReportBase):
 
 
 def create_report_schema(engine: Engine | None = None) -> None:
-    """建评审记录三张表。表已存在时是空操作。"""
+    """幂等建评审表，并为已有 review 表增加可空的 change_list 列。"""
     if engine is None:
         from ..importing import db
 
         engine = db.get_engine()
     ReportBase.metadata.create_all(engine)
+    columns = {column["name"] for column in inspect(engine).get_columns("review")}
+    if "change_list" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE review ADD COLUMN change_list JSON NULL"))

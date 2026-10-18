@@ -1526,3 +1526,162 @@ frontend/tests/e2e/sketch-fix.spec.ts       新增 3 条
 - 两视口（1280×800 / 1920×1080）五页无横向滚动仍绿（`visual.spec.ts`）。
 - `docs/plan/task_plan.md` 未改（v0.9.0 已是「通过」，阶段 8/8 是尾部追加子任务）。
 - 未改动：`backend/`（含 `backend/tests/`）、`data/`、`docs/design/`、`docs/diagrams/`、`docs/version/` 下的其他提示词文档（含只读的 `v1.8.7_修复手稿风格落地问题.md`）、`CLAUDE.md`、`compose.yaml`、`.env.example`、`backend/requirements.txt`、`.env`；项目外的 `执行手册/V1/paper-review.md` 与 `项目计划书/V2/` 未动。本阶段不生成任何 archify 图。
+
+## v1.9.1
+
+状态：实现及四道自动门禁通过；真实模型调用成功。整体验收仍有一项未完成：当前环境没有可用的 `RERANK_API_KEY`，真实 rerank 服务调用未验，只通过 MockTransport 离线测试。`/api/eval/summary` 默认仍走 deterministic；只有显式 `?force=model` 才执行真实评测，避免普通页面访问触发批量模型调用。
+
+**TDD 与实现**
+
+- 先增加失败测试，再实现配置探测、embed 独立 endpoint、SiliconFlow rerank、MySQL 无向量回退、评审索引准备和模型路由；测试观察到预期失败后再修复。期间新增测试发现并修复两处集成问题：真实候选可能包含历史评审父块（重排映射需覆盖同竞赛候选），以及图传给 retriever 的 section_types 初始为空（装配器从已确认章节推导过滤类型）。
+- `conftest.py` 通过 monkeypatch 清空 9 个 LLM / embedding / rerank 环境键，离线测试不会意外调用真实服务。HTTP 仅从 `llm/client.py` 发出；图模块不导入 client，也保留未注入 chat / retriever 的原占位分支。
+- 配置门槛采用 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL`、`EMBEDDING_MODEL` 四键齐全；rerank 另要求自身的 URL、key、model 三键齐全。embed endpoint / key 独立读取并向旧 LLM 键回落。未配置 embedding 时仍保存父块、跳过向量索引；embedding 失败时 retriever 走 MySQL 父块回退。
+- 独立 SiliconFlow rerank 通过 MockTransport 离线验证，缺少 rerank 三键仍抛 `NotImplementedError`。本次真实 smoke 没有对外调用 rerank，因当前环境未提供可用 `RERANK_API_KEY`；真实 rerank 仍是唯一未完成的外部验收项。
+
+**无密钥回退基线与真实 smoke 对照**
+
+同一演示稿 `bench-dragon`、竞赛 `cumcm-2024-A`。无密钥路径保留原响应字段及 deterministic note 原文：`source=deterministic：各维档位来自确定性结构回退，是脚本自检，不是模型结果`；五维均为「基本」，score 为 `total=0, weighted=0, excluded=[], weight_sum=0`，`change_list` 3 条。该回退分支没有改动其结果计算；HTTP 回归测试覆盖 deterministic source 和响应。
+
+| 维度 | 无密钥回退 band | 真实模型 band | 真实模型 status / quote | chat_calls |
+|---|---|---|---|---:|
+| assumption | 基本 | 证据不足 | quote=null | 1 |
+| constraint_check | 基本 | 不足 | quote=`未出现相互穿模的情况` | 1 |
+| modeling | 基本 | 证据不足 | quote=null | 1 |
+| presentation | 基本 | 证据不足 | quote=null | 1 |
+| solution | 基本 | 证据不足 | quote=null | 1 |
+
+真实 smoke 使用 `bench-dragon`，review_id `2525dc7818854d2e836d14aa319a6552`；创建返回 HTTP 201，resume 返回 HTTP 200，`source=model`、`model_name=deepseek-flash`，五维各记录一次 chat 调用，最终 `score.weight_sum=20`、`change_list` 6 条。模型在四维选择「证据不足」、一维选择「不足」；这是混合模型结果，不能记作五维均检索充分。JSON 解析成功，没有启用 thinking payload 改动，也没有更换模型。接口响应不持久化 chat_calls（冻结的 store schema 不含该列），本次通过 smoke 响应核验。
+
+**数据库与索引**
+
+- MySQL 验收前：contest 4、dimension 20、constraint 16、published contest 3；`create_parent_schema()` 幂等执行。
+- 最终 smoke 评审在 `paper_parent` 写入 8 行；完成全部联调后 `paper_parent` 总行数 256，Chroma 集合条目 287。总数包含联调 / E2E 创建的历史测试记录；此前 Playwright 曾复用正在运行的模型 smoke 服务，产生额外评审数据，隔离 dotenv、停止 8077 服务后重跑通过。数据表没有删除接口，本次保留这些记录；不能把 256 行归因于最终单次 smoke。
+- reranker 内容映射覆盖同 contest 历史父块；MySQL fallback 使用持久化 review session 的 contest 约束和 section_type 过滤，按父块内容重建 child_id。
+
+**四道门禁及真实调用命令记录**
+
+| 命令 | 退出码 | 最后一行 / 结果 |
+|---|---:|---|
+| `& D:\LEARN\AI\programs\AgentTask\env\agent-task\Scripts\python.exe -m pytest backend/tests -q` | 0 | `152 passed, 2 warnings in 4.24s` |
+| `npm run build`（frontend） | 0 | `built in 1.19s`；Vite 提示 bundle 大于 500 kB |
+| `npx vitest run`（frontend） | 0 | `Tests  106 passed (106)` |
+| `npx playwright test`（frontend；停止 8077 smoke 服务、禁用 dotenv、显式隔离模型键后） | 0 | `43 passed (29.4s)` |
+| `POST /api/reviews`（真实服务 127.0.0.1:8077，curl 使用 `--noproxy "*"`） | 0 / HTTP 201 | 返回 review_id `2525dc7818854d2e836d14aa319a6552` |
+| `POST /api/reviews/2525dc7818854d2e836d14aa319a6552/resume` | 0 / HTTP 200 | `source=model`；五维 `chat_calls=1` |
+
+前端门禁命令分别执行；`npm run build` 的完整末行是 `✓ built in 1.19s`，并伴随 1,047.90 kB JS bundle 警告；Vitest 13 files / 106 tests 全过；Playwright 43 tests 全过。一次未隔离 dotenv 且复用 smoke 服务的 Playwright 运行曾进入模型分支并失败；修正运行环境后退出码 0 的结果如上。Backend 两条 Chroma API deprecation warning 不影响退出码。真实调用的 API key 未写入命令记录、日志或测试夹具。
+
+**范围核对**
+
+- `git diff --stat` 中 `frontend/` 为零改动，`backend/requirements.txt` 为零改动；允许改动仅限 backend 指定代码 / 测试以及本文件、`task_plan.md`、`findings.md`。
+- `.env.example` 的 4 行修改和 `docs/version/10.18/` 未跟踪目录在任务开始前已存在，本任务未触碰；只读提示词文档未改，`.env` 未改且密钥未打印。
+- 用户指定的四条 Ruling 已原文加入 `docs/plan/findings.md`。
+- 最终源码约束复核新增 `review_graph.py` 无 HTTP 字样 / 无 client 导入测试：先红（注释仍含禁用字样），删除措辞后全量 pytest 最终 `152 passed, 2 warnings in 4.24s`，退出码 0。
+
+## v1.9.2
+
+状态：首期 18 条逐项验收已执行；14 ✅、4 ⚠️、0 ❌。四项 ⚠️ 等待明确接受，故 v1.0.0 尚未标为通过，也未写“首期验收收口”。完整六节报告、逐次请求 / 响应与截图索引见 `docs/plan/acceptance/report.md` 与同目录 `calls/`、`screenshots/`。
+
+**前置门槛与真实服务**
+
+- 后端解释器 `D:\LEARN\AI\programs\AgentTask\env\agent-task\Scripts\python.exe`；MySQL 3306 正在监听，三道首批赛题均 published。
+- 只检查配置键的非空状态，没有输出 `.env` 值：LLM / embedding / rerank 的 9 个 URL、API key、model 键均配置；LLM 与 embedding base URL 均为 HTTPS。与 v1.9.1 留档时 rerank key 未配置的状态不同，本次现场检查确认已配置，并完成一次 live SiliconFlow `/rerank` 请求 HTTP 200（排序下标 `[1, 0]`）。
+- Uvicorn 127.0.0.1:8077 与 Vite 127.0.0.1:5173 已启动。每条成功的外部 HTTP 调用均按验收要求在 `docs/plan/acceptance/calls/` 单独留档；前端截图在 `screenshots/`。没有修改 `.env`、前端源码或项目代码。
+
+**数据库与真实调用结果**
+
+- 验收结束计数：contest 4（published 3 / archived 1）、rubric 5、dimension 25、constraint 16、paper_parent 302、review 270、review_dimension 1,340、review_session 293、Chroma children 338。历史与本次评审写入均保留；库无删除接口。
+- 三篇演示真实 API 调用均创建 201、resume 200，`source=model`、`model_name=deepseek-flash`，五维各 `chat_calls=1`。逐维模型输出、原句及 change_list 在 calls 10–15。
+- 唯一一次显式 `GET /api/eval/summary?force=model` 返回 200、source=model、corpus=15、gradable=12：档位一致率 13/60 = 21.67%，引用精确匹配 27/27 = 100%，证据不足命中 2/2 = 100%。默认 GET 仍为 deterministic：26/60 = 43.33%、60/60 = 100%、0/2 = 0%。没有重复触发全量模型评测。
+- 真实重排单次调用 `calls/11-live-rerank.json` 返回成功；真实评审建立索引后 Chroma 记录增长，call 35 配置核查及数据库记录可复核。模型响应未将板凳宽度句选为引用：`assumption` 返回 band/status=`证据不足`、quote=null；retrieval reason 是“模型在给定证据里没有找到可引用的原句”，因此按模型差异记 ⚠️，没有改 prompt。圆弧维度为“不足”，符合验收下限。
+- 数据追加：fixture-extra import / publish / review 成功；坏包首次因 PowerShell 写入 BOM 而触发 JSON 解析错误（call 25），已保留原文；随后在四题均 published 时用无 BOM 临时包将权重和设为 99，正确收到 HTTP 400、`filename=rubric.json`、`field=dimensions.weight`，GET 确认四题都仍 published（calls 40–42）。最后重新归档 fixture-extra，列表回到三题，既有评审仍可 GET 200（calls 43–45）。
+- 量规版本：A 题 v2 发布后新评审 version=2，旧 smoke 记录仍是 version=1（calls 27–31）。
+
+**18 条判定**
+
+| 条目 | 判定 | 条目 | 判定 | 条目 | 判定 |
+|---|---|---|---|---|---|
+| 1.1 | ✅ | 1.2 | ✅ | 1.3 | ✅ |
+| 2.1 | ⚠️ | 2.2 | ✅ | 2.3 | ✅ |
+| 3.1 | ⚠️ | 3.2 | ✅ | 3.3 | ✅ |
+| 3.4 | ✅ | 4.1 | ⚠️ | 4.2 | ✅ |
+| 4.3 | ⚠️ | 5.1 | ✅ | 5.2 | ✅ |
+| 5.3 | ✅ | 5.4 | ✅ | 5.5 | ✅ |
+
+2.1 的 412/386 数字冲突与页面两处定位通过；板凳宽度模型引用未通过，圆弧缺项模型结果为“不足”。2.3 烟幕三个规则点通过；演示稿明确写有 3 m/s 下沉，静止云团的条件未触发。3.1 评分页仍显示量规内容占位说明；4.1 单篇评测差异页缺失；4.3 历史存档不含 change_list。这四项 ⚠️ 是当前收口阻塞项。
+
+**命令、退出码与末行**
+
+| 命令 / 操作 | 退出码或状态 | 末行 / 结果 |
+|---|---:|---|
+| `& D:\LEARN\AI\programs\AgentTask\env\agent-task\Scripts\python.exe -m pytest backend/tests -q` | 0 | `152 passed, 2 warnings in 5.34s` |
+| 三篇评审 `curl.exe --noproxy "*"`：POST create + POST resume | 0；HTTP 201 / 200 | 五维 `chat_calls=1`，source=model；review_id 见 calls 10–15 |
+| `GET /api/eval/summary` | 0；HTTP 200 | `source=deterministic, corpus_papers=15, gradable_papers=12` |
+| 单次 `GET /api/eval/summary?force=model` | 0；HTTP 200 | `source=model`；指标 13/60、27/27、2/2 |
+| Python 后端解释器调用 `client.rerank()`（真实服务） | 0；HTTP 200 | `ranked_indices=[1, 0]` |
+| Node `@playwright/test` 真实页面检查（复用已保存真实报告，不新建评审） | 0 | `phase=done, doneSteps=6; 412 s / 386 s located=true; 5 cards; excludedRows=1; suggestions/upstream=4/4; six-term matches=0 on each page` |
+| `rg -n "setInterval|setTimeout" frontend/src/views -g '*.vue'` | 1（无匹配） | 空输出，views 源码定时器命中数 0 |
+| 配置 / 本地运行时 / API 响应 / 导出文本扫描 | 0 | 本地运行时命中 0；受控词项匹配 0；验收文件中的密钥值出现次数 0 |
+
+前端 build / Vitest / Playwright 四道门禁没有在本版重跑：本版未修改前端或后端产品代码；v1.9.1 对应退出码和末行记录保留在上一小节。本次页面专项 Playwright 检查已实际操作证据定位并生成五张截图。
+
+**范围与收口状态**
+
+- 没有代码缺陷需要修复；没有变更 prompt、断言、前端或数据目录。评测页单篇入口和历史 change_list 是既有能力缺口；评分页量规内容仍未从后端接口提供。
+- 初始 PowerShell JSON 引号错误及 BOM 测试包均在 calls 中保留失败响应，并有成功修正后的对应记录。失败请求没有进入模型评分。
+- findings.md 无新增 Ruling（本版未改实现）；task_plan.md 将 v1.0.0 标为“验收已执行，待接受 4 项 ⚠️ 后收口”。需明确接受后才可按验收要求改成“通过”并标记收口。
+- 最终留档核对：`calls/` 共 47 个 JSON 记录、`screenshots/` 5 张图；Unicode 码点扫描末行 `frontend_source_match_count=0, api_response_match_count=0, render_change_list_match_count=0, secret_value_occurrences_in_acceptance_artifacts=0`，退出码 0；`git diff --check` 退出码 0。`frontend/`、`backend/requirements.txt`、冻结测试与 `.env` 均无本版修改。
+
+## v1.9.3
+
+状态：本阶段通过。F1～F4 全部实现，四道门禁退出码全 0，针对性复验通过，首期验收收口（v1.0.0）。
+
+**本轮修什么**：首期验收报告 V1（`docs/plan/acceptance/report.md`）有 4 项 ⚠️，其中第 1 项的根因是
+真实链路断点——约束与证据清单没送进选档 prompt。另 3 项是接口/页面缺口。
+
+- F1：接通 constraints 与 evidence_prompts 的传递。
+  `routes.py` 的 resume 路径此前只把 dimensions 传进图，constraints 没往下走；
+  `review_graph._normalize_rubric_dimensions` 把量规里的 evidence_prompts 丢了；
+  导致 `build_scoring_messages` 的必提条件恒为「无」。三处一起修，并补单测与集成测试。
+- F2：新增只读接口 `GET /api/contests/{contest_id}/rubric`（五维各四档），
+  评分页把「量规条文由后端提供」的占位块换成真实条文；拿不到时仍保留占位说明。
+  选这个方案而非改 `/api/contests`，是为了不改动被前端与 E2E 依赖的既有响应形状。
+- F3：新增只读接口 `GET /api/eval/papers/{paper_id}`，返回 gold / system / differences /
+  gold_available；`/eval/:paperId` 从缺口说明换成逐维差异表。无 gold 的演示稿返回明确说明，
+  不返回空数组冒充「无差异」。单篇默认用 deterministic 结果，不触发模型批量调用。
+- F4：`review.change_list` 改为 nullable JSON，schema 幂等新增列，不回填历史记录。
+  新记录保存并读回 change_list；旧记录返回空数组 + `change_list_note` 说明。
+  库里 270 条旧记录未批量重算、未删除（migration 前后 review 行数一致）。
+
+**F1 复验的关键对照**（同一篇 bench-dragon、同一赛题）：
+
+| 维度 | V1（修复前） | V2（修复后） |
+|---|---|---|
+| assumption | 证据不足 / quote=null | 不足 / quote=「为简化计算，本文忽略板凳宽度，把每节板凳视为刚体连杆，只保留两端把手孔中心的位置关系；」 |
+
+链路确已打通：模型现在既看得到「板凳宽度」是必提条件，也看得到该维要找什么证据。
+模型把该维判为「不足」而非「充分」是它的判档结果——按 v1.9.2 立的纪律
+（不许改 prompt 引导模型给出想要答案），不作进一步调整，记入报告挂账说明。
+
+命令与退出码：
+
+| 命令 | 退出码 | 最后一行 |
+|---|---:|---|
+| `$env:PYTEST_DEBUG_TEMPROOT='.pytest_tmp'; & 'D://LEARN//AI//programs//AgentTask//env//agent-task//Scripts//python.exe' -m pytest backend/tests -q` | 0 | `159 passed, 2 warnings in 14.00s` |
+| `npm run build`（frontend） | 0 | `✓ built in 690ms`（有 bundle 体积提示） |
+| `npx vitest run`（frontend） | 0 | `Tests 110 passed (110)` |
+| `npx playwright test`（frontend） | 0 | `43 passed (48.5s)` |
+
+补充说明：
+
+- (a) Playwright 复跑时若未隔离 `.env`，会命中 `model_available() is False` 之外的分支并失败；
+  本轮以清空模型环境键的方式复跑，43 项全过。测试隔离机制见 `backend/tests/conftest.py`。
+- (b) MySQL 复验后行数：contest 4、rubric 5、dimension 25、constraint 16、paper_parent 376、
+  review 297、review_dimension 1,475、review_session 321。计数含自动化测试新增评审；
+  F4 的 schema migration 前后 review 行数一致，旧记录未被动过。
+- (c) 复验证据（脱敏，不含密钥）：`docs/plan/acceptance/calls/v193-01` ～ `v193-06`，
+  截图 `docs/plan/acceptance/screenshots/v193-rubric-scoring.png`、`v193-single-eval.png`。
+- (d) 范围核对：冻结文件 `backend/tests/graph/test_interrupt.py` 与
+  `backend/tests/retrieve/test_rerank_cap.py` 未修改；`.env`、`backend/requirements.txt` 未修改。
+- (e) 首期验收报告已升版为 V2：`docs/plan/acceptance/report-V2.md`（18 条全 ✅）；
+  V1 原文保留在 `report.md` 未覆盖。`task_plan.md` 的 v1.0.0 已改为「通过（首期验收收口）」。

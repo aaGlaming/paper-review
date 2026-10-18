@@ -14,11 +14,13 @@ import type {
   ContestPublishResult,
   CreateReviewPayload,
   EvalSummary,
+  EvalPaperResult,
   ImportSummary,
   PaperSection,
   ReviewArchive,
   ReviewCreated,
   ReviewReport,
+  PublishedRubricText,
   RubricCopyResult,
   RubricPublishResult,
   SampleListResponse,
@@ -117,6 +119,11 @@ export function listContests(
   return request<ContestListResponse>(`/api/contests${asQuery(query)}`)
 }
 
+/** 读取赛题当前已发布量规条文。 */
+export function getContestRubric(contestId: string): Promise<PublishedRubricText> {
+  return request<PublishedRubricText>(`/api/contests/${encodeURIComponent(contestId)}/rubric`)
+}
+
 /** 创建评审：解析章节树后停在确认节点，响应里没有档位字段。 */
 export function createReview(payload: CreateReviewPayload): Promise<ReviewCreated> {
   return request<ReviewCreated>('/api/reviews', {
@@ -150,6 +157,11 @@ export function listSamples(isDemo?: boolean): Promise<SampleListResponse> {
 /** 三项评测指标。 */
 export function getEvalSummary(): Promise<EvalSummary> {
   return request<EvalSummary>('/api/eval/summary')
+}
+
+/** 读取单篇 gold 与当前 deterministic 系统档位的逐维差异。 */
+export function getEvalPaper(paperId: string): Promise<EvalPaperResult> {
+  return request<EvalPaperResult>(`/api/eval/papers/${encodeURIComponent(paperId)}`)
 }
 
 /** 导入赛题数据包。相对路径按项目根目录解析。 */

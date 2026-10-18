@@ -1,5 +1,11 @@
 # 裁决
 
+## v1.9.3
+
+- Ruling: rubric 查询使用独立只读 `GET /api/contests/{contest_id}/rubric`，不扩展既有 contests 列表响应 — `/api/contests` 的响应形状被前端与 E2E 断言依赖，而新接口可以返回当前 published 版本的维度名、权重、证据清单和四档文本而不改变列表契约 — 若扩展列表，必须同步所有调用方与断言且容易造成旧页面形状意外变化；若前端硬编码量规，则显示内容会与数据库版本分叉。
+- Ruling: F4 将 change_list 存为 review 上的 nullable JSON 字段；旧记录保持 NULL 并在读取层转成空数组及旧数据说明，新记录写入原始审查清单 — 已有 270 条评审记录是验收历史，不允许重算、删除或伪造回填；nullable 列既保留新旧区别又可兼容原记录 — 若回填旧行，会把无法恢复的历史结果伪装成当时数据；若不区分 NULL 与空清单，用户无法知道旧记录未保存清单。
+- Ruling: 单篇评测默认按既有 deterministic 结构回退计算系统档位，并明确返回 source / note，不在普通读取中隐式触发模型 — 汇总接口默认 deterministic，模型评测需显式 force=model，单篇页面浏览不应新增隐式付费调用 — 若默认打模型，打开列表中的多个样例会产生不可预期调用费用；若把 deterministic 标成模型结果则会误导评测质量。
+
 实现偏离三份依据文档时，把裁决写在这里。格式：`Ruling: 决定 — 原因 — 做错的代价`。
 
 现在还没有新的实现裁决。导入路径仍以开发任务文档为准：使用 `POST /api/imports`。
@@ -101,3 +107,11 @@
 
 - Ruling: 折线图必须按数据实时生成，静态 sketch-chart.svg 只可作空态占位 — 上一版三张指标卡 import 同一张静态图，三条折线一模一样，用户会读成"三项指标趋势相同"；方案第 10 条原文明写"数据必须精确，只有视觉表现可以是手绘的" — 若继续用静态图，评测页就从"展示指标"变成"展示装饰"，且误导性比没有图更糟。
 - Ruling: 本版禁止以"截图偏暖"为由修改纸底令牌 — 实测 --pr-paper 仍是 #f6f7f9、body 计算色 rgb(246,247,249)、source-scan 的"底色 b≥r"断言仍成立，截图发黄来自截图环境 — 若照着失真的截图改纸底，会把已经正确的冷白纸改成暖纸，还要连带改掉断言理由与七版积累的方向决策。
+
+## v1.9.1
+
+- Ruling: 用「四键齐全才走模型、否则逐字走回退」的分支，而不是默认走模型 — 测试进程读不到 .env（load_dotenv 只在 get_dsn 内触发、llm/client.py 只读 os.environ），分支设计能让 134 个测试在无密钥环境继续全绿；且线上缺密钥时不应整个不可用 — 若默认走模型，测试会去打真实 API（花钱+不稳定），缺密钥时接口直接 500，违背「未注入时保持占位、绝不报失败」的既有契约。
+- Ruling: 给 embed() 增加独立的 EMBEDDING_BASE_URL 键，缺省回落 LLM_BASE_URL — chat 与 embed 原本共用同一个 base_url，而 DeepSeek 没有 /embeddings 端点，不拆开则接入 DeepSeek 就等于放弃向量检索 — 若不拆，要么放弃 DeepSeek 换小模型对话（选档质量下降），要么放弃检索（链路断一半），两条都比加一个键代价大。
+- Ruling: 检索加无向量分支（按 contest_id + section_type 从 MySQL 取父块），嵌入是可选装配而非前置条件 — paper_parent 当前 0 行、Chroma 空集合，嵌入配不上就整体卡住会阻塞「接模型」这件更优先的事 — 若把嵌入设为硬前置，模型接入会被检索链路绑住，一个环境问题（密钥/网络）同时卡住两件事，违背风险隔离。
+- Ruling: 真实重排客户端仍只经 llm/client.py 发 HTTP，未配置 RERANK_* 时 build_rerank_client("http") 继续抛 NotImplementedError — 项目硬约束是「全项目只有 client.py 能发 HTTP」，且静默降级成假客户端会让「重排没生效」看起来像「重排生效了」 — 若在 rerank.py 里直接发请求，就打破了唯一 HTTP 出口的约束，后续无法统一加超时、重试与密钥保护。
+- Ruling: MySQL 无向量回退按 review_id + section_type 取父块，并用父块内容重建稳定 child_id — paper_parent 的冻结模型没有 contest_id 列，而 review_session 已持久化 contest_id；先由会话约束本次评审再筛章节类型，可避免跨竞赛串证据 — 若假定父块表有 contest_id，会写出无效 SQL；若只按章节类型查，会把别的评审文本带进引用。

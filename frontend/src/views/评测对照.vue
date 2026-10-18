@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { getEvalSummary, listSamples } from '../api'
-import type { EvalSummary, SampleItem } from '../api/types'
+import { getEvalPaper, getEvalSummary, listSamples } from '../api'
+import type { EvalPaperResult, EvalSummary, SampleItem } from '../api/types'
 import MetricCard from '../components/MetricCard.vue'
 import PageArt from '../components/PageArt.vue'
 import artUrl from '../assets/sketch/sketch-bg-eval.svg'
@@ -18,7 +18,7 @@ import EvalSingleIllustration from '../components/illustrations/EvalSingleIllust
  *
  * - `rate` 为 null 时显示「—（无样本）」；`no_samples` 为 true 时整页给说明；
  * - `source='deterministic'` 时额外标注「非模型评测结果」，不把百分比当成果放大；
- * - `/eval/:paperId`（单篇）是缺口：只渲染占位说明，不臆造 gold、不读 data/、不前端重算；
+ * - `/eval/:paperId` 从后端读取单篇 gold 与系统结果；
  * - 取数失败捕获降级，h1 无条件渲染。本页不参与单次评审流程，不放 StageTracker。
  */
 
@@ -28,6 +28,9 @@ const summary = ref<EvalSummary | null>(null)
 const samples = ref<SampleItem[]>([])
 const loadError = ref('')
 const loading = ref(false)
+const singlePaper = ref<EvalPaperResult | null>(null)
+const singleError = ref('')
+const singleLoading = ref(false)
 
 const isSinglePaper = computed(
   () => typeof route.params.paperId === 'string' && route.params.paperId !== '',
@@ -45,12 +48,27 @@ const metricCards = computed(() => {
   ]
 })
 
-onMounted(() => {
-  if (isSinglePaper.value) {
-    return // 单篇路由只渲染占位说明，不取数
+watch(() => route.params.paperId, (paperId) => {
+  if (typeof paperId === 'string' && paperId) {
+    void loadPaper(paperId)
+  } else {
+    singlePaper.value = null
+    void load()
   }
-  void load()
-})
+}, { immediate: true })
+
+async function loadPaper(paperId: string): Promise<void> {
+  singleLoading.value = true
+  singleError.value = ''
+  singlePaper.value = null
+  try {
+    singlePaper.value = await getEvalPaper(paperId)
+  } catch (reason) {
+    singleError.value = reason instanceof Error ? reason.message : String(reason)
+  } finally {
+    singleLoading.value = false
+  }
+}
 
 async function load(): Promise<void> {
   loading.value = true
@@ -86,9 +104,23 @@ async function load(): Promise<void> {
       <section class="eval__single" data-testid="single-paper-placeholder">
         <EvalSingleIllustration class="eval__single-illo" />
         <h2 class="eval__single-title">单篇评测</h2>
-        <p class="eval__single-note">
-          单篇的系统档位与 gold 差异需要后端提供单篇接口，当前接口未提供；请回汇总页查看三项指标。
-        </p>
+        <p v-if="singleLoading" class="eval__single-note">正在读取单篇评测…</p>
+        <p v-else-if="singleError" class="eval__single-note">{{ singleError }}</p>
+        <template v-else-if="singlePaper">
+          <p class="eval__single-note">{{ singlePaper.title }} · 系统来源：{{ singlePaper.source }}</p>
+          <p v-if="!singlePaper.gold_available" class="eval__single-note">{{ singlePaper.explanation }}</p>
+          <table v-else class="eval__difference">
+            <thead><tr><th>维度</th><th>gold</th><th>系统</th><th>对照</th></tr></thead>
+            <tbody>
+              <tr v-for="row in singlePaper.differences" :key="row.dimension_code">
+                <th scope="row">{{ row.dimension_code }}</th>
+                <td>gold：{{ row.gold_band ?? '未提供' }}</td>
+                <td>系统：{{ row.system_band ?? '未出档' }}</td>
+                <td>{{ row.matches ? '一致' : '不一致' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
         <p class="eval__single-link"><RouterLink class="ed-action-link" to="/eval">回汇总页</RouterLink></p>
       </section>
     </template>
@@ -155,7 +187,7 @@ async function load(): Promise<void> {
 
       <section v-if="samples.length > 0" class="eval__samples">
         <h2 class="eval__subtitle">样例列表</h2>
-        <p class="eval__samples-note">点一篇看单篇缺口说明（单篇接口缺口，汇总数字不受影响）。</p>
+        <p class="eval__samples-note">点一篇查看 gold 与系统档位的逐维对照。</p>
         <ul class="eval__sample-list">
           <li v-for="sample in samples" :key="sample.sample_id" class="eval__sample-row" data-testid="sample-row">
             <RouterLink :to="`/eval/${sample.sample_id}`" class="eval__sample-link">
@@ -235,6 +267,19 @@ async function load(): Promise<void> {
 
 .eval__single-illo {
   margin-bottom: var(--pr-space-4);
+}
+
+.eval__difference {
+  width: 100%;
+  margin-top: var(--pr-space-4);
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.eval__difference th,
+.eval__difference td {
+  padding: var(--pr-space-2);
+  border-bottom: 1px solid var(--pr-rule);
 }
 
 .eval__samples-note {

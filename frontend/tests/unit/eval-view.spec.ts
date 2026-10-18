@@ -20,6 +20,7 @@ vi.mock('../../src/api', async (importOriginal) => {
   return {
     ...actual,
     getEvalSummary: vi.fn(),
+    getEvalPaper: vi.fn(),
     listSamples: vi.fn(),
     getReview: vi.fn(),
     createReview: vi.fn(),
@@ -143,13 +144,34 @@ describe('评测对照页', () => {
     expect(wrapper.get('h1').text()).toBe('评测对照')
   })
 
-  it('6. /eval/:paperId：渲染单篇缺口说明，不渲染指标卡，不取汇总', async () => {
+  it('6. /eval/:paperId：显示 gold 与系统逐维差异，不渲染汇总指标', async () => {
+    vi.mocked(api.getEvalPaper).mockResolvedValue({
+      paper_id: 'eval-01', title: '评测论文', source: 'deterministic',
+      gold_available: true, explanation: null,
+      gold: [{ dimension_code: 'assumption', band: '充分' }],
+      system: [{ dimension_code: 'assumption', band: '基本', status: '基本', quote: '原句', chunk_ids: [] }],
+      differences: [{ dimension_code: 'assumption', gold_band: '充分', system_band: '基本', matches: false }],
+    })
     const wrapper = await mountAt('/eval/eval-01')
 
-    expect(wrapper.find('[data-testid="single-paper-placeholder"]').exists()).toBe(true)
-    expect(wrapper.get('[data-testid="single-paper-placeholder"]').text()).toContain('当前接口未提供')
+    expect(api.getEvalPaper).toHaveBeenCalledWith('eval-01')
+    expect(wrapper.text()).toContain('评测论文')
+    expect(wrapper.text()).toContain('gold：充分')
+    expect(wrapper.text()).toContain('系统：基本')
+    expect(wrapper.text()).toContain('不一致')
     expect(wrapper.findAll('[data-testid="metric-card"]')).toHaveLength(0)
     expect(api.getEvalSummary).not.toHaveBeenCalled()
+  })
+
+  it('单篇无 gold 时明确说明未提供标准档位', async () => {
+    vi.mocked(api.getEvalPaper).mockResolvedValue({
+      paper_id: 'demo-paper', title: '演示稿', source: 'deterministic',
+      gold_available: false, explanation: '该演示稿没有 gold 档位，无法计算逐维差异。',
+      gold: null, system: [], differences: null,
+    })
+    const wrapper = await mountAt('/eval/demo-paper')
+    expect(wrapper.text()).toContain('该演示稿没有 gold 档位')
+    expect(wrapper.text()).not.toContain('不一致')
   })
 
   it('7. listSamples 返回 15 条：渲染 15 行，demo 标「演示稿」、has_gold 标「有 gold」', async () => {

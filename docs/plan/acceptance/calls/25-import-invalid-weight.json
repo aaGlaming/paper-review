@@ -1,0 +1,18 @@
+﻿{
+    "step":  "25-import-invalid-weight",
+    "at":  "2026-10-18T18:39:38.7242985+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/imports",
+                    "body":  {
+                                 "package_dir":  "D:\\WinTemp\\fixture-extra-invalid-8d1c55786253461c9d586eb826ecc0d8"
+                             }
+                },
+    "response_status":  400,
+    "response_body":  {
+                          "filename":  "rubric.json",
+                          "field":  "\u003cjson\u003e",
+                          "detail":  "rubric.json 的 \u003cjson\u003e：不是合法 JSON：Unexpected UTF-8 BOM (decode using utf-8-sig)"
+                      },
+    "notes":  "Temporary copy in system TEMP only: one rubric weight changed so total is 99; verify atomic validation failure."
+}

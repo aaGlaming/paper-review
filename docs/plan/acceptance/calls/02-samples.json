@@ -1,0 +1,119 @@
+﻿{
+    "step":  "02-samples",
+    "at":  "2026-10-18T18:30:44.6207545+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/samples"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "samples":  [
+                                          {
+                                              "sample_id":  "bench-dragon",
+                                              "title":  "“板凳龙”闹元宵运动分析",
+                                              "is_demo":  true,
+                                              "contest_id":  "",
+                                              "has_gold":  false
+                                          },
+                                          {
+                                              "sample_id":  "planting",
+                                              "title":  "农作物的种植策略优化",
+                                              "is_demo":  true,
+                                              "contest_id":  "",
+                                              "has_gold":  false
+                                          },
+                                          {
+                                              "sample_id":  "smoke",
+                                              "title":  "烟幕干扰弹的投放策略",
+                                              "is_demo":  true,
+                                              "contest_id":  "",
+                                              "has_gold":  false
+                                          },
+                                          {
+                                              "sample_id":  "eval-01",
+                                              "title":  "自建评测样例 01 · 板凳龙盘入过程的速度分析",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-02",
+                                              "title":  "自建评测样例 02 · 板凳龙调头段的几何关系",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-03",
+                                              "title":  "自建评测样例 03 · 板凳龙全过程速度约束讨论",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-04",
+                                              "title":  "自建评测样例 04 · 板凳龙盘入时间的快速估算",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-05",
+                                              "title":  "自建评测样例 05 · 农作物种植方案的轮作约束建模",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-C",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-06",
+                                              "title":  "自建评测样例 06 · 考虑价格波动的种植策略",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-C",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-07",
+                                              "title":  "自建评测样例 07 · 种植方案的贪心启发式求解",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-C",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-08",
+                                              "title":  "自建评测样例 08 · 地块异质性下的种植安排",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2024-C",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-09",
+                                              "title":  "自建评测样例 09 · 烟幕云团下沉对遮蔽时长的影响",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2025-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-10",
+                                              "title":  "自建评测样例 10 · 多枚干扰弹的协同投放",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2025-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-11",
+                                              "title":  "自建评测样例 11 · 遮蔽判据的简化处理",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2025-A",
+                                              "has_gold":  true
+                                          },
+                                          {
+                                              "sample_id":  "eval-12",
+                                              "title":  "自建评测样例 12 · 遮蔽时长与无人机航路的联合优化",
+                                              "is_demo":  false,
+                                              "contest_id":  "cumcm-2025-A",
+                                              "has_gold":  true
+                                          }
+                                      ]
+                      },
+    "notes":  "Sample list and demo flags."
+}

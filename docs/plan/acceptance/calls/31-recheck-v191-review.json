@@ -1,0 +1,65 @@
+﻿{
+    "step":  "31-recheck-v191-review",
+    "at":  "2026-10-18T18:40:18.6380772+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/reviews/2525dc7818854d2e836d14aa319a6552"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "review_id":  "2525dc7818854d2e836d14aa319a6552",
+                          "contest_id":  "cumcm-2024-A",
+                          "rubric_id":  "cumcm-2024-A-v1",
+                          "rubric_version":  1,
+                          "model_name":  "deepseek-flash",
+                          "created_at":  "2026-10-18T08:50:45",
+                          "dimensions":  [
+                                             {
+                                                 "dimension_code":  "assumption",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "constraint_check",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "756f9035c11140df9225b9d7332dbebe-0006-00"
+                                                               ],
+                                                 "quote":  "未出现相互穿模的情况",
+                                                 "status":  "不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "modeling",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "presentation",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "solution",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             }
+                                         ]
+                      },
+    "notes":  "Confirm previous version-1 historical review remains unchanged after version 2 publication."
+}

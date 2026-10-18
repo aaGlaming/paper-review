@@ -1,0 +1,19 @@
+﻿{
+    "step":  "28-publish-rubric-A-v2",
+    "at":  "2026-10-18T18:39:50.6031399+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/rubrics/cumcm-2024-A-v2/publish"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contest_id":  "cumcm-2024-A",
+                          "rubric_id":  "cumcm-2024-A-v2",
+                          "version":  2,
+                          "status":  "published",
+                          "archived_rubric_ids":  [
+                                                      "cumcm-2024-A-v1"
+                                                  ]
+                      },
+    "notes":  "Publish version 2 without editing rubric contents."
+}

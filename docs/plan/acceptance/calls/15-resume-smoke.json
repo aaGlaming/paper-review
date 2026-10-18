@@ -1,0 +1,305 @@
+﻿{
+    "step":  "15-resume-smoke",
+    "at":  "2026-10-18T18:32:19.1210120+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/reviews/121d4617e52f4f169b027f690ad74c54/resume",
+                    "body":  {
+                                 "sections":  [
+                                                  {
+                                                      "title":  "烟幕干扰弹的投放策略",
+                                                      "section_type":  "未分类",
+                                                      "level":  1,
+                                                      "content":  "\u003e 本文是本项目自建的**演示样例**，用于预审功能演示。它不是官方答案，不是真实参赛论文，\n\u003e 其中的数值均为验收构造，不能当成赛题标准答案。"
+                                                  },
+                                                  {
+                                                      "title":  "摘要",
+                                                      "section_type":  "未分类",
+                                                      "level":  2,
+                                                      "content":  "本文研究烟幕干扰弹对来袭导弹的遮蔽效果，建立云团运动与视线遮挡的几何模型。按题目给定的\n投放与起爆时序求解，得到有效遮蔽时长为 22.4 s，并给出使遮蔽时间更长的投放策略[12]。"
+                                                  },
+                                                  {
+                                                      "title":  "一、模型假设",
+                                                      "section_type":  "假设",
+                                                      "level":  2,
+                                                      "content":  "1. 烟幕云团起爆后以 3 m/s 匀速下沉，云团形状保持为球体；\n2. 云团中心 10 m 范围内、起爆后 20 s 内视为有效遮蔽区域；\n3. 导弹与无人机在遮蔽窗口内均做匀速直线运动；\n4. 忽略风速与云团扩散，不考虑地形遮挡。"
+                                                  },
+                                                  {
+                                                      "title":  "二、模型的建立",
+                                                      "section_type":  "模型",
+                                                      "level":  2,
+                                                      "content":  "设云团中心位置随时间下沉，导弹位置由初速度与初始位置给出。被遮蔽的判据为：导弹到假目标的\n视线与云团球体的相交长度大于阈值。由此写出有效遮蔽的时间区间，并对投放时刻、起爆时刻与\n无人机速度做参数化处理，得到遮蔽时长关于这三个量的函数。"
+                                                  },
+                                                  {
+                                                      "title":  "三、模型求解与结果",
+                                                      "section_type":  "结果",
+                                                      "level":  2,
+                                                      "content":  "按题目给定的时序计算：无人机 FY1 以 160 m/s 的速度朝向假目标飞行，投放后 1.5 s 投放干扰弹，\n再间隔 3.6 s 起爆。代入模型计算得到有效遮蔽时长为 18.6 s，与摘要给出的数值略有出入，以本节\n计算结果为准。\n\n导弹 M1 以 300 m/s 的速度飞向保护目标，其速度远大于无人机速度，因此遮蔽窗口主要由云团的\n下沉过程决定。"
+                                                  },
+                                                  {
+                                                      "title":  "四、模型检验",
+                                                      "section_type":  "检验",
+                                                      "level":  2,
+                                                      "content":  "把起爆时刻提前 0.5 s 后遮蔽时长增加约 0.4 s，趋势与理论分析一致。无人机速度范围为\n70～140 m/s，本文取值 160 m/s 超出该范围，需按题目要求重新取值后再算。"
+                                                  },
+                                                  {
+                                                      "title":  "参考文献",
+                                                      "section_type":  "参考文献",
+                                                      "level":  2,
+                                                      "content":  "[1] 自建演示样例用参考条目一。\n[2] 自建演示样例用参考条目二。\n[3] 自建演示样例用参考条目三。"
+                                                  }
+                                              ]
+                             }
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "review_id":  "121d4617e52f4f169b027f690ad74c54",
+                          "status":  "完成",
+                          "contest_id":  "cumcm-2025-A",
+                          "rubric_id":  "cumcm-2025-A-v1",
+                          "rubric_version":  1,
+                          "model_name":  "deepseek-flash",
+                          "source":  "model",
+                          "dimensions":  [
+                                             {
+                                                 "dimension_code":  "assumption",
+                                                 "band":  "充分",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0002-00"
+                                                               ],
+                                                 "quote":  "2. 云团中心 10 m 范围内、起爆后 20 s 内视为有效遮蔽区域；",
+                                                 "status":  "充分",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "充分",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  1,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "constraint_check",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0005-00"
+                                                               ],
+                                                 "quote":  "本文取值 160 m/s 超出该范围，需按题目要求重新取值后再算。",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "modeling",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足",
+                                                 "chat_calls":  1,
+                                                 "reason":  "模型在给定证据里没有找到可引用的原句"
+                                             },
+                                             {
+                                                 "dimension_code":  "presentation",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0004-00"
+                                                               ],
+                                                 "quote":  "代入模型计算得到有效遮蔽时长为 18.6 s，与摘要给出的数值略有出入",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "solution",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足",
+                                                 "chat_calls":  1,
+                                                 "reason":  "模型在给定证据里没有找到可引用的原句"
+                                             }
+                                         ],
+                          "score":  {
+                                        "total":  60,
+                                        "weight_sum":  60,
+                                        "rubric_weight_sum":  100,
+                                        "weighted":  [
+                                                         {
+                                                             "dimension_code":  "assumption",
+                                                             "band":  "充分",
+                                                             "status":  "充分",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         },
+                                                         {
+                                                             "dimension_code":  "constraint_check",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         },
+                                                         {
+                                                             "dimension_code":  "presentation",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         }
+                                                     ],
+                                        "excluded":  [
+                                                         {
+                                                             "dimension_code":  "modeling",
+                                                             "band":  "证据不足",
+                                                             "status":  "证据不足",
+                                                             "weight":  20,
+                                                             "contribution":  0,
+                                                             "reason":  "证据不足不参与加权"
+                                                         },
+                                                         {
+                                                             "dimension_code":  "solution",
+                                                             "band":  "证据不足",
+                                                             "status":  "证据不足",
+                                                             "weight":  20,
+                                                             "contribution":  0,
+                                                             "reason":  "证据不足不参与加权"
+                                                         }
+                                                     ]
+                                    },
+                          "change_list":  [
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "数字冲突",
+                                                  "finding_kind":  "数字冲突",
+                                                  "upstream_id":  "finding:数字冲突:得到有效遮蔽时长",
+                                                  "target":  "得到有效遮蔽时长",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "char_start":  159,
+                                                                       "char_end":  165,
+                                                                       "text":  "22.4 s"
+                                                                   },
+                                                                   {
+                                                                       "char_start":  549,
+                                                                       "char_end":  555,
+                                                                       "text":  "18.6 s"
+                                                                   }
+                                                               ],
+                                                  "action":  "把两处数值改成同一口径，并在正文说明取值来源"
+                                              },
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "题目约束",
+                                                  "finding_kind":  "引用缺失",
+                                                  "upstream_id":  "finding:引用缺失:引用 [12]",
+                                                  "target":  "引用 [12]",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "char_start":  181,
+                                                                       "char_end":  185,
+                                                                       "text":  "[12]"
+                                                                   }
+                                                               ],
+                                                  "action":  "把缺的条目补进参考文献列表，或删掉正文里的引用"
+                                              },
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "题目约束",
+                                                  "finding_kind":  "越界",
+                                                  "upstream_id":  "finding:越界:cumcm-2025-A-uav-speed",
+                                                  "target":  "无人机速度范围为 70～140 m/s",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "char_start":  484,
+                                                                       "char_end":  491,
+                                                                       "text":  "160 m/s"
+                                                                   }
+                                                               ],
+                                                  "action":  "把取值改回题目给定范围，或在正文说明超出范围的理由"
+                                              },
+                                              {
+                                                  "section":  "证据不足",
+                                                  "kind":  "证据不足",
+                                                  "upstream_id":  "dimension:modeling",
+                                                  "dimension_code":  "modeling",
+                                                  "target":  "建模是否针对本题",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "text":  "",
+                                                                       "band":  "证据不足",
+                                                                       "status":  "证据不足",
+                                                                       "chunk_ids":  [
+
+                                                                                     ]
+                                                                   }
+                                                               ],
+                                                  "action":  "在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位"
+                                              },
+                                              {
+                                                  "section":  "证据不足",
+                                                  "kind":  "证据不足",
+                                                  "upstream_id":  "dimension:solution",
+                                                  "dimension_code":  "solution",
+                                                  "target":  "求解与结果",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "text":  "",
+                                                                       "band":  "证据不足",
+                                                                       "status":  "证据不足",
+                                                                       "chunk_ids":  [
+
+                                                                                     ]
+                                                                   }
+                                                               ],
+                                                  "action":  "在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位"
+                                              },
+                                              {
+                                                  "section":  "表述",
+                                                  "kind":  "表述",
+                                                  "upstream_id":  "dimension:presentation",
+                                                  "dimension_code":  "presentation",
+                                                  "target":  "表述与结构",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "text":  "代入模型计算得到有效遮蔽时长为 18.6 s，与摘要给出的数值略有出入",
+                                                                       "band":  "不足",
+                                                                       "status":  "不足",
+                                                                       "chunk_ids":  [
+                                                                                         "121d4617e52f4f169b027f690ad74c54-0004-00"
+                                                                                     ]
+                                                                   }
+                                                               ],
+                                                  "action":  "按问题顺序重排结果，补齐单位、图表编号与引用"
+                                              }
+                                          ],
+                          "note":  "source=model：各维档位来自模型选档，引用已校验为父块原句"
+                      },
+    "notes":  "Real model, embedding retrieval, and configured rerank acceptance call."
+}

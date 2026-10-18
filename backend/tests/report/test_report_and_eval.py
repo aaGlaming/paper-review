@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, delete, text
+from sqlalchemy import create_engine, delete, inspect, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
@@ -318,6 +318,52 @@ def test_new_rubric_version_does_not_rewrite_old_reviews(session):
     assert reloaded["rubric_version"] == 1
     assert reloaded["dimensions"][0]["quote"] == "旧记录的原句"
     assert reloaded["dimensions"][0]["chunk_ids"] == ["c-old"]
+
+
+def test_new_review_round_trips_change_list_and_old_review_is_explained(session):
+    change_list = [{"section": "证据不足", "kind": "证据不足", "upstream_id": "dimension:assumption", "evidence": [], "action": "补充依据"}]
+    saved = store.save_review(
+        "review-with-change-list",
+        contest_id="contest-a",
+        dimensions=_dimension_results(),
+        change_list=change_list,
+        session=session,
+    )
+    loaded = store.load_review("review-with-change-list", session=session)
+
+    assert saved["change_list"] == change_list
+    assert loaded["change_list"] == change_list
+    assert loaded.get("change_list_note") is None
+
+    session.add(models.Review(review_id="review-old-without-list", change_list=None))
+    session.flush()
+    old = store.load_review("review-old-without-list", session=session)
+    assert old["change_list"] == []
+    assert old["change_list_note"] == "该记录为旧数据，未保存审查清单"
+
+
+def test_report_schema_adds_nullable_change_list_column_to_existing_review_table():
+    legacy_engine = create_engine("sqlite+pysqlite:///:memory:")
+    with legacy_engine.begin() as connection:
+        connection.execute(text(
+            "CREATE TABLE review (review_id VARCHAR(64) PRIMARY KEY, contest_id VARCHAR(64) NOT NULL, "
+            "rubric_id VARCHAR(64) NOT NULL, rubric_version INTEGER NOT NULL, model_name VARCHAR(128) NOT NULL, "
+            "created_at DATETIME NOT NULL)"
+        ))
+
+    models.create_report_schema(legacy_engine)
+    models.create_report_schema(legacy_engine)
+    model_columns = {column["name"] for column in inspect(legacy_engine).get_columns("review")}
+    with legacy_engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO review (review_id, contest_id, rubric_id, rubric_version, model_name, created_at) "
+            "VALUES ('legacy', '', '', 1, '', CURRENT_TIMESTAMP)"
+        ))
+        stored_value = connection.execute(text("SELECT change_list FROM review WHERE review_id='legacy'")).scalar_one()
+
+    assert "change_list" in model_columns
+    assert stored_value is None
+    legacy_engine.dispose()
 
 
 def test_loading_old_review_keeps_contest_version_and_quotes(session, client):

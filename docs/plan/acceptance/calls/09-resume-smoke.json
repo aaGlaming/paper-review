@@ -1,0 +1,18 @@
+﻿{
+    "step":  "09-resume-smoke",
+    "at":  "2026-10-18T18:31:21.6785544+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/reviews//resume",
+                    "body":  {
+                                 "sections":  [
+                                                  null
+                                              ]
+                             }
+                },
+    "response_status":  404,
+    "response_body":  {
+                          "detail":  "Not Found"
+                      },
+    "notes":  "Real model and configured retrieval/rerank acceptance call. Full response stored."
+}

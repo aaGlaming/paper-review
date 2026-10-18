@@ -2,7 +2,8 @@
 
 约定见 docs/开发任务拆解与迭代流程.md 第 4.5 节：
 对话 POST {LLM_BASE_URL}/chat/completions，只读 choices[0].message.content；
-嵌入 POST {LLM_BASE_URL}/embeddings，只读 data[].embedding。
+嵌入 POST {EMBEDDING_BASE_URL}/embeddings（缺省回落 LLM_BASE_URL），只读 data[].embedding；
+重排 POST {RERANK_BASE_URL}/rerank，返回按 relevance_score 排序的候选下标。
 其他模块不得自己发 HTTP，也不得读取厂商私有字段。
 配置只从环境变量读，密钥不打印、不回显、不落盘。
 """
@@ -15,7 +16,7 @@ from typing import Any
 
 import httpx
 
-__all__ = ["chat", "embed", "LLMConfigError", "LLMResponseError"]
+__all__ = ["chat", "embed", "rerank", "LLMConfigError", "LLMResponseError"]
 
 DEFAULT_TEMPERATURE = 0.2
 _TIMEOUT_SECONDS = 30.0
@@ -30,11 +31,13 @@ class LLMResponseError(RuntimeError):
     """响应结构与约定不符，或网络层重试后仍未成功。"""
 
 
-def _read_env(name: str) -> str:
-    value = os.environ.get(name, "")
+def _read_env(name: str, fallback: str | None = None) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value and fallback is not None:
+        value = os.environ.get(fallback, "").strip()
     if not value.strip():
         raise LLMConfigError(f"缺少环境变量 {name}")
-    return value.strip()
+    return value
 
 
 def _post_json(
@@ -125,8 +128,8 @@ def embed(
     transport: httpx.BaseTransport | None = None,
 ) -> list[list[float]]:
     """调用兼容接口取向量。按入参顺序返回等长的二维浮点列表。"""
-    base_url = _read_env("LLM_BASE_URL").rstrip("/")
-    api_key = _read_env("LLM_API_KEY")
+    base_url = _read_env("EMBEDDING_BASE_URL", "LLM_BASE_URL").rstrip("/")
+    api_key = _read_env("EMBEDDING_API_KEY", "LLM_API_KEY")
     model = _read_env("EMBEDDING_MODEL")
     items = list(texts)
     if not items:
@@ -135,3 +138,43 @@ def embed(
     headers = {"Authorization": f"Bearer {api_key}"}
     data = _post_json(f"{base_url}/embeddings", headers, payload, transport)
     return _extract_embeddings(data, len(items))
+
+
+def rerank(
+    query: str,
+    documents: Sequence[str],
+    *,
+    transport: httpx.BaseTransport | None = None,
+) -> list[int]:
+    """调用 Cohere 风格重排端点，返回按 relevance_score 降序排列的文档下标。"""
+    base_url = _read_env("RERANK_BASE_URL").rstrip("/")
+    api_key = _read_env("RERANK_API_KEY")
+    model = _read_env("RERANK_MODEL")
+    items = list(documents)
+    if not items:
+        raise LLMResponseError("rerank() 的 documents 列表不能为空")
+    payload = {"model": model, "query": query, "documents": items}
+    headers = {"Authorization": f"Bearer {api_key}"}
+    data = _post_json(f"{base_url}/rerank", headers, payload, transport)
+    rows = data.get("results")
+    if not isinstance(rows, list) or len(rows) != len(items):
+        raise LLMResponseError("响应 results 必须完整覆盖所有候选文档")
+    ranked: list[tuple[int, float]] = []
+    seen: set[int] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise LLMResponseError("results 项必须是对象")
+        index = row.get("index")
+        score = row.get("relevance_score")
+        if isinstance(index, bool) or not isinstance(index, int) or not 0 <= index < len(items):
+            raise LLMResponseError("results 含越界或非法 index")
+        if index in seen:
+            raise LLMResponseError("results 含重复 index")
+        if isinstance(score, bool) or not isinstance(score, (int, float)):
+            raise LLMResponseError("results 含非法 relevance_score")
+        seen.add(index)
+        ranked.append((index, float(score)))
+    if seen != set(range(len(items))):
+        raise LLMResponseError("results 未覆盖全部候选文档")
+    ranked.sort(key=lambda item: item[1], reverse=True)
+    return [index for index, _score in ranked]

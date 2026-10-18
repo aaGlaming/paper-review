@@ -1,0 +1,65 @@
+﻿{
+    "step":  "34-get-fixture-review-after-archive",
+    "at":  "2026-10-18T18:40:25.3910471+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/reviews/ba7d6b28ad7a495aa0cd57cffd55e5d7"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "review_id":  "ba7d6b28ad7a495aa0cd57cffd55e5d7",
+                          "contest_id":  "fixture-extra",
+                          "rubric_id":  "fixture-extra-v1",
+                          "rubric_version":  1,
+                          "model_name":  "deepseek-flash",
+                          "created_at":  "2026-10-18T10:39:11",
+                          "dimensions":  [
+                                             {
+                                                 "dimension_code":  "assumption",
+                                                 "band":  "基本",
+                                                 "chunk_ids":  [
+                                                                   "ba7d6b28ad7a495aa0cd57cffd55e5d7-0001-00"
+                                                               ],
+                                                 "quote":  "假设数据来自自建记录表，字段含义已核对；同一记录的计数口径保持一致。",
+                                                 "status":  "基本"
+                                             },
+                                             {
+                                                 "dimension_code":  "constraint_check",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "ba7d6b28ad7a495aa0cd57cffd55e5d7-0005-00"
+                                                               ],
+                                                 "quote":  "检查 x 落在 1～5 范围内，并分别复核两种情形的输出。",
+                                                 "status":  "不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "modeling",
+                                                 "band":  "基本",
+                                                 "chunk_ids":  [
+                                                                   "ba7d6b28ad7a495aa0cd57cffd55e5d7-0003-00"
+                                                               ],
+                                                 "quote":  "按固定的计数程序求解，逐条读取 100 条输入记录，并输出每种情形的结果。",
+                                                 "status":  "基本"
+                                             },
+                                             {
+                                                 "dimension_code":  "presentation",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "ba7d6b28ad7a495aa0cd57cffd55e5d7-0004-00"
+                                                               ],
+                                                 "quote":  "情形 result_fixture_a 的结果为 42，情形 result_fixture_b 的结果为 37。",
+                                                 "status":  "不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "solution",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             }
+                                         ]
+                      },
+    "notes":  "Archived contest review remains readable."
+}

@@ -1,0 +1,16 @@
+﻿{
+    "step":  "27-draft-rubric-A-v2",
+    "at":  "2026-10-18T18:39:50.4905646+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/contests/cumcm-2024-A/rubrics"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contest_id":  "cumcm-2024-A",
+                          "rubric_id":  "cumcm-2024-A-v2",
+                          "version":  2,
+                          "status":  "draft"
+                      },
+    "notes":  "Copy the published A rubric as a new draft."
+}

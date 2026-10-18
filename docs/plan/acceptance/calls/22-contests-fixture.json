@@ -1,0 +1,330 @@
+﻿{
+    "step":  "22-contests-fixture",
+    "at":  "2026-10-18T18:38:53.1044482+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/contests"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contests":  [
+                                           {
+                                               "contest_id":  "cumcm-2024-A",
+                                               "year":  2024,
+                                               "problem_code":  "A",
+                                               "title":  "“板凳龙”闹元宵",
+                                               "statement":  "舞龙队由龙头、龙身和龙尾组成，各节板凳依次相连，沿螺线盘入。板凳的宽度不可忽略，舞龙过程中各节板凳之间不能相撞。题目要求建立数学模型，给出舞龙队在不同时刻的位置与速度，并按题目给出的螺距与调头路径描述盘入与调头过程。第 4 问：盘入螺距为 1.7 m，调头空间是直径为 9 m 的圆，调头路径由两段相切的圆弧组成，前一段圆弧的半径是后一段圆弧半径的 2 倍，龙头沿调头曲线以 1 m/s 的速度匀速前进，求各把手在各时刻的位置与速度。第 5 问：给出从盘入到盘出全过程各把手的速度，并要求各把手速度不超过 2 m/s。",
+                                               "status":  "published",
+                                               "rubric":  {
+                                                              "rubric_id":  "cumcm-2024-A-v1",
+                                                              "version":  1,
+                                                              "status":  "published"
+                                                          },
+                                               "constraints":  [
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-A-collision",
+                                                                       "name":  "板凳之间不能相撞",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "碰撞",
+                                                                                                       "相撞",
+                                                                                                       "板凳宽度"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-A-handle-speed",
+                                                                       "name":  "把手速度不超过 2 m/s",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  2,
+                                                                                      "min":  0,
+                                                                                      "unit":  "m/s"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "求解",
+                                                                                             "结果",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-A-head-speed",
+                                                                       "name":  "龙头速度为 1 m/s",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  1,
+                                                                                      "min":  1,
+                                                                                      "unit":  "m/s"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "求解"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-A-pitch",
+                                                                       "name":  "盘入螺距为 1.7 m",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  1.7,
+                                                                                      "min":  1.7,
+                                                                                      "unit":  "m"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "求解"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-A-turn-arc",
+                                                                       "name":  "调头圆弧两段相切且半径 2 倍",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "相切",
+                                                                                                       "2 倍",
+                                                                                                       "半径"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   }
+                                                               ],
+                                               "pitfall_count":  5,
+                                               "exemplar_count":  4
+                                           },
+                                           {
+                                               "contest_id":  "cumcm-2024-C",
+                                               "year":  2024,
+                                               "problem_code":  "C",
+                                               "title":  "农作物的种植策略",
+                                               "statement":  "某乡村需要为 2024～2030 年制定农作物的种植方案。耕地分为若干地块，同一地块不能连续种植同一类作物，即不能连续重茬；从 2023 年起，每块地在三年内至少种植一次豆类作物。题目给出各地块面积、作物亩产量与种植成本、销售量与销售价格等基础数据，并允许合理假设。问题 1 要求给出 2024～2030 年的最优种植方案，并对超出预期销售量的产量分两种情形处理：一是滞销造成浪费，二是按 2023 年销售价格的 50% 降价出售，两种情形分别对应结果文件 result1_1.xlsx 与 result1_2.xlsx。题目还要求进一步考虑农作物之间的替代性、价格波动等不确定因素，给出相应的种植策略。",
+                                               "status":  "published",
+                                               "rubric":  {
+                                                              "rubric_id":  "cumcm-2024-C-v1",
+                                                              "version":  1,
+                                                              "status":  "published"
+                                                          },
+                                               "constraints":  [
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-C-half-price",
+                                                                       "name":  "超额产量按 50% 降价出售情形",
+                                                                       "check_type":  "required_case",
+                                                                       "params":  {
+                                                                                      "label":  "50%降价",
+                                                                                      "artifact":  "result1_2"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-C-legume-three-years",
+                                                                       "name":  "每块地三年内至少种植一次豆类",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "豆类",
+                                                                                                       "三年内至少一次"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "结果",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-C-no-repeat-crop",
+                                                                       "name":  "同一地块不能连续重茬",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "重茬",
+                                                                                                       "连作",
+                                                                                                       "连续种植"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2024-C-unsold",
+                                                                       "name":  "超额产量滞销情形",
+                                                                       "check_type":  "required_case",
+                                                                       "params":  {
+                                                                                      "label":  "滞销",
+                                                                                      "artifact":  "result1_1"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   }
+                                                               ],
+                                               "pitfall_count":  5,
+                                               "exemplar_count":  4
+                                           },
+                                           {
+                                               "contest_id":  "cumcm-2025-A",
+                                               "year":  2025,
+                                               "problem_code":  "A",
+                                               "title":  "烟幕干扰弹的投放策略",
+                                               "statement":  "烟幕干扰弹通过起爆形成的烟幕云团遮蔽目标，使来袭导弹无法有效识别。烟幕云团以 3 m/s 的速度下沉，云团中心 10 m 范围内、起爆后 20 s 内可有效遮蔽；导弹以 300 m/s 的速度飞行；无人机在 70～140 m/s 的速度范围内等高度匀速直线飞行。问题 1 给定无人机 FY1 以 120 m/s 的速度朝向假目标飞行，1.5 s 后投放干扰弹，再间隔 3.6 s 起爆，求该烟幕对导弹 M1 的有效遮蔽时长。题目还要求给出使有效遮蔽时间最长的投放策略，并讨论无人机速度、投放时机与起爆时机对遮蔽效果的影响，最后给出多枚干扰弹协同遮蔽的策略。",
+                                               "status":  "published",
+                                               "rubric":  {
+                                                              "rubric_id":  "cumcm-2025-A-v1",
+                                                              "version":  1,
+                                                              "status":  "published"
+                                                          },
+                                               "constraints":  [
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2025-A-effective-range",
+                                                                       "name":  "云团中心 10 m 范围内、起爆后 20 s 内可有效遮蔽",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "10 m",
+                                                                                                       "20 s"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2025-A-smoke-sink",
+                                                                       "name":  "烟幕云团以 3 m/s 下沉",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  3,
+                                                                                      "min":  3,
+                                                                                      "unit":  "m/s"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "cumcm-2025-A-uav-speed",
+                                                                       "name":  "无人机速度范围为 70～140 m/s",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  140,
+                                                                                      "min":  70,
+                                                                                      "unit":  "m/s"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   }
+                                                               ],
+                                               "pitfall_count":  5,
+                                               "exemplar_count":  4
+                                           },
+                                           {
+                                               "contest_id":  "fixture-extra",
+                                               "year":  2026,
+                                               "problem_code":  "F",
+                                               "title":  "自建第四道题（导入夹具）",
+                                               "statement":  "本题是本项目自建的导入夹具，不属于任何公开赛事，也不对应任何真实赛题。题面要求：给定一组自建数据，建立模型并给出结果，结果需说明数据来源与计算口径。题目含一条数量区间约束与两种自建情形，两种情形的结果分别对应 result_fixture_a 与 result_fixture_b。",
+                                               "status":  "published",
+                                               "rubric":  {
+                                                              "rubric_id":  "fixture-extra-v1",
+                                                              "version":  1,
+                                                              "status":  "published"
+                                                          },
+                                               "constraints":  [
+                                                                   {
+                                                                       "constraint_id":  "fixture-extra-case-a",
+                                                                       "name":  "自建情形 A",
+                                                                       "check_type":  "required_case",
+                                                                       "params":  {
+                                                                                      "label":  "自建情形A",
+                                                                                      "artifact":  "result_fixture_a"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "fixture-extra-case-b",
+                                                                       "name":  "自建情形 B",
+                                                                       "check_type":  "required_case",
+                                                                       "params":  {
+                                                                                      "label":  "自建情形B",
+                                                                                      "artifact":  "result_fixture_b"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "fixture-extra-count-range",
+                                                                       "name":  "自建数量落在 1～5 次之间",
+                                                                       "check_type":  "numeric_range",
+                                                                       "params":  {
+                                                                                      "max":  5,
+                                                                                      "min":  1,
+                                                                                      "unit":  "次"
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "模型",
+                                                                                             "求解",
+                                                                                             "检验"
+                                                                                         ]
+                                                                   },
+                                                                   {
+                                                                       "constraint_id":  "fixture-extra-source-note",
+                                                                       "name":  "需说明数据来源与计算口径",
+                                                                       "check_type":  "mention",
+                                                                       "params":  {
+                                                                                      "keywords":  [
+                                                                                                       "数据来源",
+                                                                                                       "计算口径"
+                                                                                                   ]
+                                                                                  },
+                                                                       "section_types":  [
+                                                                                             "假设",
+                                                                                             "模型",
+                                                                                             "结果"
+                                                                                         ]
+                                                                   }
+                                                               ],
+                                               "pitfall_count":  2,
+                                               "exemplar_count":  2
+                                           }
+                                       ]
+                      },
+    "notes":  "Confirm fourth published contest appears."
+}

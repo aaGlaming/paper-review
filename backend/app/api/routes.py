@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 from pathlib import Path
 from typing import Any, Iterator
@@ -37,6 +38,7 @@ STATUS_DONE = "完成"
 DETERMINISTIC_MODEL_NAME = "deterministic"
 NOTE_DETERMINISTIC = "source=deterministic：各维档位来自确定性结构回退，是脚本自检，不是模型结果"
 NOTE_NO_CONTEST = "未绑定赛题，无维度可评"
+NOTE_MODEL = "source=model：各维档位来自模型选档，引用已校验为父块原句"
 
 router = APIRouter(prefix="/api")
 
@@ -91,9 +93,17 @@ def list_samples(is_demo: bool | None = None) -> dict[str, Any]:
 
 
 @router.get("/eval/summary")
-def eval_summary() -> dict[str, Any]:
-    """三项评测指标。未注入模型，走确定性结构回退，返回体里带 source 标明来源。"""
-    return report_evaluation.run_eval()
+def eval_summary(force: str | None = None) -> dict[str, Any]:
+    """汇总评测默认走确定性回退；仅 `?force=model` 才显式运行模型评测。"""
+    if force != "model":
+        return report_evaluation.run_eval()
+    from .app import model_available
+
+    if not model_available():
+        raise HTTPException(status_code=400, detail="模型评测需要完整的对话模型配置")
+    from ..llm.client import chat
+
+    return report_evaluation.run_eval(chat=chat)
 
 
 def _resolve_paper_text(payload: CreateReviewRequest) -> str:
@@ -155,6 +165,230 @@ def _empty_score() -> dict[str, Any]:
     return {"total": 0, "weighted": 0, "excluded": [], "weight_sum": 0}
 
 
+def _embedding_available() -> bool:
+    """只有显式配置独立嵌入服务时才建向量索引。"""
+    return all(
+        os.environ.get(name, "").strip()
+        for name in ("EMBEDDING_BASE_URL", "EMBEDDING_MODEL")
+    )
+
+
+def _prepare_review_index(
+    *,
+    review_id: str,
+    contest_id: str,
+    rubric_id: str,
+    sections: list[dict[str, Any]],
+    dimensions: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """先把已确认章节存为父块，再尽力生成向量子块索引。"""
+    from dataclasses import replace
+
+    from ..llm import client as llm_client
+    from ..retrieve import parent_child
+    from ..retrieve.models import create_parent_schema
+
+    parents = []
+    for index, section in enumerate(sections):
+        content = str(section.get("content") or "").strip()
+        if not content:
+            continue
+        parents.append(
+            parent_child.ParentBlock(
+                parent_id=f"{review_id}-{index:04d}",
+                section_type=str(section.get("section_type") or "未分类"),
+                content=content,
+                review_id=review_id,
+            )
+        )
+
+    create_parent_schema()
+    repository = parent_child.ParentRepository()
+    children = []
+    chunk_ids_by_parent: dict[str, tuple[str, ...]] = {}
+    for parent in parents:
+        parent_children = parent_child.build_children(
+            parent,
+            contest_id=contest_id,
+            rubric_id=rubric_id,
+            dimension_code="paper",
+        )
+        children.extend(parent_children)
+        chunk_ids_by_parent[parent.parent_id] = tuple(
+            child.chunk_id for child in parent_children
+        )
+    parents = [
+        replace(parent, chunk_ids=chunk_ids_by_parent[parent.parent_id])
+        for parent in parents
+    ]
+    repository.save_parents(parents)
+    vector_enabled = False
+    vector_client = None
+    if children and _embedding_available():
+        try:
+            vectors = llm_client.embed([child.text for child in children])
+        except Exception:
+            vectors = None
+        if vectors is not None:
+            indexed_children = [
+                replace(child, embedding=tuple(vector))
+                for child, vector in zip(children, vectors, strict=True)
+            ]
+            vector_client = parent_child.default_client()
+            collection = parent_child.get_collection(client=vector_client)
+            collection.delete(ids=[child.chunk_id for child in indexed_children])
+            parent_child.index_children(indexed_children, client=vector_client)
+            vector_enabled = True
+
+    reranker = None
+    parent_contents = {parent.parent_id: parent.content for parent in parents}
+    if contest_id:
+        from sqlalchemy import select
+
+        from ..importing import db
+        from ..report.models import ReviewSession
+        from ..retrieve.models import PaperParent
+
+        with db.session_scope() as work:
+            contest_review_ids = list(
+                work.scalars(
+                    select(ReviewSession.review_id).where(ReviewSession.contest_id == contest_id)
+                )
+            )
+            if contest_review_ids:
+                stored_parents = work.scalars(
+                    select(PaperParent).where(PaperParent.review_id.in_(contest_review_ids))
+                )
+                parent_contents.update(
+                    {row.parent_id: row.content for row in stored_parents}
+                )
+    dimension_info = {
+        str(item.get("dimension_code") or ""): item for item in (dimensions or [])
+    }
+    confirmed_section_types = tuple(
+        dict.fromkeys(
+            str(section.get("section_type") or "未分类") for section in sections
+        )
+    )
+    from ..retrieve import rerank as rerank_module
+
+    if rerank_module.read_rerank_config().available:
+        reranker = rerank_module.build_rerank_client(
+            "http", parent_contents=parent_contents, rank=llm_client.rerank
+        )
+
+    def mysql_search_round(**request):
+        from sqlalchemy import select
+
+        from ..importing import db
+        from ..retrieve.models import PaperParent
+
+        requested_types = [str(value) for value in (request.get("section_types") or ())]
+        with db.session_scope() as work:
+            statement = select(PaperParent).where(
+                PaperParent.review_id == str(request.get("review_id") or "")
+            )
+            if requested_types:
+                statement = statement.where(PaperParent.section_type.in_(requested_types))
+            rows = list(
+                work.scalars(
+                    statement.order_by(PaperParent.parent_id).limit(
+                        int(request.get("per_route_limit") or 6)
+                    )
+                )
+            )
+        blocks = [
+            parent_child.ParentBlock(
+                parent_id=row.parent_id,
+                section_type=row.section_type,
+                content=row.content,
+                review_id=row.review_id,
+                char_span=tuple(row.char_span) if row.char_span else None,
+            )
+            for row in rows
+        ]
+        return [
+            replace(
+                block,
+                chunk_ids=tuple(
+                    child.chunk_id
+                    for child in parent_child.build_children(
+                        block,
+                        contest_id=contest_id,
+                        rubric_id=rubric_id,
+                        dimension_code="paper",
+                    )
+                ),
+            )
+            for block in blocks
+        ]
+
+    def retriever(request):
+        from ..retrieve.three_route import retrieve_dimension
+
+        requested_types = tuple(
+            str(value) for value in (request.section_types or confirmed_section_types)
+        )
+        dimension = dimension_info.get(request.dimension_code, {})
+        rubric_types = tuple(str(value) for value in (dimension.get("section_types") or ()))
+        types = (
+            tuple(value for value in requested_types if value in rubric_types)
+            if rubric_types
+            else requested_types
+        )
+        if rubric_types and not types:
+            return {
+                "status": "证据不足",
+                "rounds": 0,
+                "parents": [],
+                "queries": [],
+                "reason": "已确认章节与该维量规范围无交集",
+            }
+        query = " ".join(
+            [str(dimension.get("name") or request.dimension_code), request.dimension_code, *types]
+        )
+        query_embedding = None
+        if vector_enabled:
+            try:
+                query_embedding = llm_client.embed([query])[0]
+            except Exception:
+                query_embedding = None
+        return retrieve_dimension(
+            query,
+            contest_id=str(request.contest_id or contest_id),
+            rubric_id=str(request.rubric_id or rubric_id),
+            dimension_code=request.dimension_code,
+            review_id=request.review_id,
+            section_types=types,
+            client=vector_client,
+            parent_repo=repository,
+            query_embedding=query_embedding,
+            rerank=reranker,
+            fallback_search_round=mysql_search_round,
+        )
+
+    return {
+        "parents": parents,
+        "parent_contents": parent_contents,
+        "vector_enabled": vector_enabled,
+        "retriever": retriever,
+    }
+
+
+def _configured_graph(graph: Any, inputs: dict[str, Any], retriever: Any) -> Any:
+    """用同一检查点重编译评审图，并从装配层注入模型与检索器。"""
+    from ..graph.review_graph import build_review_graph
+    from ..llm.client import chat
+
+    return build_review_graph(
+        checkpointer=graph.checkpointer,
+        retriever=retriever,
+        chat=chat,
+        rubric_dimensions=inputs["dimensions"],
+        constraints=inputs["constraints"],
+    )
+
+
 @router.post("/reviews", status_code=201)
 def create_review_endpoint(
     payload: CreateReviewRequest,
@@ -199,13 +433,38 @@ def resume_review_endpoint(
         _restore_snapshot(graph, review_id, record)
 
     sections = payload.sections if payload.sections is not None else record.get("sections") or []
-    final = resume_review(review_id, sections, graph=graph)
-
     contest_id = str(record.get("contest_id") or "")
     inputs = report_rubric.load_review_inputs(contest_id, session=session)
+    if inputs["rubric_id"] is not None:
+        inputs["dimensions"] = report_rubric.load_rubric_dimensions(
+            str(inputs["rubric_id"]), session=session
+        )
     dimensions = inputs["dimensions"]
     paper_text = record.get("paper_text", "")
-    results = report_evaluation.deterministic_results(paper_text, dimensions)
+    from .app import model_available
+
+    use_model = model_available() and inputs["rubric_id"] is not None
+    if use_model:
+        index = _prepare_review_index(
+            review_id=review_id,
+            contest_id=contest_id,
+            rubric_id=str(inputs["rubric_id"]),
+            sections=sections,
+            dimensions=dimensions,
+        )
+        execution_graph = _configured_graph(graph, inputs, index["retriever"])
+    else:
+        execution_graph = graph
+    final = resume_review(review_id, sections, graph=execution_graph)
+
+    if use_model:
+        raw_results = final.get("dimension_results") or {}
+        results = [
+            {"dimension_code": code, **dict(value)}
+            for code, value in raw_results.items()
+        ]
+    else:
+        results = report_evaluation.deterministic_results(paper_text, dimensions)
     if inputs["rubric_id"] is None:
         # 没绑定赛题就没有量规可依据：各维为空，修改清单也为空，不兜底到别的赛题。
         change_list: list[dict[str, Any]] = []
@@ -213,7 +472,7 @@ def resume_review_endpoint(
     else:
         findings = check_numbers_citations_ranges(paper_text, inputs["constraints"])
         change_list = build_change_list(results, findings, dimensions)
-        note = NOTE_DETERMINISTIC
+        note = NOTE_MODEL if use_model else NOTE_DETERMINISTIC
 
     report_store.save_session(
         review_id,
@@ -229,10 +488,24 @@ def resume_review_endpoint(
         contest_id=contest_id,
         rubric_id=inputs["rubric_id"] or "",
         rubric_version=inputs["rubric_version"] or 1,
-        model_name=DETERMINISTIC_MODEL_NAME,
+        model_name=os.environ.get("LLM_MODEL", "").strip() if use_model else DETERMINISTIC_MODEL_NAME,
         dimensions=results,
+        change_list=change_list,
         session=session,
     )
+    response_dimensions = saved["dimensions"]
+    if use_model:
+        results_by_code = {
+            str(result.get("dimension_code") or ""): result for result in results
+        }
+        response_dimensions = []
+        for item in saved["dimensions"]:
+            response_item = dict(item)
+            runtime_result = results_by_code.get(str(item["dimension_code"]), {})
+            for key in ("chat_calls", "reason", "guard"):
+                if key in runtime_result:
+                    response_item[key] = runtime_result[key]
+            response_dimensions.append(response_item)
     return {
         "review_id": review_id,
         "status": str(final.get("status") or STATUS_DONE),
@@ -240,10 +513,11 @@ def resume_review_endpoint(
         "rubric_id": inputs["rubric_id"],
         "rubric_version": inputs["rubric_version"],
         "model_name": saved["model_name"],
-        "source": report_evaluation.SOURCE_DETERMINISTIC,
-        "dimensions": saved["dimensions"],
-        "score": _empty_score(),
-        "change_list": change_list,
+        "source": report_evaluation.SOURCE_MODEL if use_model else report_evaluation.SOURCE_DETERMINISTIC,
+        "dimensions": response_dimensions,
+        "score": final.get("score") if use_model else _empty_score(),
+        "change_list": saved["change_list"],
+        "change_list_note": saved.get("change_list_note"),
         "note": note,
     }
 
@@ -279,6 +553,69 @@ def list_contests(
             session=session,
         )
     }
+
+
+@router.get("/contests/{contest_id}/rubric")
+def get_published_rubric(contest_id: str, session: Session = Depends(get_session)) -> dict[str, Any]:
+    """读取赛题当前已发布量规条文，不改变赛题列表响应。"""
+    rubric = report_rubric.load_published_rubric(contest_id, session=session)
+    if rubric is None:
+        raise HTTPException(status_code=404, detail=f"赛题 {contest_id} 没有已发布量规")
+    return rubric
+
+
+@router.get("/eval/papers/{paper_id}")
+def eval_paper(paper_id: str) -> dict[str, Any]:
+    """读取单篇 gold 对照；不隐式触发模型调用，系统档位沿用 deterministic 汇总路径。"""
+    paper = _load_eval_paper(paper_id)
+    if paper is None:
+        raise HTTPException(status_code=404, detail=f"找不到评测样例 {paper_id}")
+    gold = paper.get("gold")
+    if not gold:
+        return {
+            "paper_id": paper_id,
+            "title": str(paper.get("title") or paper_id),
+            "source": report_evaluation.SOURCE_DETERMINISTIC,
+            "gold_available": False,
+            "explanation": "该样例没有 gold 档位，无法计算逐维差异。",
+            "gold": None,
+            "system": None,
+            "differences": None,
+        }
+    rubric = report_evaluation._load_rubric(str(paper.get("contest_id") or ""))
+    system = report_evaluation.deterministic_results(str(paper.get("text") or ""), rubric["dimensions"])
+    system_by_code = {str(item.get("dimension_code") or ""): item for item in system}
+    differences = [
+        {
+            "dimension_code": str(item["dimension_code"]),
+            "gold_band": item.get("band"),
+            "system_band": system_by_code.get(str(item["dimension_code"]), {}).get("band"),
+            "matches": system_by_code.get(str(item["dimension_code"]), {}).get("band") == item.get("band"),
+        }
+        for item in gold
+    ]
+    return {
+        "paper_id": paper_id,
+        "title": str(paper.get("title") or paper_id),
+        "source": report_evaluation.SOURCE_DETERMINISTIC,
+        "gold_available": True,
+        "explanation": None,
+        "gold": list(gold),
+        "system": system,
+        "differences": differences,
+    }
+
+
+def _load_eval_paper(paper_id: str) -> dict[str, Any] | None:
+    """按公开样例 ID 从既有只读样例目录定位论文与 gold。"""
+    name = str(paper_id or "").strip()
+    for paper in review_samples.load_eval_papers():
+        if str(paper.get("paper_id") or "") == name:
+            return paper
+    demos = review_samples.load_demo_texts()
+    if name in demos:
+        return {"paper_id": name, "title": name, "contest_id": "", "text": demos[name], "gold": None}
+    return None
 
 
 @router.post("/imports")

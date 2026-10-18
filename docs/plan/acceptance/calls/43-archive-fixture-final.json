@@ -1,0 +1,14 @@
+﻿{
+    "step":  "43-archive-fixture-final",
+    "at":  "2026-10-18T18:47:40.0127375+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/contests/fixture-extra/archive"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contest_id":  "fixture-extra",
+                          "status":  "archived"
+                      },
+    "notes":  "Restore final acceptance state with fixture-extra archived."
+}

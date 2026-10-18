@@ -1,0 +1,19 @@
+{
+  "step": "37-sensitive-content-scan",
+  "at": "2026-10-18T19:00:00+08:00",
+  "request": {
+    "method": "LOCAL CONTENT SCAN",
+    "url": "frontend source, stored API response bodies, export text and acceptance artifacts; terms and credentials withheld"
+  },
+  "response_status": 200,
+  "response_body": {
+    "frontend_source_match_count": 0,
+    "frontend_source_match_files": [],
+    "api_response_match_count": 0,
+    "api_response_match_files": [],
+    "render_change_list_match_count": 0,
+    "render_change_list_match_reports": [],
+    "secret_value_occurrences_in_acceptance_artifacts": 0
+  },
+  "notes": "Unicode code-point scan. Only counts and file identifiers saved; no term literal or credential value is emitted."
+}

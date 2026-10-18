@@ -284,6 +284,55 @@ def test_resume_reports_deterministic_source_without_award_words(client):
     assert body["rubric_version"] == 1
 
 
+def test_resume_uses_model_graph_when_four_required_settings_are_present(client, monkeypatch):
+    from backend.app.api import routes as route_module
+    from backend.app.llm import client as llm_client
+
+    for key, value in {
+        "LLM_BASE_URL": "https://chat.example/v1",
+        "LLM_API_KEY": "test-chat-key",
+        "LLM_MODEL": "test-chat-model",
+        "EMBEDDING_MODEL": "test-embedding-model",
+    }.items():
+        monkeypatch.setenv(key, value)
+
+    monkeypatch.setattr(
+        route_module,
+        "_prepare_review_index",
+        lambda **_kwargs: {
+            "parents": [],
+            "vector_enabled": False,
+            "retriever": lambda _request: {
+                "status": "命中",
+                "rounds": 1,
+                "parents": [{
+                    "parent_id": "paper-parent",
+                    "section_type": "模型",
+                    "content": "本文采用结构化建模方法。",
+                    "chunk_ids": ["paper-parent-00"],
+                }],
+                "queries": ["模型依据"],
+            },
+        },
+    )
+    monkeypatch.setattr(
+        llm_client,
+        "chat",
+        lambda *_args, **_kwargs: json.dumps({
+            "band": "不足", "chunk_id": "paper-parent-00", "quote": "本文采用结构化建模"
+        }, ensure_ascii=False),
+    )
+
+    created = _create(client, paper_text=PAPER)
+    body = _resume(client, created["review_id"], created["sections"])
+
+    assert body["source"] == "model"
+    assert body["model_name"] == "test-chat-model"
+    assert body["dimensions"]
+    assert all(item["band"] == "不足" for item in body["dimensions"])
+    assert all(item["chat_calls"] == 1 for item in body["dimensions"])
+
+
 def test_dimension_rows_match_the_rubric_in_the_database(client, session):
     created = _create(client, paper_text=PAPER)
     _resume(client, created["review_id"], created["sections"])

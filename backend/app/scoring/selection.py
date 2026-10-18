@@ -139,6 +139,7 @@ def build_scoring_messages(
     dimension_name: str,
     parents: Sequence[Mapping[str, Any]],
     constraints: Iterable[Mapping[str, Any]] | None = None,
+    evidence_prompts: Iterable[str] | None = None,
 ) -> list[dict[str, str]]:
     """拼选档用的 messages。证据逐段编号，编号与 parent_id、chunk_ids 一起给出。"""
     evidence_lines = []
@@ -154,6 +155,7 @@ def build_scoring_messages(
         if isinstance(constraint, Mapping)
         and str(constraint.get("check_type")) == MENTION_CHECK_TYPE
     ] or ["- 无"]
+    evidence_points = [f"- {str(item)}" for item in evidence_prompts or () if str(item).strip()] or ["- 无"]
 
     system = (
         "你是论文预审的选档助手。只输出一个 JSON 对象，字段只有 band、chunk_id、quote。"
@@ -167,6 +169,8 @@ def build_scoring_messages(
             f"维度：{dimension_name}（{dimension_code}）",
             "题目要求必须提到的条件：",
             *required,
+            "该维度需要检查的证据要点：",
+            *evidence_points,
             "证据（父块全文）：",
             *evidence_lines,
         ]

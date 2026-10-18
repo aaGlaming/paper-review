@@ -73,6 +73,44 @@ export interface EvalSummary {
   note: string
 }
 
+export interface RubricBandText {
+  band: string
+  score: number | null
+  description: string
+}
+
+export interface RubricDimensionText {
+  dimension_code: string
+  name: string
+  weight: number
+  bands: RubricBandText[]
+}
+
+export interface PublishedRubricText {
+  contest_id: string
+  rubric_id: string
+  version: number
+  dimensions: RubricDimensionText[]
+}
+
+export interface EvalPaperDifference {
+  dimension_code: string
+  gold_band: string | null
+  system_band: string | null
+  matches: boolean
+}
+
+export interface EvalPaperResult {
+  paper_id: string
+  title: string
+  source: string
+  gold_available: boolean
+  explanation: string | null
+  gold: Array<{ dimension_code: string; band: string }> | null
+  system: Array<DimensionResult> | null
+  differences: EvalPaperDifference[] | null
+}
+
 /** 章节树的一条。`level` 是标题级别，层级在页面上用缩进表达。 */
 export interface PaperSection {
   title: string
@@ -181,6 +219,8 @@ export interface ArchivedReview {
   model_name: string
   created_at: string | null
   dimensions: DimensionResult[]
+  change_list: ChangeListItem[]
+  change_list_note: string | null
 }
 
 /** `GET /api/reviews/{id}` 的两段式：已落档返回存档，只有会话快照时返回章节树。 */

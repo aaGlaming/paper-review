@@ -1,0 +1,65 @@
+﻿{
+    "step":  "18-get-live-smoke-review",
+    "at":  "2026-10-18T18:38:23.9789797+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/reviews/121d4617e52f4f169b027f690ad74c54"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "review_id":  "121d4617e52f4f169b027f690ad74c54",
+                          "contest_id":  "cumcm-2025-A",
+                          "rubric_id":  "cumcm-2025-A-v1",
+                          "rubric_version":  1,
+                          "model_name":  "deepseek-flash",
+                          "created_at":  "2026-10-18T10:32:44",
+                          "dimensions":  [
+                                             {
+                                                 "dimension_code":  "assumption",
+                                                 "band":  "充分",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0002-00"
+                                                               ],
+                                                 "quote":  "2. 云团中心 10 m 范围内、起爆后 20 s 内视为有效遮蔽区域；",
+                                                 "status":  "充分"
+                                             },
+                                             {
+                                                 "dimension_code":  "constraint_check",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0005-00"
+                                                               ],
+                                                 "quote":  "本文取值 160 m/s 超出该范围，需按题目要求重新取值后再算。",
+                                                 "status":  "不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "modeling",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "presentation",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "121d4617e52f4f169b027f690ad74c54-0004-00"
+                                                               ],
+                                                 "quote":  "代入模型计算得到有效遮蔽时长为 18.6 s，与摘要给出的数值略有出入",
+                                                 "status":  "不足"
+                                             },
+                                             {
+                                                 "dimension_code":  "solution",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足"
+                                             }
+                                         ]
+                      },
+    "notes":  "Read archived smoke evaluation."
+}

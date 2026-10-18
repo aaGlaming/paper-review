@@ -9,7 +9,7 @@
 - score：分两路。注入了 `chat` 时逐维选档并按量规权重加总；没有注入时保持占位行为，
   只把 score_node_calls 加 1 并令 status = 完成，不选档、不报错。
 
-模型只能从外面注入一个 `chat` 可调用对象；本模块不导入模型客户端、不含 HTTP 字样，也不发请求。
+模型只能从外面注入一个 `chat` 可调用对象；本模块不导入模型客户端，也不负责网络请求。
 选档的确定性部分（JSON 解析、原句子串校验、降档守卫、加权合计）在 `backend/app/scoring`。
 检查点用 InMemorySaver，thread_id 取 review_id；只有带检查点的图支持 interrupt/resume。
 """
@@ -315,6 +315,7 @@ def _normalize_rubric_dimensions(
                 "name": str(dimension.get("name") or code),
                 "weight": int(weight),
                 "section_types": [str(item) for item in (dimension.get("section_types") or ())],
+                "evidence_prompts": [str(item) for item in (dimension.get("evidence_prompts") or ())],
             }
         )
     return tuple(normalized)
@@ -343,6 +344,7 @@ def _score_dimension(
         dimension_name=str(dimension.get("name") or code),
         parents=parents,
         constraints=constraints,
+        evidence_prompts=dimension.get("evidence_prompts") or (),
     )
     parsed: dict[str, str] | None = None
     attempts = 0

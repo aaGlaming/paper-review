@@ -1,0 +1,9 @@
+{
+    "request":  {
+                    "method":  "GET",
+                    "path":  "/api/eval/papers/eval-01"
+                },
+    "response_status":  200,
+    "response_body":  "{\"paper_id\":\"eval-01\",\"title\":\"自建评测样例 01 · 板凳龙盘入过程的速度分析\",\"source\":\"deterministic\",\"gold_available\":true,\"explanation\":null,\"gold\":[{\"dimension_code\":\"assumption\",\"band\":\"充分\"},{\"dimension_code\":\"modeling\",\"band\":\"充分\"},{\"dimension_code\":\"solution\",\"band\":\"基本\"},{\"dimension_code\":\"constraint_check\",\"band\":\"基本\"},{\"dimension_code\":\"presentation\",\"band\":\"基本\"}],\"system\":[{\"dimension_code\":\"assumption\",\"band\":\"基本\",\"status\":\"基本\",\"quote\":\"1. 板凳视为刚体连杆，连接处无滑动；\",\"chunk_ids\":[]},{\"dimension_code\":\"modeling\",\"band\":\"基本\",\"status\":\"基本\",\"quote\":\"1. 板凳视为刚体连杆，连接处无滑动；\",\"chunk_ids\":[]},{\"dimension_code\":\"solution\",\"band\":\"基本\",\"status\":\"基本\",\"quote\":\"采用固定步长迭代，步长取 0.005 s，收敛判据为相邻迭代位置差小于 1e-7 m。\",\"chunk_ids\":[]},{\"dimension_code\":\"constraint_check\",\"band\":\"基本\",\"status\":\"基本\",\"quote\":\"给出各时刻各把手的位置与速度曲线，并列出最大值所在时刻。\",\"chunk_ids\":[]},{\"dimension_code\":\"presentation\",\"band\":\"基本\",\"status\":\"基本\",\"quote\":\"给出各时刻各把手的位置与速度曲线，并列出最大值所在时刻。\",\"chunk_ids\":[]}],\"differences\":[{\"dimension_code\":\"assumption\",\"gold_band\":\"充分\",\"system_band\":\"基本\",\"matches\":false},{\"dimension_code\":\"modeling\",\"gold_band\":\"充分\",\"system_band\":\"基本\",\"matches\":false},{\"dimension_code\":\"solution\",\"gold_band\":\"基本\",\"system_band\":\"基本\",\"matches\":true},{\"dimension_code\":\"constraint_check\",\"gold_band\":\"基本\",\"system_band\":\"基本\",\"matches\":true},{\"dimension_code\":\"presentation\",\"gold_band\":\"基本\",\"system_band\":\"基本\",\"matches\":true}]}",
+    "notes":  "单篇 gold 对照接口复验；默认 deterministic，不触发模型。"
+}

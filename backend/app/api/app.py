@@ -6,9 +6,19 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI
 
 from .routes import router
+
+
+MODEL_REQUIRED_ENV = ("LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL", "EMBEDDING_MODEL")
+
+
+def model_available() -> bool:
+    """四个必需模型配置齐全时启用模型路径；嵌入端点与重排配置可独立缺省。"""
+    return all(os.environ.get(name, "").strip() for name in MODEL_REQUIRED_ENV)
 
 
 def create_app() -> FastAPI:

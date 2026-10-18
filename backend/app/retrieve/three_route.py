@@ -114,6 +114,7 @@ def retrieve_dimension(
     contest_id: str,
     rubric_id: str,
     dimension_code: str,
+    review_id: str | None = None,
     section_types: Sequence[str] | str | None = None,
     client: Any = None,
     parent_repo: ParentRepository | None = None,
@@ -123,13 +124,17 @@ def retrieve_dimension(
     limit: int = MAX_PARENTS,
     per_route_limit: int = PER_ROUTE_LIMIT,
     search_round: Callable[..., list[ParentBlock]] | None = None,
+    fallback_search_round: Callable[..., list[ParentBlock]] | None = None,
     rewrite_query: Callable[[str, int, str], str] | None = None,
 ) -> DimensionRetrieval:
     """逐维检索。最多两轮；合并后只重排一次，最后截断到 `limit`（缺省 4）段。"""
     if limit < 1:
         raise ValueError("limit 必须是不小于 1 的整数")
 
-    round_fn = search_round if search_round is not None else default_search_round
+    if query_embedding is None and fallback_search_round is not None:
+        round_fn = fallback_search_round
+    else:
+        round_fn = search_round if search_round is not None else default_search_round
     rewrite_fn = rewrite_query if rewrite_query is not None else default_rewrite
 
     rounds = 0
@@ -139,20 +144,21 @@ def retrieve_dimension(
     while rounds < MAX_ROUNDS:
         rounds += 1
         queries.append(current)
-        merged = merge_candidates(
-            round_fn(
-                query=current,
-                contest_id=contest_id,
-                rubric_id=rubric_id,
-                dimension_code=dimension_code,
-                section_types=section_types,
-                client=client,
-                parent_repo=parent_repo,
-                query_embedding=query_embedding,
-                embedding_function=embedding_function,
-                per_route_limit=per_route_limit,
-            )
-        )
+        round_request = {
+            "query": current,
+            "contest_id": contest_id,
+            "rubric_id": rubric_id,
+            "dimension_code": dimension_code,
+            "section_types": section_types,
+            "client": client,
+            "parent_repo": parent_repo,
+            "query_embedding": query_embedding,
+            "embedding_function": embedding_function,
+            "per_route_limit": per_route_limit,
+        }
+        if query_embedding is None and fallback_search_round is not None:
+            round_request["review_id"] = review_id
+        merged = merge_candidates(round_fn(**round_request))
         if merged:
             break
         current = rewrite_fn(current, rounds + 1, dimension_code)

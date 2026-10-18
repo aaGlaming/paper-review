@@ -2,8 +2,8 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import { getReview } from '../api'
-import type { ArchivedReview, DimensionResult, PaperSection, ReviewReport } from '../api/types'
+import { getContestRubric, getReview } from '../api'
+import type { ArchivedReview, DimensionResult, PaperSection, PublishedRubricText, ReviewReport } from '../api/types'
 import DimensionCard from '../components/DimensionCard.vue'
 import PageArt from '../components/PageArt.vue'
 import artUrl from '../assets/sketch/sketch-bg-scoring.svg'
@@ -26,6 +26,7 @@ const archive = ref<ArchivedReview | null>(null)
 const sections = ref<PaperSection[]>([])
 const loading = ref(false)
 const loadError = ref('')
+const rubric = ref<PublishedRubricText | null>(null)
 
 const located = ref<{ sectionIndex: number; dimensionCode: string; start: number; quote: string } | null>(null)
 const locateError = ref('')
@@ -66,6 +67,7 @@ async function load(): Promise<void> {
   sections.value = flow.sections.map((section) => ({ ...section }))
   if (flow.report) {
     report.value = flow.report
+    await loadRubric(flow.report.contest_id)
     return
   }
   if (!flow.reviewId) {
@@ -76,12 +78,23 @@ async function load(): Promise<void> {
     const fetched = await getReview(flow.reviewId)
     if (isArchivedReview(fetched)) {
       archive.value = fetched
+      await loadRubric(fetched.contest_id)
     }
     // 未确认的快照（ReviewPending）→ 保持空态
   } catch (reason) {
     loadError.value = reason instanceof Error ? reason.message : String(reason)
   } finally {
     loading.value = false
+  }
+}
+
+async function loadRubric(contest: string): Promise<void> {
+  rubric.value = null
+  if (!contest) return
+  try {
+    rubric.value = await getContestRubric(contest)
+  } catch {
+    rubric.value = null
   }
 }
 
@@ -108,7 +121,7 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 </script>
 
 <template>
-  <article class="scoring" data-testid="scoring-page">
+  <article class="scoring" :class="{ 'scoring--has-rubric': rubric !== null }" data-testid="scoring-page">
     <PageArt :art="artUrl" :spot="spotUrl" layout="left" />
     <header class="ed-head">
       <span class="ed-head__num" aria-hidden="true">02</span>
@@ -146,8 +159,8 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
             <dd>{{ modelName || '—' }}</dd>
           </div>
         </dl>
-        <p v-if="fromArchive" class="scoring__archive-note" data-testid="archive-note">
-          加权与修改清单未随存档返回，下面只是存档里的维度档位；可在论文解析页重跑一次以拿全量报告。
+        <p v-if="fromArchive && archive?.change_list_note" class="scoring__archive-note" data-testid="archive-note">
+          {{ archive.change_list_note }}；加权未随存档保存。
         </p>
       </header>
 
@@ -161,6 +174,29 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
           :class="index === 0 ? 'scoring__card--lead' : null"
           @locate="locateQuote"
         />
+      </section>
+
+      <section v-if="rubric" class="scoring__rubric-details">
+        <h2 class="scoring__subtitle">量规条文 · {{ rubric.rubric_id }} v{{ rubric.version }}</h2>
+        <article v-for="item in rubric.dimensions" :key="item.dimension_code" class="scoring__rubric-item">
+          <h3>{{ item.name }}（{{ item.dimension_code }}）· 权重 {{ item.weight }}</h3>
+          <ul>
+            <li v-for="band in item.bands" :key="band.band">
+              {{ band.band }}<template v-if="band.score !== null"> · {{ band.score }}</template> · {{ band.description }}
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section v-if="fromArchive && archive?.change_list?.length" class="scoring__archive-changes">
+        <h2 class="scoring__subtitle">历史审查清单</h2>
+        <ol>
+          <li v-for="item in archive.change_list" :key="item.upstream_id">
+            <strong>{{ item.section }} · {{ item.kind }}</strong>
+            <p>{{ item.action }}</p>
+            <small>上游编号：{{ item.upstream_id }}</small>
+          </li>
+        </ol>
       </section>
 
       <hr class="ed-rule" />
@@ -290,6 +326,36 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 .scoring__noweight,
 .scoring__raw {
   margin: 0 0 var(--pr-space-2);
+}
+
+.scoring__archive-changes li {
+  margin-top: var(--pr-space-3);
+}
+
+.scoring__archive-changes li p {
+  margin: var(--pr-space-1) 0;
+}
+
+.scoring__rubric-item {
+  margin-top: var(--pr-space-3);
+}
+
+.scoring__rubric-item h3 {
+  margin: 0 0 var(--pr-space-1);
+  font-size: var(--pr-text-sm);
+}
+
+.scoring__rubric-item ul {
+  display: grid;
+  gap: var(--pr-space-1);
+  margin: 0;
+  padding-left: var(--pr-space-4);
+  color: var(--pr-ink-muted);
+  font-size: var(--pr-text-sm);
+}
+
+.scoring--has-rubric :deep([data-testid='rubric-reserved']) {
+  display: none;
 }
 
 .scoring__subtitle {

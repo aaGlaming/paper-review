@@ -61,7 +61,7 @@ def _normalize_dimensions(dimensions: Any) -> list[dict[str, Any]]:
 
 
 def _to_dict(row: Review, dimensions: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
-    return {
+    result = {
         "review_id": row.review_id,
         "contest_id": row.contest_id,
         "rubric_id": row.rubric_id,
@@ -71,7 +71,13 @@ def _to_dict(row: Review, dimensions: Iterable[Mapping[str, Any]]) -> dict[str, 
         "dimensions": [
             {field: item.get(field) for field in _DIMENSION_FIELDS} for item in dimensions
         ],
+        "change_list": [dict(item) for item in (row.change_list or ())],
     }
+    if row.change_list is None:
+        result["change_list_note"] = "该记录为旧数据，未保存审查清单"
+    else:
+        result["change_list_note"] = None
+    return result
 
 
 def save_review(
@@ -82,6 +88,7 @@ def save_review(
     rubric_version: int = 1,
     model_name: str = "",
     dimensions: Any = None,
+    change_list: Any = None,
     session: Session | None = None,
 ) -> dict[str, Any]:
     """保存一条评审记录与它的各维结果。已存在的记录不回写，原样返回当时的存档。"""
@@ -96,6 +103,7 @@ def save_review(
             rubric_version=int(rubric_version),
             model_name=str(model_name),
             created_at=utc_now(),
+            change_list=[dict(item) for item in (change_list or ()) if isinstance(item, Mapping)],
         )
         work.add(row)
         work.flush()
