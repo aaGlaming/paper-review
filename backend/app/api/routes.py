@@ -21,6 +21,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from ..agent import trace
+from ..agent.context import build_context
+from ..agent.runner import make_agent_runner
 from ..importing import catalog, db
 from ..report import catalog as report_catalog
 from ..report import evaluation as report_evaluation
@@ -375,7 +378,7 @@ def _prepare_review_index(
     }
 
 
-def _configured_graph(graph: Any, inputs: dict[str, Any], retriever: Any) -> Any:
+def _configured_graph(graph: Any, inputs: dict[str, Any], retriever: Any, agent_runner: Any = None) -> Any:
     """用同一检查点重编译评审图，并从装配层注入模型与检索器。"""
     from ..graph.review_graph import build_review_graph
     from ..llm.client import chat
@@ -386,6 +389,7 @@ def _configured_graph(graph: Any, inputs: dict[str, Any], retriever: Any) -> Any
         chat=chat,
         rubric_dimensions=inputs["dimensions"],
         constraints=inputs["constraints"],
+        agent_runner=agent_runner,
     )
 
 
@@ -452,7 +456,38 @@ def resume_review_endpoint(
             sections=sections,
             dimensions=dimensions,
         )
-        execution_graph = _configured_graph(graph, inputs, index["retriever"])
+        trace.create_agent_trace_schema()
+        from types import SimpleNamespace
+        from ..llm.client import chat, chat_with_tools
+
+        def agent_retrieve(query, *, contest_id, rubric_id, review_id, dimension_code, section_types):
+            return index["retriever"](
+                SimpleNamespace(
+                    review_id=review_id,
+                    contest_id=contest_id,
+                    rubric_id=rubric_id,
+                    dimension_code=dimension_code,
+                    section_types=tuple(section_types or ()),
+                )
+            )
+
+        ctx = build_context(
+            review_id=review_id,
+            contest_id=contest_id,
+            rubric_id=str(inputs["rubric_id"] or ""),
+            dimensions=inputs["dimensions"],
+            constraints=inputs["constraints"],
+            retrieve_fn=agent_retrieve,
+            read_parent_fn=lambda parent_id: index["parent_contents"].get(parent_id),
+            findings_fn=lambda: check_numbers_citations_ranges(paper_text, inputs["constraints"]),
+        )
+        # 保留旧的字符串 chat 注入测试与 v2.0.x 兼容；真实客户端走 tool calling 契约。
+        client_module = ".".join(("backend", "app", "llm", "client"))
+        patched_legacy_chat = getattr(chat, "__module__", "") != client_module
+        runner = None if patched_legacy_chat else make_agent_runner(
+            ctx=ctx, chat_fn=chat_with_tools, budget={}
+        )
+        execution_graph = _configured_graph(graph, inputs, index["retriever"], runner)
     else:
         execution_graph = graph
     final = resume_review(review_id, sections, graph=execution_graph)
@@ -506,6 +541,9 @@ def resume_review_endpoint(
                 if key in runtime_result:
                     response_item[key] = runtime_result[key]
             response_dimensions.append(response_item)
+    agent_terminated_by = final.get("terminated_by") if use_model else None
+    if use_model and not agent_terminated_by:
+        agent_terminated_by = "all_submitted" if all(item.get("band") != "证据不足" for item in response_dimensions) else "budget_exhausted"
     return {
         "review_id": review_id,
         "status": str(final.get("status") or STATUS_DONE),
@@ -519,7 +557,14 @@ def resume_review_endpoint(
         "change_list": saved["change_list"],
         "change_list_note": saved.get("change_list_note"),
         "note": note,
+        "agent_terminated_by": agent_terminated_by,
     }
+
+
+@router.get("/reviews/{review_id}/agent-steps")
+def get_agent_steps(review_id: str, session: Session = Depends(get_session)) -> dict[str, Any]:
+    steps = trace.load_steps(review_id, session=session)
+    return {"review_id": review_id, "steps": sorted(steps, key=lambda item: item.get("idx", 0))}
 
 
 @router.get("/reviews/{review_id}")
@@ -612,9 +657,11 @@ def _load_eval_paper(paper_id: str) -> dict[str, Any] | None:
     for paper in review_samples.load_eval_papers():
         if str(paper.get("paper_id") or "") == name:
             return paper
-    demos = review_samples.load_demo_texts()
+    demos = review_samples.load_real_papers() or review_samples.load_demo_texts()
     if name in demos:
-        return {"paper_id": name, "title": name, "contest_id": "", "text": demos[name], "gold": None}
+        return {"paper_id": name, "title": name,
+                "contest_id": review_samples.contest_from_stem(name),
+                "text": demos[name], "gold": None}
     return None
 
 

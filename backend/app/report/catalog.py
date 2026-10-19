@@ -21,15 +21,20 @@ def _title(text: str, fallback: str) -> str:
 
 
 def list_samples(is_demo: bool | None = None) -> list[dict[str, Any]]:
-    """列出样例。`is_demo=None` 时三篇演示与全部评测论文都返回。"""
+    """列出样例。`is_demo=None` 时全部返回。
+
+    优先列真实参赛论文（样例目录下除演示稿之外的 `.md`）；一篇都没有时回退到
+    三篇演示稿，保证空目录下接口仍可用。
+    """
     entries: list[dict[str, Any]] = []
-    for stem, text in review_samples.load_demo_texts().items():
+    sources = review_samples.load_real_papers() or review_samples.load_demo_texts()
+    for stem, text in sources.items():
         entries.append(
             {
                 "sample_id": stem,
                 "title": _title(text, stem),
                 "is_demo": True,
-                "contest_id": "",
+                "contest_id": review_samples.contest_from_stem(stem),
                 "has_gold": False,
             }
         )

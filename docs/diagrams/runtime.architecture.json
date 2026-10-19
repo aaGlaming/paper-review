@@ -3,23 +3,23 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "paper-review 运行时架构",
-    "subtitle": "模型调用在信任边界外；节点标注实现该部分的版本",
+    "subtitle": "按 v1.9.3 代码核对：13 条路由、四节点线性状态图、唯一 HTTP 出口",
     "locale": "zh-CN",
     "output": "docs/diagrams/runtime.architecture.html",
     "quality_profile": "showcase"
   },
   "components": [
-    { "id": "fe", "type": "frontend", "label": "前端", "sublabel": "论文解析等五个页面", "tag": "v0.9.0", "pos": [40, 60], "size": [200, 76] },
-    { "id": "api", "type": "backend", "label": "后端 API", "sublabel": "FastAPI · /api/*", "tag": "v0.3.0", "pos": [330, 60], "size": [200, 76] },
-    { "id": "graph", "type": "backend", "label": "评审编排", "sublabel": "LangGraph 状态图", "tag": "v0.2.0", "pos": [620, 60], "size": [200, 76] },
-    { "id": "mysql", "type": "database", "label": "MySQL", "sublabel": "父块全文 · 评审记录", "tag": "v0.3.0", "pos": [330, 210], "size": [200, 76] },
-    { "id": "retrieve", "type": "backend", "label": "检索", "sublabel": "过滤子块 → 取父块", "tag": "v0.4.0", "pos": [620, 210], "size": [200, 76] },
-    { "id": "chroma", "type": "database", "label": "Chroma", "sublabel": "子块向量", "tag": "v0.4.0", "pos": [910, 210], "size": [200, 76] },
-    { "id": "report", "type": "backend", "label": "报告", "sublabel": "修改清单 · 评测", "tag": "v0.8.0", "pos": [40, 360], "size": [200, 76] },
-    { "id": "review", "type": "backend", "label": "规则审查", "sublabel": "冲突 · 引用 · 越界", "tag": "v0.7.0", "pos": [330, 360], "size": [200, 76] },
-    { "id": "score", "type": "backend", "label": "评分与选档", "sublabel": "五维量规 · 档位", "tag": "v0.6.0", "pos": [620, 360], "size": [200, 76] },
-    { "id": "llm", "type": "backend", "label": "模型客户端", "sublabel": "唯一 HTTP 出口", "tag": "v0.1.0 已实现", "pos": [910, 360], "size": [200, 76] },
-    { "id": "llmapi", "type": "external", "label": "模型兼容接口", "sublabel": "HTTPS · 对话与嵌入", "tag": "信任边界外", "pos": [910, 540], "size": [200, 76] }
+    { "id": "fe", "type": "frontend", "label": "前端", "sublabel": "五个页面 · Vite 代理 /api", "tag": "v0.9.0", "pos": [40, 60], "size": [200, 76] },
+    { "id": "api", "type": "backend", "label": "后端 API", "sublabel": "FastAPI · 13 条路由", "tag": "v1.9.3", "pos": [330, 60], "size": [200, 76] },
+    { "id": "graph", "type": "backend", "label": "评审编排", "sublabel": "LangGraph · 四节点线性", "tag": "v0.2.0 → v0.6.0", "pos": [620, 60], "size": [200, 76] },
+    { "id": "mysql", "type": "database", "label": "MySQL", "sublabel": "父块全文 · 评审·会话·量规", "tag": "v0.3.0", "pos": [330, 210], "size": [200, 76] },
+    { "id": "retrieve", "type": "backend", "label": "检索", "sublabel": "三路过滤 → 合并 → 一次重排", "tag": "v0.4.0 → v1.9.2", "pos": [620, 210], "size": [200, 76] },
+    { "id": "chroma", "type": "database", "label": "Chroma", "sublabel": "子块向量 · 五类 doc_type", "tag": "v0.4.0", "pos": [910, 210], "size": [200, 76] },
+    { "id": "report", "type": "backend", "label": "报告与只读", "sublabel": "量规 · 评测 · 清单 · 存档", "tag": "v0.8.0 → v1.9.3", "pos": [40, 360], "size": [200, 76] },
+    { "id": "review", "type": "backend", "label": "规则审查", "sublabel": "数字 · 引用 · 越界 · 缺情形", "tag": "v0.7.0", "pos": [330, 360], "size": [200, 76] },
+    { "id": "score", "type": "backend", "label": "评分与选档", "sublabel": "五维选档 · 子串校验 · 降档守卫", "tag": "v0.6.0", "pos": [620, 360], "size": [200, 76] },
+    { "id": "llm", "type": "backend", "label": "模型客户端", "sublabel": "唯一 HTTP 出口", "tag": "v0.1.0 → v1.9.2", "pos": [910, 360], "size": [200, 76] },
+    { "id": "llmapi", "type": "external", "label": "模型兼容接口", "sublabel": "chat / embeddings / rerank", "tag": "信任边界外", "pos": [910, 540], "size": [200, 76] }
   ],
   "boundaries": [
     {
@@ -30,17 +30,17 @@
   ],
   "connections": [
     { "id": "fe-to-api", "from": "fe", "to": "api", "label": "REST", "variant": "emphasis" },
-    { "id": "api-to-graph", "from": "api", "to": "graph", "label": "创建评审" },
-    { "id": "api-to-mysql", "from": "api", "to": "mysql", "label": "评审记录" },
-    { "id": "graph-to-retrieve", "from": "graph", "to": "retrieve", "label": "逐维检索" },
-    { "id": "retrieve-to-mysql", "from": "retrieve", "to": "mysql", "label": "父块" },
-    { "id": "retrieve-to-chroma", "from": "retrieve", "to": "chroma", "label": "子块向量" },
-    { "id": "retrieve-to-score", "from": "retrieve", "to": "score", "label": "检索结果" },
-    { "id": "score-to-review", "from": "score", "to": "review", "label": "档位" },
-    { "id": "review-to-report", "from": "review", "to": "report", "label": "审查结果" },
-    { "id": "report-to-api", "from": "report", "to": "api", "label": "报告" },
+    { "id": "api-to-graph", "from": "api", "to": "graph", "label": "创建 / 继续评审" },
+    { "id": "api-to-mysql", "from": "api", "to": "mysql", "label": "会话与存档" },
+    { "id": "graph-to-retrieve", "from": "graph", "to": "retrieve", "label": "逐维检索（5 次）" },
+    { "id": "retrieve-to-mysql", "from": "retrieve", "to": "mysql", "label": "父块全文" },
+    { "id": "retrieve-to-chroma", "from": "retrieve", "to": "chroma", "label": "子块过滤召回" },
+    { "id": "retrieve-to-score", "from": "retrieve", "to": "score", "label": "每维至多 4 段" },
+    { "id": "score-to-review", "from": "score", "to": "review", "label": "档位与失败项" },
+    { "id": "review-to-report", "from": "review", "to": "report", "label": "findings" },
+    { "id": "report-to-api", "from": "report", "to": "api", "label": "清单与存档" },
     { "id": "score-to-llm", "from": "score", "to": "llm", "label": "chat()" },
-    { "id": "retrieve-to-llm", "from": "retrieve", "to": "llm", "label": "embed()" },
+    { "id": "retrieve-to-llm", "from": "retrieve", "to": "llm", "label": "embed() · rerank()" },
     { "id": "llm-to-llmapi", "from": "llm", "to": "llmapi", "label": "HTTPS", "variant": "security" }
   ],
   "cards": [
@@ -49,27 +49,26 @@
       "title": "信任边界与密钥",
       "items": [
         "本地部署的十个组件都在界内，只有模型兼容接口在界外",
-        "全项目只有模型客户端发 HTTP，只使用 httpx",
+        "全项目只有模型客户端发 HTTP，只使用 httpx；三个端点分别是对话、嵌入、重排",
         "密钥只从环境变量读，不打印、不回显、不落盘"
       ]
     },
     {
       "dot": "cyan",
-      "title": "接口约定",
+      "title": "两条取数路径",
       "items": [
-        "对话走 /chat/completions，只读 choices[0].message.content",
-        "嵌入走 /embeddings，只读 data[].embedding",
-        "不读厂商私有字段，不用 Assistants 与 Responses"
+        "四个模型键齐全才走真实选档：source=model，各维档位由模型给出",
+        "缺任一键则逐字走确定性回退：source=deterministic，是脚本自检不是模型准确率",
+        "嵌入是可选装配：配了 EMBEDDING_* 才建向量索引，否则按 review_id + section_type 从 MySQL 取父块"
       ]
     },
     {
       "dot": "emerald",
       "title": "存储与输出",
       "items": [
-        "父块全文只在 MySQL，Chroma 只存子块等五类 doc_type",
-        "检查点按 review_id 保存；规则审查不调用模型",
-        "引用必须是切片连续子串，对不上写「引用失败」；证据不足不参与加权",
-        "输出限于档位、论文原句与修改清单"
+        "父块全文只在 MySQL，子块片段与向量只进 Chroma；检查点用 InMemorySaver，键是 review_id",
+        "引用必须是父块连续子串，对不上记「引用失败」；证据不足不换算分数，两者都不进加权",
+        "输出限于档位、论文原句与修改清单，不出现奖项、名次、获奖概率"
       ]
     }
   ]

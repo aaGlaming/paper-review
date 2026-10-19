@@ -3,7 +3,7 @@
   "diagram_type": "workflow",
   "meta": {
     "title": "预审主路径",
-    "subtitle": "一条主路径；模型调用在信任边界外",
+    "subtitle": "七步，与 v1.9.3 代码一致；模型调用在信任边界外",
     "locale": "zh-CN",
     "output": "docs/diagrams/review.workflow.html",
     "quality_profile": "showcase"
@@ -14,27 +14,25 @@
     { "id": "outside", "label": "信任边界外 · 外部依赖", "variant": "exception" },
     { "id": "output", "label": "校验与产物" }
   ],
-  "mainPath": ["upload", "confirm", "align", "retrieve", "select", "check", "verify", "changes"],
+  "mainPath": ["upload", "parse", "confirm", "retrieve", "select", "check", "changes"],
   "nodes": [
-    { "id": "upload", "lane": "intake", "col": 0, "type": "frontend", "label": "上传论文", "sublabel": "Markdown 文本入参" },
-    { "id": "confirm", "lane": "intake", "col": 1, "type": "security", "label": "确认章节", "sublabel": "人工确认章节树", "tag": "未确认不评分" },
-    { "id": "align", "lane": "intake", "col": 2, "type": "backend", "label": "对齐赛题", "sublabel": "取该题约束与量规" },
-    { "id": "retrieve", "lane": "evidence", "col": 2, "type": "backend", "label": "逐维检索", "sublabel": "过滤子块 → 取父块" },
-    { "id": "select", "lane": "evidence", "col": 3, "type": "backend", "label": "选档", "sublabel": "五维档位与原句" },
-    { "id": "check", "lane": "evidence", "col": 4, "type": "backend", "label": "规则审查", "sublabel": "数字 · 引用 · 越界" },
-    { "id": "model", "lane": "outside", "col": 3, "type": "external", "label": "模型兼容接口", "sublabel": "HTTPS · 对话与嵌入", "tag": "外部依赖" },
-    { "id": "verify", "lane": "output", "col": 4, "type": "backend", "label": "子串校验", "sublabel": "原句须是切片子串" },
-    { "id": "changes", "lane": "output", "col": 5, "type": "backend", "label": "修改清单", "sublabel": "每条指回上游结果" }
+    { "id": "upload", "lane": "intake", "col": 0, "type": "frontend", "label": "输入论文", "sublabel": "paper_text 或 sample_id", "tag": "二选一，都给则 400" },
+    { "id": "parse", "lane": "intake", "col": 1, "type": "backend", "label": "解析章节", "sublabel": "ATX 标题切成六类加未分类" },
+    { "id": "confirm", "lane": "intake", "col": 2, "type": "security", "label": "确认章节", "sublabel": "人工改章节类型", "tag": "未确认不评分" },
+    { "id": "retrieve", "lane": "evidence", "col": 2, "type": "backend", "label": "逐维检索", "sublabel": "三路各召回 6 条，合并去重", "tag": "确认后建索引" },
+    { "id": "select", "lane": "evidence", "col": 3, "type": "backend", "label": "选档与子串校验", "sublabel": "原句须是父块连续子串", "tag": "解析失败重试 1 次" },
+    { "id": "model", "lane": "outside", "col": 3, "type": "external", "label": "模型兼容接口", "sublabel": "chat / embeddings / rerank", "tag": "外部依赖" },
+    { "id": "check", "lane": "output", "col": 4, "type": "backend", "label": "规则审查", "sublabel": "数字 · 引用 · 越界 · 缺情形", "tag": "纯确定性，不调模型" },
+    { "id": "changes", "lane": "output", "col": 5, "type": "backend", "label": "修改清单", "sublabel": "三段顺序固定", "tag": "每条指回上游记录" }
   ],
   "edges": [
-    { "id": "upload-confirm", "from": "upload", "to": "confirm", "role": "main" },
-    { "id": "confirm-align", "from": "confirm", "to": "align", "role": "main" },
-    { "id": "align-retrieve", "from": "align", "to": "retrieve", "role": "main" },
+    { "id": "upload-parse", "from": "upload", "to": "parse", "role": "main" },
+    { "id": "parse-confirm", "from": "parse", "to": "confirm", "label": "章节树", "role": "main" },
+    { "id": "confirm-retrieve", "from": "confirm", "to": "retrieve", "label": "人工确认", "role": "main" },
     { "id": "retrieve-select", "from": "retrieve", "to": "select", "label": "候选父块", "role": "main" },
-    { "id": "select-check", "from": "select", "to": "check", "label": "档位", "role": "main" },
-    { "id": "check-verify", "from": "check", "to": "verify", "role": "main" },
-    { "id": "verify-changes", "from": "verify", "to": "changes", "label": "通过校验", "role": "main" },
-    { "id": "retrieve-model", "from": "retrieve", "to": "model", "label": "embed()" },
+    { "id": "select-check", "from": "select", "to": "check", "label": "档位与校验结果", "role": "main" },
+    { "id": "check-changes", "from": "check", "to": "changes", "label": "审查结果", "role": "main" },
+    { "id": "retrieve-model", "from": "retrieve", "to": "model", "label": "embed() / rerank()" },
     { "id": "select-model", "from": "select", "to": "model", "label": "chat()" }
   ],
   "cards": [
@@ -42,27 +40,27 @@
       "dot": "cyan",
       "title": "主路径只有一条",
       "items": [
-        "上传 → 确认章节 → 对齐赛题 → 逐维检索 → 选档 → 规则审查 → 子串校验 → 修改清单",
-        "未确认章节树不进入评分：图停在确认节点",
-        "检查点按 review_id 保存，重启后从暂停点继续"
+        "输入 → 解析章节 → 确认章节 → 逐维检索 → 选档与子串校验 → 规则审查 → 修改清单",
+        "未确认章节树不进入评分：图停在 confirm 节点，评分节点调用次数为 0",
+        "检查点用 InMemorySaver，thread_id 取 review_id；进程重启时按快照回填，仍停在确认节点"
       ]
     },
     {
       "dot": "rose",
       "title": "信任边界与外部依赖",
       "items": [
-        "全项目只有模型客户端发 HTTP，只使用 httpx",
-        "模型兼容接口在信任边界外：检索走 embed()，选档走 chat()",
-        "密钥只从环境变量读，不打印、不回显、不落盘"
+        "全项目只有模型客户端发 HTTP，只使用 httpx；对话、嵌入、重排各一个端点",
+        "检索走 embed() 与 rerank()，选档走 chat()；重排未配 RERANK_* 时跳过，不算失败",
+        "四个模型键齐全才走模型路径；缺任一键逐字走确定性回退，档位不由模型给出"
       ]
     },
     {
-      "dot": "emerald",
+      "dot": "amber",
       "title": "校验与产物",
       "items": [
-        "引用必须是切片的连续子串，对不上写「引用失败」",
-        "证据不足不换算成分数，不参与加权",
-        "输出限于档位、论文原句与修改清单"
+        "原句必须是父块连续子串，对不上记「引用失败」；证据不足不换算分数，两者都不进加权",
+        "mention 约束的证据里没出现过时，该维不得为「充分」，由代码降一档",
+        "修改清单只转写上游结果，顺序固定：题目约束与数字冲突 → 证据不足 → 表述"
       ]
     }
   ]

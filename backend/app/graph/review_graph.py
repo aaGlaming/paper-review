@@ -76,7 +76,9 @@ _HEADING_RE = re.compile(r"^[ \t]{0,3}(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$", re.MU
 _SECTION_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("假设", ("假设",)),
     ("求解", ("求解",)),
-    ("检验", ("检验",)),
+    # 竞赛论文里「检验」常写成「验证」（模型验证 / 误差验证 / 实验验证），
+    # 不认这个词会让 constraint_check 与 presentation 取不到章节。
+    ("检验", ("检验", "验证")),
     ("结果", ("结果",)),
     ("模型", ("模型", "建模")),
 )
@@ -268,8 +270,15 @@ def _normalize_outcome(outcome: Any) -> dict[str, Any]:
 def _retrieve_node_factory(
     retriever: Callable[[RetrieveRequest], Any] | None,
     dimensions: Sequence[str],
+    agent_runner: Callable[[ReviewState], dict[str, Any]] | None = None,
 ) -> Callable[[ReviewState], dict[str, Any]]:
     def retrieve_node(state: ReviewState) -> dict[str, Any]:
+        if agent_runner is not None:
+            return {
+                "retrievals": {},
+                "status": STATUS_SCORING,
+                "retrieve_node_calls": state.get("retrieve_node_calls", 0) + 1,
+            }
         results: dict[str, Any] = {}
         section_types = tuple(str(item) for item in (state.get("retrieve_section_types") or ()))
         for dimension_code in dimensions:
@@ -416,9 +425,20 @@ def _make_score_node(
     chat: Callable[..., str] | None,
     rubric_dimensions: Sequence[Mapping[str, Any]],
     constraints: Sequence[Mapping[str, Any]],
+    agent_runner: Callable[[ReviewState], dict[str, Any]] | None = None,
 ) -> Callable[[ReviewState], dict[str, Any]]:
     def score_node(state: ReviewState) -> dict[str, Any]:
         calls = state.get("score_node_calls", 0) + 1
+        if agent_runner is not None:
+            outcome = agent_runner(state)
+            results = dict(outcome.get("dimension_results") or {})
+            return {
+                "dimension_results": results,
+                "score": weighted_sum(rubric_dimensions, list(results.values())),
+                "score_node_calls": calls,
+                "status": STATUS_DONE,
+                "terminated_by": outcome.get("terminated_by", "all_submitted"),
+            }
         if chat is None:
             # 没有注入模型：沿用占位节点，不选档、不报错。
             return _score_node(state)
@@ -453,6 +473,7 @@ def build_review_graph(
     chat: Callable[..., str] | None = None,
     rubric_dimensions: Sequence[Mapping[str, Any]] | None = None,
     constraints: Sequence[Mapping[str, Any]] | None = None,
+    agent_runner: Callable[[ReviewState], dict[str, Any]] | None = None,
 ) -> "CompiledStateGraph":
     """编译预审状态图。不传检查点时默认用 InMemorySaver，检查点键为 review_id。
 
@@ -476,8 +497,8 @@ def build_review_graph(
     builder = StateGraph(ReviewState)
     builder.add_node("parse", _parse_node)
     builder.add_node("confirm", _confirm_node)
-    builder.add_node("retrieve", _retrieve_node_factory(retriever, resolved_dimensions))
-    builder.add_node("score", _make_score_node(chat, resolved_rubric, resolved_constraints))
+    builder.add_node("retrieve", _retrieve_node_factory(retriever, resolved_dimensions, agent_runner))
+    builder.add_node("score", _make_score_node(chat, resolved_rubric, resolved_constraints, agent_runner))
     builder.add_edge(START, "parse")
     builder.add_edge("parse", "confirm")
     builder.add_edge("confirm", "retrieve")

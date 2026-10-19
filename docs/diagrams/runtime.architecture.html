@@ -5152,7 +5152,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>paper-review 运行时架构</h1>
       </div>
-      <p class="subtitle">模型调用在信任边界外；节点标注实现该部分的版本</p>
+      <p class="subtitle">按 v1.9.3 代码核对：13 条路由、四节点线性状态图、唯一 HTTP 出口</p>
     </div>
 
 
@@ -5162,7 +5162,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
          data-preset-badge-editorial-plate="ARCHIFY / 图版 04">
       <svg viewBox="0 0 1180 684" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
         <title id="archify-diagram-title">paper-review 运行时架构</title>
-        <desc id="archify-diagram-description">模型调用在信任边界外；节点标注实现该部分的版本</desc>
+        <desc id="archify-diagram-description">按 v1.9.3 代码核对：13 条路由、四节点线性状态图、唯一 HTTP 出口</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5216,39 +5216,39 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
         <g data-graph-role="automatic-crossover" style="--step:1">
           <path data-graph-role="automatic-crossover-underlay" d="M 530 98 L 620 98" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="api" data-edge-to="graph" data-edge-label="创建评审" data-edge-key="1" data-edge-id="api-to-graph" data-composition-points="530,98;620,98" data-composition-crossover="halo" data-composition-independent="true" d="M 530 98 L 620 98" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="api" data-edge-to="graph" data-edge-label="创建 / 继续评审" data-edge-key="1" data-edge-id="api-to-graph" data-composition-points="530,98;620,98" data-composition-crossover="halo" data-composition-independent="true" d="M 530 98 L 620 98" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:2">
           <path data-graph-role="automatic-crossover-underlay" d="M 437 136 L 437 210" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="api" data-edge-to="mysql" data-edge-label="评审记录" data-edge-key="2" data-edge-id="api-to-mysql" data-composition-points="437,136;437,210" data-composition-crossover="halo" data-composition-independent="true" d="M 437 136 L 437 210" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="api" data-edge-to="mysql" data-edge-label="会话与存档" data-edge-key="2" data-edge-id="api-to-mysql" data-composition-points="437,136;437,210" data-composition-crossover="halo" data-composition-independent="true" d="M 437 136 L 437 210" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:3">
           <path data-graph-role="automatic-crossover-underlay" d="M 720 136 L 720 210" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="graph" data-edge-to="retrieve" data-edge-label="逐维检索" data-edge-key="3" data-edge-id="graph-to-retrieve" data-composition-points="720,136;720,210" data-composition-crossover="halo" data-composition-independent="true" d="M 720 136 L 720 210" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="graph" data-edge-to="retrieve" data-edge-label="逐维检索（5 次）" data-edge-key="3" data-edge-id="graph-to-retrieve" data-composition-points="720,136;720,210" data-composition-crossover="halo" data-composition-independent="true" d="M 720 136 L 720 210" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:4">
           <path data-graph-role="automatic-crossover-underlay" d="M 620 248 L 530 248" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="retrieve" data-edge-to="mysql" data-edge-label="父块" data-edge-key="4" data-edge-id="retrieve-to-mysql" data-composition-points="620,248;530,248" data-composition-crossover="halo" data-composition-independent="true" d="M 620 248 L 530 248" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="retrieve" data-edge-to="mysql" data-edge-label="父块全文" data-edge-key="4" data-edge-id="retrieve-to-mysql" data-composition-points="620,248;530,248" data-composition-crossover="halo" data-composition-independent="true" d="M 620 248 L 530 248" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:5">
           <path data-graph-role="automatic-crossover-underlay" d="M 820 241 L 910 241" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="retrieve" data-edge-to="chroma" data-edge-label="子块向量" data-edge-key="5" data-edge-id="retrieve-to-chroma" data-composition-points="820,241;910,241" data-composition-crossover="halo" data-composition-independent="true" d="M 820 241 L 910 241" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="retrieve" data-edge-to="chroma" data-edge-label="子块过滤召回" data-edge-key="5" data-edge-id="retrieve-to-chroma" data-composition-points="820,241;910,241" data-composition-crossover="halo" data-composition-independent="true" d="M 820 241 L 910 241" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:6">
           <path data-graph-role="automatic-crossover-underlay" d="M 720 286 L 720 360" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="retrieve" data-edge-to="score" data-edge-label="检索结果" data-edge-key="6" data-edge-id="retrieve-to-score" data-composition-points="720,286;720,360" data-composition-crossover="halo" data-composition-independent="true" d="M 720 286 L 720 360" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="retrieve" data-edge-to="score" data-edge-label="每维至多 4 段" data-edge-key="6" data-edge-id="retrieve-to-score" data-composition-points="720,286;720,360" data-composition-crossover="halo" data-composition-independent="true" d="M 720 286 L 720 360" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:7">
           <path data-graph-role="automatic-crossover-underlay" d="M 620 398 L 530 398" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="score" data-edge-to="review" data-edge-label="档位" data-edge-key="7" data-edge-id="score-to-review" data-composition-points="620,398;530,398" data-composition-crossover="halo" data-composition-independent="true" d="M 620 398 L 530 398" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="score" data-edge-to="review" data-edge-label="档位与失败项" data-edge-key="7" data-edge-id="score-to-review" data-composition-points="620,398;530,398" data-composition-crossover="halo" data-composition-independent="true" d="M 620 398 L 530 398" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:8">
           <path data-graph-role="automatic-crossover-underlay" d="M 330 398 L 240 398" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="review" data-edge-to="report" data-edge-label="审查结果" data-edge-key="8" data-edge-id="review-to-report" data-composition-points="330,398;240,398" data-composition-crossover="halo" data-composition-independent="true" d="M 330 398 L 240 398" class="a-default" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="review" data-edge-to="report" data-edge-label="findings" data-edge-key="8" data-edge-id="review-to-report" data-composition-points="330,398;240,398" data-composition-crossover="halo" data-composition-independent="true" d="M 330 398 L 240 398" class="a-default" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:9">
           <path data-graph-role="automatic-crossover-underlay" d="M 140 360 L 140 168 Q 140 160 148 160 L 415 160 Q 423 160 423 152 L 423 136" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="report" data-edge-to="api" data-edge-label="报告" data-edge-key="9" data-edge-id="report-to-api" data-composition-points="140,360;140,160;423,160;423,136" data-composition-crossover="halo" data-composition-independent="true" d="M 140 360 L 140 168 Q 140 160 148 160 L 415 160 Q 423 160 423 152 L 423 136" class="a-default" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="report" data-edge-to="api" data-edge-label="清单与存档" data-edge-key="9" data-edge-id="report-to-api" data-composition-points="140,360;140,160;423,160;423,136" data-composition-crossover="halo" data-composition-independent="true" d="M 140 360 L 140 168 Q 140 160 148 160 L 415 160 Q 423 160 423 152 L 423 136" class="a-default" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:10">
           <path data-graph-role="automatic-crossover-underlay" d="M 820 405 L 910 405" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
@@ -5256,7 +5256,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
         <g data-graph-role="automatic-crossover" style="--step:11">
           <path data-graph-role="automatic-crossover-underlay" d="M 820 255 L 857 255 Q 865 255 865 263 L 865 383 Q 865 391 873 391 L 910 391" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="retrieve" data-edge-to="llm" data-edge-label="embed()" data-edge-key="11" data-edge-id="retrieve-to-llm" data-composition-points="820,255;865,255;865,391;910,391" data-composition-crossover="halo" data-composition-independent="true" d="M 820 255 L 857 255 Q 865 255 865 263 L 865 383 Q 865 391 873 391 L 910 391" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-edge-from="retrieve" data-edge-to="llm" data-edge-label="embed() · rerank()" data-edge-key="11" data-edge-id="retrieve-to-llm" data-composition-points="820,255;865,255;865,391;910,391" data-composition-crossover="halo" data-composition-independent="true" d="M 820 255 L 857 255 Q 865 255 865 263 L 865 383 Q 865 391 873 391 L 910 391" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:12">
           <path data-graph-role="automatic-crossover-underlay" d="M 1010 436 L 1010 540" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
@@ -5264,8 +5264,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
 
         <!-- Components -->
-        <g id="node-fe" data-node-id="fe" data-node-label="前端" tabindex="0" role="button" aria-label="聚焦前端，论文解析等五个页面, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="论文解析等五个页面" data-node-tag="v0.9.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>前端 · 论文解析等五个页面 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.9.0</title>
+        <g id="node-fe" data-node-id="fe" data-node-label="前端" tabindex="0" role="button" aria-label="聚焦前端，五个页面 · Vite 代理 /api, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="五个页面 · Vite 代理 /api" data-node-tag="v0.9.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>前端 · 五个页面 · Vite 代理 /api · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.9.0</title>
           <rect x="40" y="60" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="40" y="60" width="200" height="76" rx="8" class="c-frontend" data-animate="node" style="--step:0" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(46 66) scale(0.6875)">
@@ -5275,36 +5275,36 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="140" y="96" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">前端</text>
-        <text data-detail="context" x="140" y="112" class="t-muted" font-size="9" text-anchor="middle">论文解析等五个页面</text>
+        <text data-detail="context" x="140" y="112" class="t-muted" font-size="9" text-anchor="middle">五个页面 · Vite 代理 /api</text>
         <text data-detail="fine" x="140" y="128" class="t-frontend" font-size="7" text-anchor="middle">v0.9.0</text>
         </g>
 
-        <g id="node-api" data-node-id="api" data-node-label="后端 API" tabindex="0" role="button" aria-label="聚焦后端 API，FastAPI · /api/*, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="FastAPI · /api/*" data-node-tag="v0.3.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>后端 API · FastAPI · /api/* · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.3.0</title>
+        <g id="node-api" data-node-id="api" data-node-label="后端 API" tabindex="0" role="button" aria-label="聚焦后端 API，FastAPI · 13 条路由, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="FastAPI · 13 条路由" data-node-tag="v1.9.3" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>后端 API · FastAPI · 13 条路由 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v1.9.3</title>
           <rect x="330" y="60" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="330" y="60" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(336 66) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="430" y="96" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">后端 API</text>
-        <text data-detail="context" x="430" y="112" class="t-muted" font-size="9" text-anchor="middle">FastAPI · /api/*</text>
-        <text data-detail="fine" x="430" y="128" class="t-backend" font-size="7" text-anchor="middle">v0.3.0</text>
+        <text data-detail="context" x="430" y="112" class="t-muted" font-size="9" text-anchor="middle">FastAPI · 13 条路由</text>
+        <text data-detail="fine" x="430" y="128" class="t-backend" font-size="7" text-anchor="middle">v1.9.3</text>
         </g>
 
-        <g id="node-graph" data-node-id="graph" data-node-label="评审编排" tabindex="0" role="button" aria-label="聚焦评审编排，LangGraph 状态图, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="LangGraph 状态图" data-node-tag="v0.2.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>评审编排 · LangGraph 状态图 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.2.0</title>
+        <g id="node-graph" data-node-id="graph" data-node-label="评审编排" tabindex="0" role="button" aria-label="聚焦评审编排，LangGraph · 四节点线性, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="LangGraph · 四节点线性" data-node-tag="v0.2.0 → v0.6.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>评审编排 · LangGraph · 四节点线性 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.2.0 → v0.6.0</title>
           <rect x="620" y="60" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="620" y="60" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 66) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="720" y="96" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">评审编排</text>
-        <text data-detail="context" x="720" y="112" class="t-muted" font-size="9" text-anchor="middle">LangGraph 状态图</text>
-        <text data-detail="fine" x="720" y="128" class="t-backend" font-size="7" text-anchor="middle">v0.2.0</text>
+        <text data-detail="context" x="720" y="112" class="t-muted" font-size="9" text-anchor="middle">LangGraph · 四节点线性</text>
+        <text data-detail="fine" x="720" y="128" class="t-backend" font-size="7" text-anchor="middle">v0.2.0 → v0.6.0</text>
         </g>
 
-        <g id="node-mysql" data-node-id="mysql" data-node-label="MySQL" tabindex="0" role="button" aria-label="聚焦MySQL，父块全文 · 评审记录, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="database" data-node-sublabel="父块全文 · 评审记录" data-node-tag="v0.3.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>MySQL · 父块全文 · 评审记录 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.3.0</title>
+        <g id="node-mysql" data-node-id="mysql" data-node-label="MySQL" tabindex="0" role="button" aria-label="聚焦MySQL，父块全文 · 评审·会话·量规, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="database" data-node-sublabel="父块全文 · 评审·会话·量规" data-node-tag="v0.3.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>MySQL · 父块全文 · 评审·会话·量规 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.3.0</title>
           <rect x="330" y="210" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="330" y="210" width="200" height="76" rx="8" class="c-database" data-animate="node" style="--step:3" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(336 216) scale(0.6875)">
@@ -5312,24 +5312,24 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="430" y="246" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">MySQL</text>
-        <text data-detail="context" x="430" y="262" class="t-muted" font-size="9" text-anchor="middle">父块全文 · 评审记录</text>
+        <text data-detail="context" x="430" y="262" class="t-muted" font-size="9" text-anchor="middle">父块全文 · 评审·会话·量规</text>
         <text data-detail="fine" x="430" y="278" class="t-database" font-size="7" text-anchor="middle">v0.3.0</text>
         </g>
 
-        <g id="node-retrieve" data-node-id="retrieve" data-node-label="检索" tabindex="0" role="button" aria-label="聚焦检索，过滤子块 → 取父块, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="过滤子块 → 取父块" data-node-tag="v0.4.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>检索 · 过滤子块 → 取父块 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.4.0</title>
+        <g id="node-retrieve" data-node-id="retrieve" data-node-label="检索" tabindex="0" role="button" aria-label="聚焦检索，三路过滤 → 合并 → 一次重排, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="三路过滤 → 合并 → 一次重排" data-node-tag="v0.4.0 → v1.9.2" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>检索 · 三路过滤 → 合并 → 一次重排 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.4.0 → v1.9.2</title>
           <rect x="620" y="210" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="620" y="210" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 216) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="720" y="246" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">检索</text>
-        <text data-detail="context" x="720" y="262" class="t-muted" font-size="9" text-anchor="middle">过滤子块 → 取父块</text>
-        <text data-detail="fine" x="720" y="278" class="t-backend" font-size="7" text-anchor="middle">v0.4.0</text>
+        <text data-detail="context" x="720" y="262" class="t-muted" font-size="9" text-anchor="middle">三路过滤 → 合并 → 一次重排</text>
+        <text data-detail="fine" x="720" y="278" class="t-backend" font-size="7" text-anchor="middle">v0.4.0 → v1.9.2</text>
         </g>
 
-        <g id="node-chroma" data-node-id="chroma" data-node-label="Chroma" tabindex="0" role="button" aria-label="聚焦Chroma，子块向量, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="database" data-node-sublabel="子块向量" data-node-tag="v0.4.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>Chroma · 子块向量 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.4.0</title>
+        <g id="node-chroma" data-node-id="chroma" data-node-label="Chroma" tabindex="0" role="button" aria-label="聚焦Chroma，子块向量 · 五类 doc_type, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="database" data-node-sublabel="子块向量 · 五类 doc_type" data-node-tag="v0.4.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>Chroma · 子块向量 · 五类 doc_type · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.4.0</title>
           <rect x="910" y="210" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="910" y="210" width="200" height="76" rx="8" class="c-database" data-animate="node" style="--step:6" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(916 216) scale(0.6875)">
@@ -5337,48 +5337,48 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="1010" y="246" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Chroma</text>
-        <text data-detail="context" x="1010" y="262" class="t-muted" font-size="9" text-anchor="middle">子块向量</text>
+        <text data-detail="context" x="1010" y="262" class="t-muted" font-size="9" text-anchor="middle">子块向量 · 五类 doc_type</text>
         <text data-detail="fine" x="1010" y="278" class="t-database" font-size="7" text-anchor="middle">v0.4.0</text>
         </g>
 
-        <g id="node-report" data-node-id="report" data-node-label="报告" tabindex="0" role="button" aria-label="聚焦报告，修改清单 · 评测, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="修改清单 · 评测" data-node-tag="v0.8.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>报告 · 修改清单 · 评测 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.8.0</title>
+        <g id="node-report" data-node-id="report" data-node-label="报告与只读" tabindex="0" role="button" aria-label="聚焦报告与只读，量规 · 评测 · 清单 · 存档, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="量规 · 评测 · 清单 · 存档" data-node-tag="v0.8.0 → v1.9.3" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>报告与只读 · 量规 · 评测 · 清单 · 存档 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.8.0 → v1.9.3</title>
           <rect x="40" y="360" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="40" y="360" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:9" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(46 366) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="140" y="396" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">报告</text>
-        <text data-detail="context" x="140" y="412" class="t-muted" font-size="9" text-anchor="middle">修改清单 · 评测</text>
-        <text data-detail="fine" x="140" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.8.0</text>
+          <text data-node-label="" data-detail-anchor="" x="140" y="396" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">报告与只读</text>
+        <text data-detail="context" x="140" y="412" class="t-muted" font-size="9" text-anchor="middle">量规 · 评测 · 清单 · 存档</text>
+        <text data-detail="fine" x="140" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.8.0 → v1.9.3</text>
         </g>
 
-        <g id="node-review" data-node-id="review" data-node-label="规则审查" tabindex="0" role="button" aria-label="聚焦规则审查，冲突 · 引用 · 越界, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="冲突 · 引用 · 越界" data-node-tag="v0.7.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>规则审查 · 冲突 · 引用 · 越界 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.7.0</title>
+        <g id="node-review" data-node-id="review" data-node-label="规则审查" tabindex="0" role="button" aria-label="聚焦规则审查，数字 · 引用 · 越界 · 缺情形, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="数字 · 引用 · 越界 · 缺情形" data-node-tag="v0.7.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>规则审查 · 数字 · 引用 · 越界 · 缺情形 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.7.0</title>
           <rect x="330" y="360" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="330" y="360" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:8" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(336 366) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="430" y="396" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">规则审查</text>
-        <text data-detail="context" x="430" y="412" class="t-muted" font-size="9" text-anchor="middle">冲突 · 引用 · 越界</text>
+        <text data-detail="context" x="430" y="412" class="t-muted" font-size="9" text-anchor="middle">数字 · 引用 · 越界 · 缺情形</text>
         <text data-detail="fine" x="430" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.7.0</text>
         </g>
 
-        <g id="node-score" data-node-id="score" data-node-label="评分与选档" tabindex="0" role="button" aria-label="聚焦评分与选档，五维量规 · 档位, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="五维量规 · 档位" data-node-tag="v0.6.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>评分与选档 · 五维量规 · 档位 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.6.0</title>
+        <g id="node-score" data-node-id="score" data-node-label="评分与选档" tabindex="0" role="button" aria-label="聚焦评分与选档，五维选档 · 子串校验 · 降档守卫, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="五维选档 · 子串校验 · 降档守卫" data-node-tag="v0.6.0" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>评分与选档 · 五维选档 · 子串校验 · 降档守卫 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.6.0</title>
           <rect x="620" y="360" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="620" y="360" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:7" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 366) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="720" y="396" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">评分与选档</text>
-        <text data-detail="context" x="720" y="412" class="t-muted" font-size="9" text-anchor="middle">五维量规 · 档位</text>
+        <text data-detail="context" x="720" y="412" class="t-muted" font-size="9" text-anchor="middle">五维选档 · 子串校验 · 降档守卫</text>
         <text data-detail="fine" x="720" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.6.0</text>
         </g>
 
-        <g id="node-llm" data-node-id="llm" data-node-label="模型客户端" tabindex="0" role="button" aria-label="聚焦模型客户端，唯一 HTTP 出口, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="唯一 HTTP 出口" data-node-tag="v0.1.0 已实现" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
-          <title>模型客户端 · 唯一 HTTP 出口 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.1.0 已实现</title>
+        <g id="node-llm" data-node-id="llm" data-node-label="模型客户端" tabindex="0" role="button" aria-label="聚焦模型客户端，唯一 HTTP 出口, 信任边界：本地部署（frontend / backend / mysql / chroma）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="唯一 HTTP 出口" data-node-tag="v0.1.0 → v1.9.2" data-node-context="信任边界：本地部署（frontend / backend / mysql / chroma）">
+          <title>模型客户端 · 唯一 HTTP 出口 · 信任边界：本地部署（frontend / backend / mysql / chroma） · v0.1.0 → v1.9.2</title>
           <rect x="910" y="360" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="910" y="360" width="200" height="76" rx="8" class="c-backend" data-animate="node" style="--step:11" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(916 366) scale(0.6875)">
@@ -5386,11 +5386,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           </g>
           <text data-node-label="" data-detail-anchor="" x="1010" y="396" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">模型客户端</text>
         <text data-detail="context" x="1010" y="412" class="t-muted" font-size="9" text-anchor="middle">唯一 HTTP 出口</text>
-        <text data-detail="fine" x="1010" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.1.0 已实现</text>
+        <text data-detail="fine" x="1010" y="428" class="t-backend" font-size="7" text-anchor="middle">v0.1.0 → v1.9.2</text>
         </g>
 
-        <g id="node-llmapi" data-node-id="llmapi" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，HTTPS · 对话与嵌入, 架构组件" aria-pressed="false" data-node-kind="external" data-node-sublabel="HTTPS · 对话与嵌入" data-node-tag="信任边界外" data-node-context="架构组件">
-          <title>模型兼容接口 · HTTPS · 对话与嵌入 · 架构组件 · 信任边界外</title>
+        <g id="node-llmapi" data-node-id="llmapi" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，chat / embeddings / rerank, 架构组件" aria-pressed="false" data-node-kind="external" data-node-sublabel="chat / embeddings / rerank" data-node-tag="信任边界外" data-node-context="架构组件">
+          <title>模型兼容接口 · chat / embeddings / rerank · 架构组件 · 信任边界外</title>
           <rect x="910" y="540" width="200" height="76" rx="8" class="c-mask"/>
           <rect x="910" y="540" width="200" height="76" rx="8" class="c-external" data-animate="node" style="--step:12" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(916 546) scale(0.6875)">
@@ -5398,7 +5398,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="1010" y="576" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">模型兼容接口</text>
-        <text data-detail="context" x="1010" y="592" class="t-muted" font-size="9" text-anchor="middle">HTTPS · 对话与嵌入</text>
+        <text data-detail="context" x="1010" y="592" class="t-muted" font-size="9" text-anchor="middle">chat / embeddings / rerank</text>
         <text data-detail="fine" x="1010" y="608" class="t-external" font-size="7" text-anchor="middle">信任边界外</text>
         </g>
 
@@ -5407,49 +5407,49 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="270" y="78" width="30" height="14" rx="3" class="c-mask"/>
           <text x="285" y="88" class="t-edge-emphasis" font-size="8" text-anchor="middle">REST</text>
         </g>
-        <g data-detail="context" data-edge-from="api" data-edge-to="graph" data-edge-label="创建评审" data-edge-key="1" data-edge-id="api-to-graph">
-          <rect x="550.8" y="78" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="575" y="88" class="t-edge-default" font-size="8" text-anchor="middle">创建评审</text>
+        <g data-detail="context" data-edge-from="api" data-edge-to="graph" data-edge-label="创建 / 继续评审" data-edge-key="1" data-edge-id="api-to-graph">
+          <rect x="534" y="78" width="82" height="14" rx="3" class="c-mask"/>
+          <text x="575" y="88" class="t-edge-default" font-size="8" text-anchor="middle">创建 / 继续评审</text>
         </g>
-        <g data-detail="context" data-edge-from="api" data-edge-to="mysql" data-edge-label="评审记录" data-edge-key="2" data-edge-id="api-to-mysql">
-          <rect x="382.6" y="166" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="406.8" y="176" class="t-edge-default" font-size="8" text-anchor="middle">评审记录</text>
+        <g data-detail="context" data-edge-from="api" data-edge-to="mysql" data-edge-label="会话与存档" data-edge-key="2" data-edge-id="api-to-mysql">
+          <rect x="373" y="166" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="402" y="176" class="t-edge-default" font-size="8" text-anchor="middle">会话与存档</text>
         </g>
-        <g data-detail="context" data-edge-from="graph" data-edge-to="retrieve" data-edge-label="逐维检索" data-edge-key="3" data-edge-id="graph-to-retrieve">
-          <rect x="665.5999999999999" y="166" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="689.8" y="176" class="t-edge-default" font-size="8" text-anchor="middle">逐维检索</text>
+        <g data-detail="context" data-edge-from="graph" data-edge-to="retrieve" data-edge-label="逐维检索（5 次）" data-edge-key="3" data-edge-id="graph-to-retrieve">
+          <rect x="627.2" y="166" width="86.8" height="14" rx="3" class="c-mask"/>
+          <text x="670.6" y="176" class="t-edge-default" font-size="8" text-anchor="middle">逐维检索（5 次）</text>
         </g>
-        <g data-detail="context" data-edge-from="retrieve" data-edge-to="mysql" data-edge-label="父块" data-edge-key="4" data-edge-id="retrieve-to-mysql">
-          <rect x="560" y="228" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="575" y="238" class="t-edge-default" font-size="8" text-anchor="middle">父块</text>
+        <g data-detail="context" data-edge-from="retrieve" data-edge-to="mysql" data-edge-label="父块全文" data-edge-key="4" data-edge-id="retrieve-to-mysql">
+          <rect x="550.8" y="228" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="575" y="238" class="t-edge-default" font-size="8" text-anchor="middle">父块全文</text>
         </g>
-        <g data-detail="context" data-edge-from="retrieve" data-edge-to="chroma" data-edge-label="子块向量" data-edge-key="5" data-edge-id="retrieve-to-chroma">
-          <rect x="840.8" y="221" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="865" y="231" class="t-edge-default" font-size="8" text-anchor="middle">子块向量</text>
+        <g data-detail="context" data-edge-from="retrieve" data-edge-to="chroma" data-edge-label="子块过滤召回" data-edge-key="5" data-edge-id="retrieve-to-chroma">
+          <rect x="831.2" y="221" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="865" y="231" class="t-edge-default" font-size="8" text-anchor="middle">子块过滤召回</text>
         </g>
-        <g data-detail="context" data-edge-from="retrieve" data-edge-to="score" data-edge-label="检索结果" data-edge-key="6" data-edge-id="retrieve-to-score">
-          <rect x="665.5999999999999" y="316" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="689.8" y="326" class="t-edge-default" font-size="8" text-anchor="middle">检索结果</text>
+        <g data-detail="context" data-edge-from="retrieve" data-edge-to="score" data-edge-label="每维至多 4 段" data-edge-key="6" data-edge-id="retrieve-to-score">
+          <rect x="641.5999999999999" y="316" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="677.8" y="326" class="t-edge-default" font-size="8" text-anchor="middle">每维至多 4 段</text>
         </g>
-        <g data-detail="context" data-edge-from="score" data-edge-to="review" data-edge-label="档位" data-edge-key="7" data-edge-id="score-to-review">
-          <rect x="560" y="378" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="575" y="388" class="t-edge-default" font-size="8" text-anchor="middle">档位</text>
+        <g data-detail="context" data-edge-from="score" data-edge-to="review" data-edge-label="档位与失败项" data-edge-key="7" data-edge-id="score-to-review">
+          <rect x="541.2" y="378" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="575" y="388" class="t-edge-default" font-size="8" text-anchor="middle">档位与失败项</text>
         </g>
-        <g data-detail="context" data-edge-from="review" data-edge-to="report" data-edge-label="审查结果" data-edge-key="8" data-edge-id="review-to-report">
+        <g data-detail="context" data-edge-from="review" data-edge-to="report" data-edge-label="findings" data-edge-key="8" data-edge-id="review-to-report">
           <rect x="260.8" y="378" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="285" y="388" class="t-edge-default" font-size="8" text-anchor="middle">审查结果</text>
+          <text x="285" y="388" class="t-edge-default" font-size="8" text-anchor="middle">findings</text>
         </g>
-        <g data-detail="context" data-edge-from="report" data-edge-to="api" data-edge-label="报告" data-edge-key="9" data-edge-id="report-to-api">
-          <rect x="266.5" y="140" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="281.5" y="150" class="t-edge-default" font-size="8" text-anchor="middle">报告</text>
+        <g data-detail="context" data-edge-from="report" data-edge-to="api" data-edge-label="清单与存档" data-edge-key="9" data-edge-id="report-to-api">
+          <rect x="252.5" y="140" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="281.5" y="150" class="t-edge-default" font-size="8" text-anchor="middle">清单与存档</text>
         </g>
         <g data-detail="context" data-edge-from="score" data-edge-to="llm" data-edge-label="chat()" data-edge-key="10" data-edge-id="score-to-llm">
           <rect x="845.6" y="415" width="38.8" height="14" rx="3" class="c-mask"/>
           <text x="865" y="425" class="t-edge-default" font-size="8" text-anchor="middle">chat()</text>
         </g>
-        <g data-detail="context" data-edge-from="retrieve" data-edge-to="llm" data-edge-label="embed()" data-edge-key="11" data-edge-id="retrieve-to-llm">
-          <rect x="843.2" y="303" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="865" y="313" class="t-edge-default" font-size="8" text-anchor="middle">embed()</text>
+        <g data-detail="context" data-edge-from="retrieve" data-edge-to="llm" data-edge-label="embed() · rerank()" data-edge-key="11" data-edge-id="retrieve-to-llm">
+          <rect x="816.8" y="303" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="865" y="313" class="t-edge-default" font-size="8" text-anchor="middle">embed() · rerank()</text>
         </g>
         <g data-detail="context" data-edge-from="llm" data-edge-to="llmapi" data-edge-label="HTTPS" data-edge-key="12" data-edge-id="llm-to-llmapi">
           <rect x="970" y="481" width="34" height="14" rx="3" class="c-mask"/>
@@ -5666,7 +5666,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
         <ul>
           <li>本地部署的十个组件都在界内，只有模型兼容接口在界外</li>
-          <li>全项目只有模型客户端发 HTTP，只使用 httpx</li>
+          <li>全项目只有模型客户端发 HTTP，只使用 httpx；三个端点分别是对话、嵌入、重排</li>
           <li>密钥只从环境变量读，不打印、不回显、不落盘</li>
         </ul>
       </div>
@@ -5674,12 +5674,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div class="card">
         <div class="card-header">
           <div class="card-dot cyan"></div>
-          <h3>接口约定</h3>
+          <h3>两条取数路径</h3>
         </div>
         <ul>
-          <li>对话走 /chat/completions，只读 choices[0].message.content</li>
-          <li>嵌入走 /embeddings，只读 data[].embedding</li>
-          <li>不读厂商私有字段，不用 Assistants 与 Responses</li>
+          <li>四个模型键齐全才走真实选档：source=model，各维档位由模型给出</li>
+          <li>缺任一键则逐字走确定性回退：source=deterministic，是脚本自检不是模型准确率</li>
+          <li>嵌入是可选装配：配了 EMBEDDING_* 才建向量索引，否则按 review_id + section_type 从 MySQL 取父块</li>
         </ul>
       </div>
 
@@ -5689,10 +5689,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>存储与输出</h3>
         </div>
         <ul>
-          <li>父块全文只在 MySQL，Chroma 只存子块等五类 doc_type</li>
-          <li>检查点按 review_id 保存；规则审查不调用模型</li>
-          <li>引用必须是切片连续子串，对不上写「引用失败」；证据不足不参与加权</li>
-          <li>输出限于档位、论文原句与修改清单</li>
+          <li>父块全文只在 MySQL，子块片段与向量只进 Chroma；检查点用 InMemorySaver，键是 review_id</li>
+          <li>引用必须是父块连续子串，对不上记「引用失败」；证据不足不换算分数，两者都不进加权</li>
+          <li>输出限于档位、论文原句与修改清单，不出现奖项、名次、获奖概率</li>
         </ul>
       </div>
     </div>

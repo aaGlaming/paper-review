@@ -5152,7 +5152,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>父子块数据流</h1>
       </div>
-      <p class="subtitle">子块进 Chroma，父块留在 MySQL，送入模型的是父块</p>
+      <p class="subtitle">子块进 Chroma，父块留在 MySQL；送进模型的是父块全文（v1.9.3）</p>
     </div>
 
 
@@ -5162,7 +5162,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
          data-preset-badge-editorial-plate="ARCHIFY / 图版 04">
       <svg viewBox="0 0 1068 512" data-reader-fit="intrinsic-height" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-motion-choreography="stream">
         <title id="archify-diagram-title">父子块数据流</title>
-        <desc id="archify-diagram-description">子块进 Chroma，父块留在 MySQL，送入模型的是父块</desc>
+        <desc id="archify-diagram-description">子块进 Chroma，父块留在 MySQL；送进模型的是父块全文（v1.9.3）</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5203,10 +5203,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
         <!-- Flow paths -->
         <path data-edge-from="paper" data-edge-to="splitter" data-edge-label="论文纯文本" data-edge-key="0" data-edge-id="paper-to-splitter" data-composition-points="156,271;259,271" d="M 156 271 L 259 271" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="splitter" data-edge-to="chroma" data-edge-label="子块片段与向量" data-edge-key="1" data-edge-id="splitter-to-chroma" data-composition-points="371,271;422.5,271;422.5,157;474,157" d="M 371 271 L 422.5 271 L 422.5 157 L 474 157" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="splitter" data-edge-to="chroma" data-edge-label="片段与向量" data-edge-key="1" data-edge-id="splitter-to-chroma" data-composition-points="371,271;422.5,271;422.5,157;474,157" d="M 371 271 L 422.5 271 L 422.5 157 L 474 157" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="splitter" data-edge-to="parent_block" data-edge-label="父块全文" data-edge-key="2" data-edge-id="splitter-to-parent" data-composition-points="315,300;315,356" d="M 315 300 L 315 356" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="parent_block" data-edge-to="mysql" data-edge-label="全文落库" data-edge-key="3" data-edge-id="parent-to-mysql" data-composition-points="371,385;474,385" d="M 371 385 L 474 385" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="chroma" data-edge-to="filter" data-edge-label="候选子块" data-edge-key="4" data-edge-id="chroma-to-filter" data-composition-points="586,157;663,157" d="M 586 157 L 663 157" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="chroma" data-edge-to="filter" data-edge-label="候选子块" data-edge-key="4" data-edge-id="chroma-to-filter" data-composition-points="586,157;689,157" d="M 586 157 L 689 157" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="mysql" data-edge-to="parent_fetch" data-edge-label="父块全文" data-edge-key="5" data-edge-id="mysql-to-parent-fetch" data-composition-points="586,385;634,385;634,271;682,271" d="M 586 385 L 634 385 L 634 271 L 682 271" class="a-emphasis" data-animate="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="filter" data-edge-to="parent_fetch" data-edge-label="命中的 parent_id" data-edge-key="6" data-edge-id="filter-to-parent-fetch" data-composition-points="745,186;745,242" d="M 745 186 L 745 242" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="parent_fetch" data-edge-to="model" data-edge-label="父块全文" data-edge-key="7" data-edge-id="parent-fetch-to-model" data-composition-points="808,271;904,271" d="M 808 271 L 904 271" class="a-security" data-animate="edge" style="--step:7" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
@@ -5226,15 +5226,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="100" y="279" class="t-muted" font-size="7" text-anchor="middle">Markdown 字符串</text>
         </g>
 
-        <g id="node-splitter" data-node-id="splitter" data-node-label="切块" tabindex="0" role="button" aria-label="聚焦切块，标题分段 → 片段, 02 / 切块" aria-pressed="false" data-node-kind="backend" data-node-sublabel="标题分段 → 片段" data-node-tag="表格单独成块" data-node-context="02 / 切块">
-          <title>切块 · 标题分段 → 片段 · 02 / 切块 · 表格单独成块</title>
+        <g id="node-splitter" data-node-id="splitter" data-node-label="切块" tabindex="0" role="button" aria-label="聚焦切块，按空行成块 → 片段, 02 / 切块" aria-pressed="false" data-node-kind="backend" data-node-sublabel="按空行成块 → 片段" data-node-tag="表格单独成块" data-node-context="02 / 切块">
+          <title>切块 · 按空行成块 → 片段 · 02 / 切块 · 表格单独成块</title>
           <rect x="259" y="242" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="259" y="242" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(265 248) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="315" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">切块</text>
-          <text data-detail="context" x="315" y="279" class="t-muted" font-size="7" text-anchor="middle">标题分段 → 片段</text>
+          <text data-detail="context" x="315" y="279" class="t-muted" font-size="7" text-anchor="middle">按空行成块 → 片段</text>
         <text data-detail="fine" x="315" y="289" class="t-backend" font-size="7" text-anchor="middle">表格单独成块</text>
         </g>
 
@@ -5249,8 +5249,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="315" y="400.4" class="t-muted" font-size="7" text-anchor="middle">带 char_span</text>
         </g>
 
-        <g id="node-chroma" data-node-id="chroma" data-node-label="Chroma" tabindex="0" role="button" aria-label="聚焦Chroma，子块片段 + 元数据 + 向量, 03 / 两处落库" aria-pressed="false" data-node-kind="database" data-node-sublabel="子块片段 + 元数据 + 向量" data-node-tag="子块只进这里" data-node-context="03 / 两处落库">
-          <title>Chroma · 子块片段 + 元数据 + 向量 · 03 / 两处落库 · 子块只进这里</title>
+        <g id="node-chroma" data-node-id="chroma" data-node-label="Chroma" tabindex="0" role="button" aria-label="聚焦Chroma，片段 + 八键元数据 + 向量, 03 / 两处落库" aria-pressed="false" data-node-kind="database" data-node-sublabel="片段 + 八键元数据 + 向量" data-node-tag="子块只进这里" data-node-context="03 / 两处落库">
+          <title>Chroma · 片段 + 八键元数据 + 向量 · 03 / 两处落库 · 子块只进这里</title>
           <rect x="474" y="128" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="474" y="128" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:2" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(480 134) scale(0.6875)">
@@ -5258,7 +5258,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="530" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Chroma</text>
-          <text data-detail="context" x="530" y="165" class="t-muted" font-size="7" text-anchor="middle">子块片段 + 元数据 + 向量</text>
+          <text data-detail="context" x="530" y="165" class="t-muted" font-size="7" text-anchor="middle">片段 + 八键元数据 + 向量</text>
         <text data-detail="fine" x="530" y="175" class="t-database" font-size="7" text-anchor="middle">子块只进这里</text>
         </g>
 
@@ -5275,27 +5275,27 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="530" y="403" class="t-database" font-size="7" text-anchor="middle">父块全文留在这里</text>
         </g>
 
-        <g id="node-filter" data-node-id="filter" data-node-label="过滤与召回" tabindex="0" role="button" aria-label="聚焦过滤与召回，contest_id / rubric_id / section_type, 04 / 过滤与召回" aria-pressed="false" data-node-kind="backend" data-node-sublabel="contest_id / rubric_id / section_type" data-node-tag="先过滤再排序" data-node-context="04 / 过滤与召回">
-          <title>过滤与召回 · contest_id / rubric_id / section_type · 04 / 过滤与召回 · 先过滤再排序</title>
-          <rect x="663" y="128" width="164" height="58" rx="6" class="c-mask"/>
-          <rect x="663" y="128" width="164" height="58" rx="6" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(669 134) scale(0.6875)">
+        <g id="node-filter" data-node-id="filter" data-node-label="过滤与召回" tabindex="0" role="button" aria-label="聚焦过滤与召回，四键过滤, 04 / 过滤与召回" aria-pressed="false" data-node-kind="backend" data-node-sublabel="四键过滤" data-node-tag="先过滤再排序" data-node-context="04 / 过滤与召回">
+          <title>过滤与召回 · 四键过滤 · 04 / 过滤与召回 · 先过滤再排序</title>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(695 134) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="745" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">过滤与召回</text>
-          <text data-detail="context" x="745" y="165" class="t-muted" font-size="7" text-anchor="middle">contest_id / rubric_id / section_type</text>
+          <text data-detail="context" x="745" y="165" class="t-muted" font-size="7" text-anchor="middle">四键过滤</text>
         <text data-detail="fine" x="745" y="175" class="t-backend" font-size="7" text-anchor="middle">先过滤再排序</text>
         </g>
 
-        <g id="node-parent_fetch" data-node-id="parent_fetch" data-node-label="取回父块全文" tabindex="0" role="button" aria-label="聚焦取回父块全文，按 parent_id · 每维最多 4 段, 04 / 过滤与召回" aria-pressed="false" data-node-kind="backend" data-node-sublabel="按 parent_id · 每维最多 4 段" data-node-context="04 / 过滤与召回">
-          <title>取回父块全文 · 按 parent_id · 每维最多 4 段 · 04 / 过滤与召回</title>
+        <g id="node-parent_fetch" data-node-id="parent_fetch" data-node-label="取回父块全文" tabindex="0" role="button" aria-label="聚焦取回父块全文，按 parent_id · 合并后取 4 段, 04 / 过滤与召回" aria-pressed="false" data-node-kind="backend" data-node-sublabel="按 parent_id · 合并后取 4 段" data-node-context="04 / 过滤与召回">
+          <title>取回父块全文 · 按 parent_id · 合并后取 4 段 · 04 / 过滤与召回</title>
           <rect x="682" y="242" width="126" height="58" rx="6" class="c-mask"/>
           <rect x="682" y="242" width="126" height="58" rx="6" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(688 248) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="745" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">取回父块全文</text>
-          <text data-detail="context" x="745" y="279" class="t-muted" font-size="7" text-anchor="middle">按 parent_id · 每维最多 4 段</text>
+          <text data-detail="context" x="745" y="279" class="t-muted" font-size="7" text-anchor="middle">按 parent_id · 合并后取 4 段</text>
         </g>
 
         <g id="node-model" data-node-id="model" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，选档 chat(), 05 / 送入模型" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="选档 chat()" data-node-tag="信任边界外" data-node-context="05 / 送入模型">
@@ -5316,10 +5316,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text x="207.5" y="250" class="t-edge-emphasis" font-size="8" text-anchor="middle">论文纯文本</text>
         <text data-detail="fine" x="207.5" y="261" class="t-dim" font-size="7" text-anchor="middle">只读入参</text>
         </g>
-        <g data-detail="context" data-edge-from="splitter" data-edge-to="chroma" data-edge-label="子块片段与向量" data-edge-key="1" data-edge-id="splitter-to-chroma">
-          <rect x="382.2" y="193" width="80.6" height="27" rx="4" class="c-mask"/>
-          <text x="422.5" y="204" class="t-edge-emphasis" font-size="8" text-anchor="middle">子块片段与向量</text>
-        <text data-detail="fine" x="422.5" y="215" class="t-dim" font-size="7" text-anchor="middle">片段 + 元数据</text>
+        <g data-detail="context" data-edge-from="splitter" data-edge-to="chroma" data-edge-label="片段与向量" data-edge-key="1" data-edge-id="splitter-to-chroma">
+          <rect x="377.3" y="193" width="90.4" height="27" rx="4" class="c-mask"/>
+          <text x="422.5" y="204" class="t-edge-emphasis" font-size="8" text-anchor="middle">片段与向量</text>
+        <text data-detail="fine" x="422.5" y="215" class="t-dim" font-size="7" text-anchor="middle">embed() 生成向量</text>
         </g>
         <g data-detail="context" data-edge-from="splitter" data-edge-to="parent_block" data-edge-label="父块全文" data-edge-key="2" data-edge-id="splitter-to-parent">
           <rect x="257.79999999999995" y="321" width="51.2" height="27" rx="4" class="c-mask"/>
@@ -5332,9 +5332,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="422.5" y="375" class="t-dim" font-size="7" text-anchor="middle">save_parents()</text>
         </g>
         <g data-detail="context" data-edge-from="chroma" data-edge-to="filter" data-edge-label="候选子块" data-edge-key="4" data-edge-id="chroma-to-filter">
-          <rect x="569.5" y="97" width="110" height="27" rx="4" class="c-mask"/>
-          <text x="624.5" y="108" class="t-edge-default" font-size="8" text-anchor="middle">候选子块</text>
-        <text data-detail="fine" x="624.5" y="119" class="t-dim" font-size="7" text-anchor="middle">元数据里带 parent_id</text>
+          <rect x="587.4" y="136" width="100.2" height="27" rx="4" class="c-mask"/>
+          <text x="637.5" y="147" class="t-edge-default" font-size="8" text-anchor="middle">候选子块</text>
+        <text data-detail="fine" x="637.5" y="158" class="t-dim" font-size="7" text-anchor="middle">元数据带 parent_id</text>
         </g>
         <g data-detail="context" data-edge-from="mysql" data-edge-to="parent_fetch" data-edge-label="父块全文" data-edge-key="5" data-edge-id="mysql-to-parent-fetch">
           <rect x="598.6" y="307" width="70.8" height="27" rx="4" class="c-mask"/>
@@ -5344,12 +5344,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <g data-detail="context" data-edge-from="filter" data-edge-to="parent_fetch" data-edge-label="命中的 parent_id" data-edge-key="6" data-edge-id="filter-to-parent-fetch">
           <rect x="648.5999999999999" y="207" width="90.4" height="27" rx="4" class="c-mask"/>
           <text x="693.8" y="218" class="t-edge-default" font-size="8" text-anchor="middle">命中的 parent_id</text>
-        <text data-detail="fine" x="693.8" y="229" class="t-dim" font-size="7" text-anchor="middle">过滤后的候选</text>
+        <text data-detail="fine" x="693.8" y="229" class="t-dim" font-size="7" text-anchor="middle">三路合并去重</text>
         </g>
         <g data-detail="context" data-edge-from="parent_fetch" data-edge-to="model" data-edge-label="父块全文" data-edge-key="7" data-edge-id="parent-fetch-to-model">
           <rect x="818.15" y="239" width="75.7" height="27" rx="4" class="c-mask"/>
           <text x="856" y="250" class="t-edge-security" font-size="8" text-anchor="middle">父块全文</text>
-        <text data-detail="fine" x="856" y="261" class="t-dim" font-size="7" text-anchor="middle">每维最多 4 段</text>
+        <text data-detail="fine" x="856" y="261" class="t-dim" font-size="7" text-anchor="middle">每维至多 4 段</text>
         </g>
 
         <!-- Legend -->
@@ -5555,33 +5555,33 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>两条路分开</h3>
         </div>
         <ul>
-          <li>子块片段、元数据与向量进 Chroma，父块全文不进向量库</li>
+          <li>子块片段、八键元数据与向量进 Chroma；父块全文不进向量库</li>
           <li>父块全文只落在 MySQL 的 paper_parent，按 parent_id 取回</li>
-          <li>送入模型的是父块全文，不是子块碎片</li>
+          <li>送入模型的是父块全文，不是子块碎片；命中的 chunk_ids 随父块带回，供溯源</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot amber"></div>
-          <h3>过滤与顺序</h3>
+          <h3>切块与顺序</h3>
         </div>
         <ul>
-          <li>过滤条件：contest_id、rubric_id、section_type $in</li>
-          <li>过滤先于任何排序与截断；重排属 P4，只改顺序</li>
-          <li>section_type 是单值字符串：数组元数据用 $in 会静默返回空</li>
+          <li>按空行成块，相邻段可并到 200 字；两行以上带竖线的表格单独成块，不切进相邻段落</li>
+          <li>每块带 char_start / char_end，保证 text[char_start:char_end] 等于块文本</li>
+          <li>过滤先于排序与截断：三路各召回 6 条 → 按 parent_id 合并 → 一次重排 → 取前 4 段</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot rose"></div>
-          <h3>边界与范围</h3>
+          <h3>边界与现状</h3>
         </div>
         <ul>
-          <li>模型接口在信任边界外，是选档那一步才出的界</li>
-          <li>本版不调用 chat() 与 embed()，向量由调用方显式传入</li>
-          <li>doc_type 只有五个：paper_child、band_text、pitfall、exemplar、contest_statement</li>
+          <li>向量由调用方显式传给模块，模块内的占位 EF 一旦被调用就报错，避免 Chroma 下载默认模型</li>
+          <li>embed() 在确认章节后建索引时真实调用；RERANK_* 配齐才启用重排，缺失则直接跳过</li>
+          <li>doc_type 只有五个：paper_child、band_text、pitfall、exemplar、contest_statement；section_type 必须单值</li>
         </ul>
       </div>
     </div>

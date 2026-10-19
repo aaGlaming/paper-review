@@ -5152,7 +5152,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>一维检索时序</h1>
       </div>
-      <p class="subtitle">先过滤子块，再按 parent_id 取回父块全文，最后送入选档；模型调用在信任边界外</p>
+      <p class="subtitle">三路各自过滤召回 → 合并去重 → 一次重排 → 取 4 段送选档（v1.9.3）</p>
     </div>
 
 
@@ -5162,7 +5162,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
          data-preset-badge-editorial-plate="ARCHIFY / 图版 04">
       <svg viewBox="0 0 920 788" data-sequence-column-fit="spread" data-reader-fit="width-first" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-motion-choreography="sequence">
         <title id="archify-diagram-title">一维检索时序</title>
-        <desc id="archify-diagram-description">先过滤子块，再按 parent_id 取回父块全文，最后送入选档；模型调用在信任边界外</desc>
+        <desc id="archify-diagram-description">三路各自过滤召回 → 合并去重 → 一次重排 → 取 4 段送选档（v1.9.3）</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5229,7 +5229,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="111.68571428571428" y="140" width="91.19999999999999" height="18" rx="3" class="c-mask"/>
           <text x="157.28571428571428" y="150" class="t-edge-emphasis" font-size="11" text-anchor="middle">生成一维查询</text>
         </g>
-        <text data-detail="context" x="124" y="178" class="t-muted" font-size="7"><tspan x="124" dy="0">evidence_prompts</tspan><tspan x="124" dy="11">+ section_types</tspan></text>
+        <text data-detail="context" x="124" y="178" class="t-muted" font-size="7"><tspan x="124" dy="0">维度名 + 维度码 +</tspan><tspan x="124" dy="11">章节类型</tspan></text>
         </g>
 
         <g data-edge-from="retrieve" data-edge-to="chroma" data-edge-label="过滤子块" data-edge-key="1" data-edge-id="filter-children">
@@ -5238,7 +5238,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="229.45714285714283" y="194" width="64.8" height="18" rx="3" class="c-mask"/>
           <text x="261.85714285714283" y="204" class="t-edge-emphasis" font-size="11" text-anchor="middle">过滤子块</text>
         </g>
-        <text data-detail="context" x="228.57142857142856" y="232" class="t-muted" font-size="7"><tspan x="228.57142857142856" dy="0">过滤先于排序与截</tspan><tspan x="228.57142857142856" dy="11">断</tspan></text>
+        <text data-detail="context" x="228.57142857142856" y="232" class="t-muted" font-size="7"><tspan x="228.57142857142856" dy="0">四键过滤，先于排</tspan><tspan x="228.57142857142856" dy="11">序</tspan></text>
         </g>
 
         <g data-edge-from="chroma" data-edge-to="retrieve" data-edge-label="命中子块" data-edge-key="2" data-edge-id="hit-children">
@@ -5265,13 +5265,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
         </g>
 
-        <g data-edge-from="retrieve" data-edge-to="rerank" data-edge-label="候选顺序" data-edge-key="5" data-edge-id="candidate-order">
+        <g data-edge-from="retrieve" data-edge-to="rerank" data-edge-label="已过滤候选" data-edge-key="5" data-edge-id="candidate-order">
           <path data-composition-edge-from="retrieve" data-composition-edge-to="rerank" data-composition-edge-id="candidate-order" data-composition-points="216.57142857142856,370;516.2857142857142,370" d="M 216.57142857142856 370 L 516.2857142857142 370" class="a-dashed" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <g data-detail="context">
-          <rect x="334.0285714285714" y="350" width="64.8" height="18" rx="3" class="c-mask"/>
-          <text x="366.4285714285714" y="360" class="t-edge-dashed" font-size="11" text-anchor="middle">候选顺序</text>
+          <rect x="327.4285714285714" y="350" width="78" height="18" rx="3" class="c-mask"/>
+          <text x="366.4285714285714" y="360" class="t-edge-dashed" font-size="11" text-anchor="middle">已过滤候选</text>
         </g>
-        <text data-detail="context" x="228.57142857142856" y="388" class="t-muted" font-size="7">P4 才接真重排</text>
+        <text data-detail="context" x="228.57142857142856" y="388" class="t-muted" font-size="7"><tspan x="228.57142857142856" dy="0">未配置重排则跳过</tspan><tspan x="228.57142857142856" dy="11">此段</tspan></text>
         </g>
 
         <g data-edge-from="rerank" data-edge-to="retrieve" data-edge-label="只改顺序" data-edge-key="6" data-edge-id="reordered">
@@ -5280,6 +5280,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="334.0285714285714" y="400" width="64.8" height="18" rx="3" class="c-mask"/>
           <text x="366.4285714285714" y="410" class="t-muted" font-size="11" text-anchor="middle">只改顺序</text>
         </g>
+        <rect data-detail="context" data-graph-role="message-note-background" x="226.57142857142856" y="427.6" width="71.2" height="16.399999999999977" rx="2" class="c-mask" pointer-events="none"/>
+        <text data-detail="context" x="228.57142857142856" y="438" class="t-muted" font-size="7">不加回被过滤片段</text>
         </g>
 
         <g data-edge-from="retrieve" data-edge-to="scoring" data-edge-label="送入父块全文" data-edge-key="7" data-edge-id="to-scoring">
@@ -5288,7 +5290,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="373.11428571428576" y="436" width="91.19999999999999" height="18" rx="3" class="c-mask"/>
           <text x="418.7142857142858" y="446" class="t-edge-emphasis" font-size="11" text-anchor="middle">送入父块全文</text>
         </g>
-        <text data-detail="context" x="228.57142857142856" y="474" class="t-muted" font-size="7">每维最多 4 段</text>
+        <text data-detail="context" x="228.57142857142856" y="474" class="t-muted" font-size="7">每维至多 4 段</text>
         </g>
 
         <g data-edge-from="scoring" data-edge-to="llmapi" data-edge-label="chat() 选档" data-edge-key="8" data-edge-id="chat">
@@ -5297,7 +5299,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="690.1285714285715" y="490" width="84.6" height="18" rx="3" class="c-mask"/>
           <text x="732.4285714285714" y="500" class="t-edge-security" font-size="11" text-anchor="middle">chat() 选档</text>
         </g>
-        <text data-detail="context" x="646.8571428571429" y="528" class="t-muted" font-size="7"><tspan x="646.8571428571429" dy="0">跨信任边界：只发</tspan><tspan x="646.8571428571429" dy="11">父块全文与原句</tspan></text>
+        <text data-detail="context" x="646.8571428571429" y="528" class="t-muted" font-size="7"><tspan x="646.8571428571429" dy="0">只发父块全文与必</tspan><tspan x="646.8571428571429" dy="11">提条件</tspan></text>
         </g>
 
         <g data-edge-from="llmapi" data-edge-to="scoring" data-edge-label="只读 choices[0].message.content" data-edge-key="9" data-edge-id="chat-reply">
@@ -5322,6 +5324,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="634.5428571428571" y="612" width="91.19999999999999" height="18" rx="3" class="c-mask"/>
           <text x="680.1428571428571" y="622" class="t-muted" font-size="11" text-anchor="middle">引用校验结果</text>
         </g>
+        <text data-detail="context" x="646.8571428571429" y="650" class="t-muted" font-size="7"><tspan x="646.8571428571429" dy="0">对不上记引用失败</tspan><tspan x="646.8571428571429" dy="11">，不进加权</tspan></text>
         </g>
 
         <g data-edge-from="scoring" data-edge-to="graph" data-edge-label="档位与校验结果" data-edge-key="12" data-edge-id="back-to-graph">
@@ -5334,20 +5337,20 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
         <!-- Segment Labels -->
         <g data-graph-role="segment-label" data-segment-id="0">
-          <rect x="56" y="198" width="86.8" height="18" rx="3" class="c-mask"/>
-          <text x="62" y="211" class="t-muted" font-size="9" font-weight="600">生成查询与过滤</text>
+          <rect x="56" y="198" width="107.60000000000001" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="211" class="t-muted" font-size="9" font-weight="600">生成查询与四键过滤</text>
         </g>
         <g data-graph-role="segment-label" data-segment-id="1">
           <rect x="56" y="238" width="76.4" height="18" rx="3" class="c-mask"/>
           <text x="62" y="251" class="t-muted" font-size="9" font-weight="600">召回与取父块</text>
         </g>
         <g data-graph-role="segment-label" data-segment-id="2">
-          <rect x="56" y="338" width="66" height="18" rx="3" class="c-mask"/>
-          <text x="62" y="351" class="t-muted" font-size="9" font-weight="600">重排（P4）</text>
+          <rect x="56" y="338" width="107.60000000000001" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="351" class="t-muted" font-size="9" font-weight="600">一次重排，只改顺序</text>
         </g>
         <g data-graph-role="segment-label" data-segment-id="3">
-          <rect x="56" y="428" width="86.8" height="18" rx="3" class="c-mask"/>
-          <text x="62" y="441" class="t-muted" font-size="9" font-weight="600">送入选档与回传</text>
+          <rect x="56" y="428" width="97.2" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="441" class="t-muted" font-size="9" font-weight="600">选档、校验与回传</text>
         </g>
 
         <!-- Participants -->
@@ -5362,15 +5365,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="105" y="122" class="t-muted" font-size="7" text-anchor="middle">LangGraph 状态图</text>
         </g>
 
-        <g id="node-retrieve" data-node-id="retrieve" data-node-label="检索" tabindex="0" role="button" aria-label="聚焦检索，parent_child, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="parent_child" data-node-context="时序参与者">
-          <title>检索 · parent_child · 时序参与者</title>
+        <g id="node-retrieve" data-node-id="retrieve" data-node-label="检索" tabindex="0" role="button" aria-label="聚焦检索，three_route, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="three_route" data-node-context="时序参与者">
+          <title>检索 · three_route · 时序参与者</title>
           <rect x="166.57142857142856" y="72" width="86" height="60" rx="6" class="c-mask"/>
           <rect x="166.57142857142856" y="72" width="86" height="60" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(172.57142857142856 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="209.57142857142856" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">检索</text>
-          <text data-detail="context" x="209.57142857142856" y="122" class="t-muted" font-size="7" text-anchor="middle">parent_child</text>
+          <text data-detail="context" x="209.57142857142856" y="122" class="t-muted" font-size="7" text-anchor="middle">three_route</text>
         </g>
 
         <g id="node-chroma" data-node-id="chroma" data-node-label="Chroma" tabindex="0" role="button" aria-label="聚焦Chroma，子块向量, 时序参与者" aria-pressed="false" data-node-kind="database" data-node-sublabel="子块向量" data-node-context="时序参与者">
@@ -5397,15 +5400,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="418.7142857142857" y="122" class="t-muted" font-size="6.1" text-anchor="middle">paper_parent 父块全文</text>
         </g>
 
-        <g id="node-rerank" data-node-id="rerank" data-node-label="重排" tabindex="0" role="button" aria-label="聚焦重排，P4 占位, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="P4 占位" data-node-context="时序参与者">
-          <title>重排 · P4 占位 · 时序参与者</title>
+        <g id="node-rerank" data-node-id="rerank" data-node-label="重排" tabindex="0" role="button" aria-label="聚焦重排，配齐 RERANK_* 才启用, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="配齐 RERANK_* 才启用" data-node-context="时序参与者">
+          <title>重排 · 配齐 RERANK_* 才启用 · 时序参与者</title>
           <rect x="480.2857142857142" y="72" width="86" height="60" rx="6" class="c-mask"/>
           <rect x="480.2857142857142" y="72" width="86" height="60" rx="6" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(486.2857142857142 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="523.2857142857142" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">重排</text>
-          <text data-detail="context" x="523.2857142857142" y="122" class="t-muted" font-size="7" text-anchor="middle">P4 占位</text>
+          <text data-detail="context" x="523.2857142857142" y="122" class="t-muted" font-size="6.5" text-anchor="middle">配齐 RERANK_* 才启用</text>
         </g>
 
         <g id="node-scoring" data-node-id="scoring" data-node-label="选档" tabindex="0" role="button" aria-label="聚焦选档，五维档位, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="五维档位" data-node-context="时序参与者">
@@ -5419,15 +5422,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <text data-detail="context" x="627.8571428571429" y="122" class="t-muted" font-size="7" text-anchor="middle">五维档位</text>
         </g>
 
-        <g id="node-gate" data-node-id="gate" data-node-label="子串校验" tabindex="0" role="button" aria-label="聚焦子串校验，原句须是切片子串, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="原句须是切片子串" data-node-context="时序参与者">
-          <title>子串校验 · 原句须是切片子串 · 时序参与者</title>
+        <g id="node-gate" data-node-id="gate" data-node-label="子串校验" tabindex="0" role="button" aria-label="聚焦子串校验，原句须是父块连续子串, 时序参与者" aria-pressed="false" data-node-kind="backend" data-node-sublabel="原句须是父块连续子串" data-node-context="时序参与者">
+          <title>子串校验 · 原句须是父块连续子串 · 时序参与者</title>
           <rect x="689.4285714285714" y="72" width="86" height="60" rx="6" class="c-mask"/>
           <rect x="689.4285714285714" y="72" width="86" height="60" rx="6" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(695.4285714285714 78) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="732.4285714285714" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">子串校验</text>
-          <text data-detail="context" x="732.4285714285714" y="122" class="t-muted" font-size="7" text-anchor="middle">原句须是切片子串</text>
+          <text data-detail="context" x="732.4285714285714" y="122" class="t-muted" font-size="6.5" text-anchor="middle">原句须是父块连续子串</text>
         </g>
 
         <g id="node-llmapi" data-node-id="llmapi" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，信任边界外, 时序参与者" aria-pressed="false" data-node-kind="external" data-node-sublabel="信任边界外" data-node-context="时序参与者">
@@ -5649,9 +5652,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>主流程只有一条</h3>
         </div>
         <ul>
-          <li>生成查询 → 过滤子块 → 召回 → 按 parent_id 取回父块 → 送入选档</li>
-          <li>过滤条件交给向量库：contest_id、rubric_id、section_type $in</li>
-          <li>先过滤，再排序与截断；每维最多 4 段父块进模型</li>
+          <li>生成查询 → 三路过滤召回 → 合并去重 → 一次重排 → 送入选档</li>
+          <li>三路是档位说明、论文子块、扣分点，各召回 6 条；合并后按 parent_id 去重</li>
+          <li>重排只做一次，截断到最多 4 段——是三路合并后共 4 段，不是每路 4 段</li>
         </ul>
       </div>
 
@@ -5661,21 +5664,21 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>父子块分工</h3>
         </div>
         <ul>
-          <li>子块片段、元数据与向量进 Chroma；父块全文只在 MySQL 的 paper_parent</li>
-          <li>送入模型的是父块全文，不是子块碎片</li>
-          <li>命中的 chunk_ids 随父块带回，供后续溯源</li>
+          <li>子块片段、八键元数据与向量进 Chroma；父块全文只在 MySQL 的 paper_parent</li>
+          <li>送入模型的是父块全文，不是子块碎片；命中的 chunk_ids 随父块带回，供后续溯源</li>
+          <li>本模块不导入模型客户端：embed() 由装配层调用，向量显式传入</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot rose"></div>
-          <h3>信任边界与重排位置</h3>
+          <h3>两轮与边界</h3>
         </div>
         <ul>
-          <li>模型调用在信任边界外：选档的 chat() 是界内唯一出口</li>
-          <li>本版不调用 chat() 与 embed()，向量由调用方显式传入</li>
-          <li>重排属 P4：只改顺序，不能把被过滤掉的片段加回来</li>
+          <li>第一轮有就停；第一轮全空才确定性改写查询再查一轮，仍空记「证据不足」，检索恰好 2 次</li>
+          <li>重排经模型客户端的 rerank() 发出，未配置 RERANK_* 时整段跳过，不记失败</li>
+          <li>模型只能选档与抄原句：权重、分值一律丢弃，档位由代码按量规加总</li>
         </ul>
       </div>
     </div>

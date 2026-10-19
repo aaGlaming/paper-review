@@ -15,6 +15,8 @@ SAMPLES_DIR = PROJECT_ROOT / "data" / "samples"
 EVAL_DIR = SAMPLES_DIR / "eval"
 
 DEMO_FILES: tuple[str, ...] = ("bench-dragon.md", "planting.md", "smoke.md")
+# 真实参赛论文与演示稿放在同一目录，靠 DEMO_FILES 排除，不按赛题名匹配
+# （架构约束：不得按题号分支，见 backend/tests/review/test_demo_conflicts.py）。
 REQUIRED_EVAL_FIELDS: tuple[str, ...] = ("paper_id", "title", "gold", "expected_findings")
 GOLD_FIELDS: tuple[str, ...] = ("dimension_code", "band")
 
@@ -31,6 +33,35 @@ def load_demo_text(filename: str, directory: str | Path | None = None) -> str:
 def load_demo_texts(directory: str | Path | None = None) -> dict[str, str]:
     """读三篇演示稿的正文，key 取文件名（不含扩展名）。"""
     return {Path(name).stem: load_demo_text(name, directory) for name in DEMO_FILES}
+
+
+def load_real_papers(directory: str | Path | None = None) -> dict[str, str]:
+    """读真实参赛论文：目录下除演示稿与 README 之外的 `.md`。
+
+    没有真实论文时返回空字典；调用方自行决定是否回退到演示稿。
+    """
+    base = Path(directory) if directory is not None else SAMPLES_DIR
+    if not base.is_dir():
+        return {}
+    skip = set(DEMO_FILES)
+    papers: dict[str, str] = {}
+    for path in sorted(base.glob("*.md")):
+        if path.name in skip or path.stem.upper().startswith("README"):
+            continue
+        papers[path.stem] = path.read_text(encoding="utf-8")
+    return papers
+
+
+def contest_from_stem(stem: str) -> str:
+    """从真实论文文件名推断所属赛题：去掉最后一段编号。
+
+    例：`<赛题ID>-<论文编号>` -> `<赛题ID>`。
+    源码里不写具体赛题名（架构约束：不得按题号分支，见 test_demo_conflicts）。
+    """
+    if not stem:
+        return ""
+    head, sep, tail = stem.rpartition("-")
+    return head if sep and tail else ""
 
 
 def load_eval_papers(directory: str | Path | None = None) -> list[dict[str, object]]:

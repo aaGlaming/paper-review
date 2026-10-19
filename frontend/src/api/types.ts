@@ -205,6 +205,24 @@ export interface ReviewReport {
   score: ReviewScore
   change_list: ChangeListItem[]
   note: string
+  agent_terminated_by?: string | null
+}
+
+export interface AgentStep {
+  idx: number
+  node: string
+  action: string
+  args_digest: string
+  result_note: string
+  ok: boolean
+  error_code: string | null
+  elapsed_ms: number
+  created_at: string
+}
+
+export interface AgentStepsResponse {
+  review_id: string
+  steps: AgentStep[]
 }
 
 /**

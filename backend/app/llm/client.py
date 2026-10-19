@@ -10,13 +10,14 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import Sequence
 from typing import Any
 
 import httpx
 
-__all__ = ["chat", "embed", "rerank", "LLMConfigError", "LLMResponseError"]
+__all__ = ["chat", "embed", "rerank", "LLMConfigError", "LLMResponseError", "chat_with_tools"]
 
 DEFAULT_TEMPERATURE = 0.2
 _TIMEOUT_SECONDS = 30.0
@@ -120,6 +121,87 @@ def chat(
     headers = {"Authorization": f"Bearer {api_key}"}
     data = _post_json(f"{base_url}/chat/completions", headers, payload, transport)
     return _extract_content(data)
+
+
+def _extract_tool_chat(data: dict[str, Any]) -> dict[str, Any]:
+    choices = data.get("choices")
+    if not isinstance(choices, list) or not choices:
+        raise LLMResponseError("响应缺少非空的 choices")
+    first = choices[0]
+    if not isinstance(first, dict):
+        raise LLMResponseError("choices[0] 不是对象")
+    message = first.get("message")
+    if not isinstance(message, dict):
+        raise LLMResponseError("响应缺少 choices[0].message")
+
+    content = message.get("content")
+    if content is None:
+        content = ""
+    elif not isinstance(content, str):
+        raise LLMResponseError("choices[0].message.content 不是字符串")
+
+    finish_reason = first.get("finish_reason")
+    if not isinstance(finish_reason, str):
+        raise LLMResponseError("choices[0].finish_reason 不是字符串")
+
+    raw_calls = message.get("tool_calls")
+    if raw_calls is None:
+        raw_calls = []
+    if not isinstance(raw_calls, list):
+        raise LLMResponseError("choices[0].message.tool_calls 不是数组")
+
+    tool_calls: list[dict[str, Any]] = []
+    for index, call in enumerate(raw_calls):
+        if not isinstance(call, dict):
+            raise LLMResponseError(f"tool_calls[{index}] 不是对象")
+        call_id = call.get("id")
+        function = call.get("function")
+        if not isinstance(call_id, str):
+            raise LLMResponseError(f"tool_calls[{index}].id 不是字符串")
+        if not isinstance(function, dict):
+            raise LLMResponseError(f"tool_calls[{index}].function 不是对象")
+        name = function.get("name")
+        if not isinstance(name, str):
+            raise LLMResponseError(f"tool_calls[{index}].function.name 不是字符串")
+        arguments_text = function.get("arguments")
+        if not isinstance(arguments_text, str):
+            raise LLMResponseError(f"tool_calls[{index}].arguments 不是字符串")
+        try:
+            arguments = json.loads(arguments_text)
+        except (TypeError, ValueError) as exc:
+            raise LLMResponseError(f"tool_calls[{index}].arguments 不是合法 JSON") from exc
+        if not isinstance(arguments, dict):
+            raise LLMResponseError(f"tool_calls[{index}].arguments 不是 JSON 对象")
+        tool_calls.append({"id": call_id, "name": name, "arguments": arguments})
+
+    return {"content": content, "tool_calls": tool_calls, "finish_reason": finish_reason}
+
+
+def chat_with_tools(
+    messages: Sequence[dict[str, Any]],
+    tools: Sequence[dict[str, Any]],
+    *,
+    tool_choice: str | dict[str, Any] = "auto",
+    temperature: float = DEFAULT_TEMPERATURE,
+    transport: httpx.BaseTransport | None = None,
+) -> dict[str, Any]:
+    """调用 OpenAI 兼容的工具接口，并解析首个 choice 的工具调用。"""
+    items = list(tools)
+    if not items:
+        raise ValueError("tools 不能为空")
+    base_url = _read_env("LLM_BASE_URL").rstrip("/")
+    api_key = _read_env("LLM_API_KEY")
+    model = _read_env("LLM_MODEL")
+    payload = {
+        "model": model,
+        "messages": list(messages),
+        "temperature": temperature,
+        "tools": items,
+        "tool_choice": tool_choice,
+    }
+    headers = {"Authorization": f"Bearer {api_key}"}
+    data = _post_json(f"{base_url}/chat/completions", headers, payload, transport)
+    return _extract_tool_chat(data)
 
 
 def embed(

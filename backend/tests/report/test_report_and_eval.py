@@ -424,7 +424,9 @@ def test_new_endpoints_return_200(client):
 
     demos_only = client.get("/api/samples", params={"is_demo": "true"}).json()["samples"]
     assert demos_only and all(item["is_demo"] for item in demos_only)
-    assert len(demos_only) == 3
+    # 演示样例已从「固定三篇演示稿」改为「样例目录下的真实参赛论文」，
+    # 数量随载入的论文文件数变化，因此只断言非空与标记正确。
+    assert len(demos_only) >= 1
 
     summary = client.get("/api/eval/summary")
     assert summary.status_code == 200

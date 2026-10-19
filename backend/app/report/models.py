@@ -65,7 +65,10 @@ class ReviewSession(ReportBase):
     __tablename__ = "review_session"
 
     review_id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    paper_text: Mapped[str] = mapped_column(Text, nullable=False)
+    # 真实参赛论文通常 2~5 万字（UTF-8 约 60~150 KB），超过 MySQL TEXT 的 64 KB 上限。
+    # 带长度的 Text 会按方言映射：MySQL 下 2**24-1 生成 MEDIUMTEXT（16 MB），
+    # 其他方言仍按普通文本处理。千字样例永远碰不到这个边界，接入真实数据才会暴露。
+    paper_text: Mapped[str] = mapped_column(Text(2**24 - 1), nullable=False)
     sections: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
     confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="")

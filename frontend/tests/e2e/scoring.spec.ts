@@ -5,6 +5,12 @@ import { expect, test } from '@playwright/test'
 
 const BAND_WORDS = ['充分', '基本', '不足', '证据不足']
 
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/reviews/*/agent-steps', route =>
+    route.fulfill({ json: { review_id: 'x', steps: [] } }),
+  )
+})
+
 test('解析 → 确认 → 评分页：维度卡、原句定位、刷新仍在', async ({ page }) => {
   // 先在解析页走完整链路
   await page.goto('/parse')

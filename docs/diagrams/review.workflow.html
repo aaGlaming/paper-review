@@ -5152,7 +5152,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>预审主路径</h1>
       </div>
-      <p class="subtitle">一条主路径；模型调用在信任边界外</p>
+      <p class="subtitle">七步，与 v1.9.3 代码一致；模型调用在信任边界外</p>
     </div>
 
 
@@ -5160,9 +5160,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / 图版 04">
-      <svg viewBox="0 0 843 660" data-reader-fit="width-first" data-layout-contract="readable-v2" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="">
+      <svg viewBox="0 0 922 660" data-reader-fit="width-first" data-layout-contract="readable-v2" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="">
         <title id="archify-diagram-title">预审主路径</title>
-        <desc id="archify-diagram-description">一条主路径；模型调用在信任边界外</desc>
+        <desc id="archify-diagram-description">七步，与 v1.9.3 代码一致；模型调用在信任边界外</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5207,17 +5207,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Swimlanes -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="787" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="866" height="106" rx="10" class="c-lane" stroke-width="1"/>
         <text x="54" y="74" class="t-muted" font-size="10" font-weight="600">01 / 接入与确认</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="787" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="866" height="106" rx="10" class="c-lane" stroke-width="1"/>
         <text x="54" y="200" class="t-muted" font-size="10" font-weight="600">02 / 取证与打分</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="304" width="787" height="106" rx="10" class="c-lane" stroke-width="1"/>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-2-exception" x="46" y="310" width="775" height="94" rx="8" class="c-security-group" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="304" width="866" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-2-exception" x="46" y="310" width="854" height="94" rx="8" class="c-security-group" stroke-width="1"/>
         <text x="54" y="326" class="t-security" font-size="10" font-weight="600">EX / 信任边界外 · 外部依赖</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="430" width="787" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="430" width="866" height="106" rx="10" class="c-lane" stroke-width="1"/>
         <text x="54" y="452" class="t-muted" font-size="10" font-weight="600">04 / 校验与产物</text>
 
         <!-- Phase headers -->
@@ -5227,148 +5227,146 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
         <!-- Edge paths -->
-        <path data-edge-from="align" data-edge-to="retrieve" data-edge-key="0" data-edge-id="align-retrieve" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="342,146;342,220" d="M 342 146 L 342 220" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="check" data-edge-to="verify" data-edge-key="1" data-edge-id="check-verify" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="620.4,272;620.4,472" d="M 620.4 272 L 620.4 472" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="confirm" data-edge-to="align" data-edge-key="2" data-edge-id="confirm-align" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="264,120;296,120" d="M 264 120 L 296 120" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="retrieve" data-edge-to="model" data-edge-label="embed()" data-edge-key="3" data-edge-id="retrieve-model" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="342,272;342,372;444.4,372" d="M 342 272 L 342 364 Q 342 372 350 372 L 444.4 372" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="retrieve" data-edge-to="select" data-edge-label="候选父块" data-edge-key="4" data-edge-id="retrieve-select" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="388,246;444.4,246" d="M 388 246 L 444.4 246" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="select" data-edge-to="check" data-edge-label="档位" data-edge-key="5" data-edge-id="select-check" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="536.4,246;574.4,246" d="M 536.4 246 L 574.4 246" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="select" data-edge-to="model" data-edge-label="chat()" data-edge-key="6" data-edge-id="select-model" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="490.4,272;490.4,338" d="M 490.4 272 L 490.4 338" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="upload" data-edge-to="confirm" data-edge-key="7" data-edge-id="upload-confirm" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="140,120;172,120" d="M 140 120 L 172 120" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="verify" data-edge-to="changes" data-edge-label="通过校验" data-edge-key="8" data-edge-id="verify-changes" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="666.4,498;722.8,498" d="M 666.4 498 L 722.8 498" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="check" data-edge-to="changes" data-edge-label="审查结果" data-edge-key="0" data-edge-id="check-changes" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="745.2,498;801.6,498" d="M 745.2 498 L 801.6 498" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="confirm" data-edge-to="retrieve" data-edge-label="人工确认" data-edge-key="1" data-edge-id="confirm-retrieve" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="388.8,154;388.8,212" d="M 388.8 154 L 388.8 212" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="parse" data-edge-to="confirm" data-edge-label="章节树" data-edge-key="2" data-edge-id="parse-confirm" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="296,120;342.8,120" d="M 296 120 L 342.8 120" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="retrieve" data-edge-to="model" data-edge-label="embed() / rerank()" data-edge-key="3" data-edge-id="retrieve-model" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="388.8,280;388.8,372;487.20000000000005,372" d="M 388.8 280 L 388.8 364 Q 388.8 372 396.8 372 L 487.20000000000005 372" class="a-default" data-animate="edge" style="--step:10" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="retrieve" data-edge-to="select" data-edge-label="候选父块" data-edge-key="4" data-edge-id="retrieve-select" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="452.8,246;509.20000000000005,246" d="M 452.8 246 L 509.20000000000005 246" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="select" data-edge-to="check" data-edge-label="档位与校验结果" data-edge-key="5" data-edge-id="select-check" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="601.2,246;675.2,246;675.2,464" d="M 601.2 246 L 667.2 246 Q 675.2 246 675.2 254 L 675.2 464" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="select" data-edge-to="model" data-edge-label="chat()" data-edge-key="6" data-edge-id="select-model" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="555.2,280;555.2,338" d="M 555.2 280 L 555.2 338" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="upload" data-edge-to="parse" data-edge-key="7" data-edge-id="upload-parse" data-composition-routing="workflow-v2-auto" data-edge-role="main" data-composition-points="140,120;172,120" d="M 140 120 L 172 120" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
 
         <!-- Nodes -->
-        <g id="node-upload" data-node-id="upload" data-node-label="上传论文" tabindex="0" role="button" aria-label="聚焦上传论文，Markdown 文本入参, 接入与确认" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Markdown 文本入参" data-node-context="接入与确认">
-          <title>上传论文 · Markdown 文本入参 · 接入与确认</title>
-          <rect x="48" y="94" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="48" y="94" width="92" height="52" rx="8" class="c-frontend" data-animate="node" style="--step:0" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(54 100) scale(0.6875)">
+        <g id="node-upload" data-node-id="upload" data-node-label="输入论文" tabindex="0" role="button" aria-label="聚焦输入论文，paper_text 或 sample_id, 接入与确认" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="paper_text 或 sample_id" data-node-tag="二选一，都给则 400" data-node-context="接入与确认">
+          <title>输入论文 · paper_text 或 sample_id · 接入与确认 · 二选一，都给则 400</title>
+          <rect x="48" y="86" width="92" height="68" rx="8" class="c-mask"/>
+          <rect x="48" y="86" width="92" height="68" rx="8" class="c-frontend" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(54 92) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="94" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">上传论文</text>
-          <text data-detail="context" x="94" y="132" class="t-muted" font-size="8" text-anchor="middle">Markdown 文本入参</text>
+          <text data-node-label="" data-detail-anchor="" x="94" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">输入论文</text>
+          <text data-detail="context" x="94" y="124" class="t-muted" font-size="6" text-anchor="middle">paper_text 或 sample_id</text>
+        <text data-detail="fine" x="94" y="142" class="t-frontend" font-size="7" text-anchor="middle">二选一，都给则 400</text>
         </g>
 
-        <g id="node-confirm" data-node-id="confirm" data-node-label="确认章节" tabindex="0" role="button" aria-label="聚焦确认章节，人工确认章节树, 接入与确认" aria-pressed="false" data-node-kind="security" data-node-sublabel="人工确认章节树" data-node-tag="未确认不评分" data-node-context="接入与确认">
-          <title>确认章节 · 人工确认章节树 · 接入与确认 · 未确认不评分</title>
-          <rect x="172" y="86" width="92" height="68" rx="8" class="c-mask"/>
-          <rect x="172" y="86" width="92" height="68" rx="8" class="c-security" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(178 92) scale(0.6875)">
+        <g id="node-parse" data-node-id="parse" data-node-label="解析章节" tabindex="0" role="button" aria-label="聚焦解析章节，ATX 标题切成六类加未分类, 接入与确认" aria-pressed="false" data-node-kind="backend" data-node-sublabel="ATX 标题切成六类加未分类" data-node-context="接入与确认">
+          <title>解析章节 · ATX 标题切成六类加未分类 · 接入与确认</title>
+          <rect x="172" y="94" width="124" height="52" rx="8" class="c-mask"/>
+          <rect x="172" y="94" width="124" height="52" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(178 100) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="234" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">解析章节</text>
+          <text data-detail="context" x="234" y="132" class="t-muted" font-size="8" text-anchor="middle">ATX 标题切成六类加未分类</text>
+        </g>
+
+        <g id="node-confirm" data-node-id="confirm" data-node-label="确认章节" tabindex="0" role="button" aria-label="聚焦确认章节，人工改章节类型, 接入与确认" aria-pressed="false" data-node-kind="security" data-node-sublabel="人工改章节类型" data-node-tag="未确认不评分" data-node-context="接入与确认">
+          <title>确认章节 · 人工改章节类型 · 接入与确认 · 未确认不评分</title>
+          <rect x="342.8" y="86" width="92" height="68" rx="8" class="c-mask"/>
+          <rect x="342.8" y="86" width="92" height="68" rx="8" class="c-security" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(348.8 92) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="218" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">确认章节</text>
-          <text data-detail="context" x="218" y="124" class="t-muted" font-size="8" text-anchor="middle">人工确认章节树</text>
-        <text data-detail="fine" x="218" y="142" class="t-security" font-size="7" text-anchor="middle">未确认不评分</text>
+          <text data-node-label="" data-detail-anchor="" x="388.8" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">确认章节</text>
+          <text data-detail="context" x="388.8" y="124" class="t-muted" font-size="8" text-anchor="middle">人工改章节类型</text>
+        <text data-detail="fine" x="388.8" y="142" class="t-security" font-size="7" text-anchor="middle">未确认不评分</text>
         </g>
 
-        <g id="node-align" data-node-id="align" data-node-label="对齐赛题" tabindex="0" role="button" aria-label="聚焦对齐赛题，取该题约束与量规, 接入与确认" aria-pressed="false" data-node-kind="backend" data-node-sublabel="取该题约束与量规" data-node-context="接入与确认">
-          <title>对齐赛题 · 取该题约束与量规 · 接入与确认</title>
-          <rect x="296" y="94" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="296" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(302 100) scale(0.6875)">
+        <g id="node-retrieve" data-node-id="retrieve" data-node-label="逐维检索" tabindex="0" role="button" aria-label="聚焦逐维检索，三路各召回 6 条，合并去重, 取证与打分" aria-pressed="false" data-node-kind="backend" data-node-sublabel="三路各召回 6 条，合并去重" data-node-tag="确认后建索引" data-node-context="取证与打分">
+          <title>逐维检索 · 三路各召回 6 条，合并去重 · 取证与打分 · 确认后建索引</title>
+          <rect x="324.8" y="212" width="128" height="68" rx="8" class="c-mask"/>
+          <rect x="324.8" y="212" width="128" height="68" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(330.8 218) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="342" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">对齐赛题</text>
-          <text data-detail="context" x="342" y="132" class="t-muted" font-size="8" text-anchor="middle">取该题约束与量规</text>
+          <text data-node-label="" data-detail-anchor="" x="388.8" y="233" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">逐维检索</text>
+          <text data-detail="context" x="388.8" y="250" class="t-muted" font-size="8" text-anchor="middle">三路各召回 6 条，合并去重</text>
+        <text data-detail="fine" x="388.8" y="268" class="t-backend" font-size="7" text-anchor="middle">确认后建索引</text>
         </g>
 
-        <g id="node-retrieve" data-node-id="retrieve" data-node-label="逐维检索" tabindex="0" role="button" aria-label="聚焦逐维检索，过滤子块 → 取父块, 取证与打分" aria-pressed="false" data-node-kind="backend" data-node-sublabel="过滤子块 → 取父块" data-node-context="取证与打分">
-          <title>逐维检索 · 过滤子块 → 取父块 · 取证与打分</title>
-          <rect x="296" y="220" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="296" y="220" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(302 226) scale(0.6875)">
+        <g id="node-select" data-node-id="select" data-node-label="选档与子串校验" tabindex="0" role="button" aria-label="聚焦选档与子串校验，原句须是父块连续子串, 取证与打分" aria-pressed="false" data-node-kind="backend" data-node-sublabel="原句须是父块连续子串" data-node-tag="解析失败重试 1 次" data-node-context="取证与打分">
+          <title>选档与子串校验 · 原句须是父块连续子串 · 取证与打分 · 解析失败重试 1 次</title>
+          <rect x="509.20000000000005" y="212" width="92" height="68" rx="8" class="c-mask"/>
+          <rect x="509.20000000000005" y="212" width="92" height="68" rx="8" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(515.2 218) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="342" y="241" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">逐维检索</text>
-          <text data-detail="context" x="342" y="258" class="t-muted" font-size="8" text-anchor="middle">过滤子块 → 取父块</text>
+          <text data-node-label="" data-detail-anchor="" x="555.2" y="243" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">选档与子串校验</text>
+          <text data-detail="context" x="555.2" y="256.4" class="t-muted" font-size="7" text-anchor="middle">原句须是父块连续子串</text>
+        <text data-detail="fine" x="555.2" y="268.9" class="t-backend" font-size="7" text-anchor="middle">解析失败重试 1 次</text>
         </g>
 
-        <g id="node-select" data-node-id="select" data-node-label="选档" tabindex="0" role="button" aria-label="聚焦选档，五维档位与原句, 取证与打分" aria-pressed="false" data-node-kind="backend" data-node-sublabel="五维档位与原句" data-node-context="取证与打分">
-          <title>选档 · 五维档位与原句 · 取证与打分</title>
-          <rect x="444.4" y="220" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="444.4" y="220" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(450.4 226) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="490.4" y="241" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">选档</text>
-          <text data-detail="context" x="490.4" y="258" class="t-muted" font-size="8" text-anchor="middle">五维档位与原句</text>
-        </g>
-
-        <g id="node-check" data-node-id="check" data-node-label="规则审查" tabindex="0" role="button" aria-label="聚焦规则审查，数字 · 引用 · 越界, 取证与打分" aria-pressed="false" data-node-kind="backend" data-node-sublabel="数字 · 引用 · 越界" data-node-context="取证与打分">
-          <title>规则审查 · 数字 · 引用 · 越界 · 取证与打分</title>
-          <rect x="574.4" y="220" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="574.4" y="220" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(580.4 226) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
-          </g>
-          <text data-node-label="" data-detail-anchor="" x="620.4" y="241" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">规则审查</text>
-          <text data-detail="context" x="620.4" y="258" class="t-muted" font-size="7.7" text-anchor="middle">数字 · 引用 · 越界</text>
-        </g>
-
-        <g id="node-model" data-node-id="model" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，HTTPS · 对话与嵌入, 信任边界外 · 外部依赖" aria-pressed="false" data-node-kind="external" data-node-sublabel="HTTPS · 对话与嵌入" data-node-tag="外部依赖" data-node-context="信任边界外 · 外部依赖">
-          <title>模型兼容接口 · HTTPS · 对话与嵌入 · 信任边界外 · 外部依赖 · 外部依赖</title>
-          <rect x="444.4" y="338" width="92" height="68" rx="8" class="c-mask"/>
-          <rect x="444.4" y="338" width="92" height="68" rx="8" class="c-external" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(450.4 344) scale(0.6875)">
+        <g id="node-model" data-node-id="model" data-node-label="模型兼容接口" tabindex="0" role="button" aria-label="聚焦模型兼容接口，chat / embeddings / rerank, 信任边界外 · 外部依赖" aria-pressed="false" data-node-kind="external" data-node-sublabel="chat / embeddings / rerank" data-node-tag="外部依赖" data-node-context="信任边界外 · 外部依赖">
+          <title>模型兼容接口 · chat / embeddings / rerank · 信任边界外 · 外部依赖 · 外部依赖</title>
+          <rect x="487.20000000000005" y="338" width="136" height="68" rx="8" class="c-mask"/>
+          <rect x="487.20000000000005" y="338" width="136" height="68" rx="8" class="c-external" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(493.20000000000005 344) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="490.4" y="370.2" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">模型兼容接口</text>
-          <text data-detail="context" x="490.4" y="384.8" class="t-muted" font-size="7.7" text-anchor="middle">HTTPS · 对话与嵌入</text>
-        <text data-detail="fine" x="490.4" y="397.6" class="t-external" font-size="7" text-anchor="middle">外部依赖</text>
+          <text data-node-label="" data-detail-anchor="" x="555.2" y="359" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">模型兼容接口</text>
+          <text data-detail="context" x="555.2" y="376" class="t-muted" font-size="8" text-anchor="middle">chat / embeddings / rerank</text>
+        <text data-detail="fine" x="555.2" y="394" class="t-external" font-size="7" text-anchor="middle">外部依赖</text>
         </g>
 
-        <g id="node-verify" data-node-id="verify" data-node-label="子串校验" tabindex="0" role="button" aria-label="聚焦子串校验，原句须是切片子串, 校验与产物" aria-pressed="false" data-node-kind="backend" data-node-sublabel="原句须是切片子串" data-node-context="校验与产物">
-          <title>子串校验 · 原句须是切片子串 · 校验与产物</title>
-          <rect x="574.4" y="472" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="574.4" y="472" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(580.4 478) scale(0.6875)">
+        <g id="node-check" data-node-id="check" data-node-label="规则审查" tabindex="0" role="button" aria-label="聚焦规则审查，数字 · 引用 · 越界 · 缺情形, 校验与产物" aria-pressed="false" data-node-kind="backend" data-node-sublabel="数字 · 引用 · 越界 · 缺情形" data-node-tag="纯确定性，不调模型" data-node-context="校验与产物">
+          <title>规则审查 · 数字 · 引用 · 越界 · 缺情形 · 校验与产物 · 纯确定性，不调模型</title>
+          <rect x="605.2" y="464" width="140" height="68" rx="8" class="c-mask"/>
+          <rect x="605.2" y="464" width="140" height="68" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(611.2 470) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="620.4" y="493" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">子串校验</text>
-          <text data-detail="context" x="620.4" y="510" class="t-muted" font-size="8" text-anchor="middle">原句须是切片子串</text>
+          <text data-node-label="" data-detail-anchor="" x="675.2" y="485" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">规则审查</text>
+          <text data-detail="context" x="675.2" y="502" class="t-muted" font-size="8" text-anchor="middle">数字 · 引用 · 越界 · 缺情形</text>
+        <text data-detail="fine" x="675.2" y="520" class="t-backend" font-size="7" text-anchor="middle">纯确定性，不调模型</text>
         </g>
 
-        <g id="node-changes" data-node-id="changes" data-node-label="修改清单" tabindex="0" role="button" aria-label="聚焦修改清单，每条指回上游结果, 校验与产物" aria-pressed="false" data-node-kind="backend" data-node-sublabel="每条指回上游结果" data-node-context="校验与产物">
-          <title>修改清单 · 每条指回上游结果 · 校验与产物</title>
-          <rect x="722.8" y="472" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="722.8" y="472" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:7" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(728.8 478) scale(0.6875)">
+        <g id="node-changes" data-node-id="changes" data-node-label="修改清单" tabindex="0" role="button" aria-label="聚焦修改清单，三段顺序固定, 校验与产物" aria-pressed="false" data-node-kind="backend" data-node-sublabel="三段顺序固定" data-node-tag="每条指回上游记录" data-node-context="校验与产物">
+          <title>修改清单 · 三段顺序固定 · 校验与产物 · 每条指回上游记录</title>
+          <rect x="801.6" y="464" width="92" height="68" rx="8" class="c-mask"/>
+          <rect x="801.6" y="464" width="92" height="68" rx="8" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(807.6 470) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="768.8" y="493" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">修改清单</text>
-          <text data-detail="context" x="768.8" y="510" class="t-muted" font-size="8" text-anchor="middle">每条指回上游结果</text>
+          <text data-node-label="" data-detail-anchor="" x="847.6" y="485" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">修改清单</text>
+          <text data-detail="context" x="847.6" y="502" class="t-muted" font-size="8" text-anchor="middle">三段顺序固定</text>
+        <text data-detail="fine" x="847.6" y="520" class="t-backend" font-size="7" text-anchor="middle">每条指回上游记录</text>
         </g>
 
         <!-- Edge labels -->
-
-
-
-        <g data-detail="context" data-edge-from="retrieve" data-edge-to="model" data-edge-label="embed()" data-edge-key="3" data-edge-id="retrieve-model">
-          <rect x="371.4" y="352" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="393.2" y="362" class="t-muted" font-size="8" text-anchor="middle">embed()</text>
+        <g data-detail="context" data-edge-from="check" data-edge-to="changes" data-edge-label="审查结果" data-edge-key="0" data-edge-id="check-changes">
+          <rect x="749.2" y="478" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="773.4000000000001" y="488" class="t-muted" font-size="8" text-anchor="middle">审查结果</text>
+        </g>
+        <g data-detail="context" data-edge-from="confirm" data-edge-to="retrieve" data-edge-label="人工确认" data-edge-key="1" data-edge-id="confirm-retrieve">
+          <rect x="364.6" y="173" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="388.8" y="183" class="t-muted" font-size="8" text-anchor="middle">人工确认</text>
+        </g>
+        <g data-detail="context" data-edge-from="parse" data-edge-to="confirm" data-edge-label="章节树" data-edge-key="2" data-edge-id="parse-confirm">
+          <rect x="300" y="100" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="319.4" y="110" class="t-muted" font-size="8" text-anchor="middle">章节树</text>
+        </g>
+        <g data-detail="context" data-edge-from="retrieve" data-edge-to="model" data-edge-label="embed() / rerank()" data-edge-key="3" data-edge-id="retrieve-model">
+          <rect x="389.8" y="352" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="438" y="362" class="t-muted" font-size="8" text-anchor="middle">embed() / rerank()</text>
         </g>
         <g data-detail="context" data-edge-from="retrieve" data-edge-to="select" data-edge-label="候选父块" data-edge-key="4" data-edge-id="retrieve-select">
-          <rect x="392" y="226" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="416.2" y="236" class="t-muted" font-size="8" text-anchor="middle">候选父块</text>
+          <rect x="456.8" y="226" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="481" y="236" class="t-muted" font-size="8" text-anchor="middle">候选父块</text>
         </g>
-        <g data-detail="context" data-edge-from="select" data-edge-to="check" data-edge-label="档位" data-edge-key="5" data-edge-id="select-check">
-          <rect x="540.4" y="226" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="555.4" y="236" class="t-muted" font-size="8" text-anchor="middle">档位</text>
+        <g data-detail="context" data-edge-from="select" data-edge-to="check" data-edge-label="档位与校验结果" data-edge-key="5" data-edge-id="select-check">
+          <rect x="599.6" y="226" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="638.2" y="236" class="t-muted" font-size="8" text-anchor="middle">档位与校验结果</text>
         </g>
         <g data-detail="context" data-edge-from="select" data-edge-to="model" data-edge-label="chat()" data-edge-key="6" data-edge-id="select-model">
-          <rect x="471" y="295" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="490.4" y="305" class="t-muted" font-size="8" text-anchor="middle">chat()</text>
+          <rect x="535.8000000000001" y="299" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="555.2" y="309" class="t-muted" font-size="8" text-anchor="middle">chat()</text>
         </g>
 
-        <g data-detail="context" data-edge-from="verify" data-edge-to="changes" data-edge-label="通过校验" data-edge-key="8" data-edge-id="verify-changes">
-          <rect x="670.3999999999999" y="478" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="694.5999999999999" y="488" class="t-muted" font-size="8" text-anchor="middle">通过校验</text>
-        </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
@@ -5573,9 +5571,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>主路径只有一条</h3>
         </div>
         <ul>
-          <li>上传 → 确认章节 → 对齐赛题 → 逐维检索 → 选档 → 规则审查 → 子串校验 → 修改清单</li>
-          <li>未确认章节树不进入评分：图停在确认节点</li>
-          <li>检查点按 review_id 保存，重启后从暂停点继续</li>
+          <li>输入 → 解析章节 → 确认章节 → 逐维检索 → 选档与子串校验 → 规则审查 → 修改清单</li>
+          <li>未确认章节树不进入评分：图停在 confirm 节点，评分节点调用次数为 0</li>
+          <li>检查点用 InMemorySaver，thread_id 取 review_id；进程重启时按快照回填，仍停在确认节点</li>
         </ul>
       </div>
 
@@ -5585,21 +5583,21 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>信任边界与外部依赖</h3>
         </div>
         <ul>
-          <li>全项目只有模型客户端发 HTTP，只使用 httpx</li>
-          <li>模型兼容接口在信任边界外：检索走 embed()，选档走 chat()</li>
-          <li>密钥只从环境变量读，不打印、不回显、不落盘</li>
+          <li>全项目只有模型客户端发 HTTP，只使用 httpx；对话、嵌入、重排各一个端点</li>
+          <li>检索走 embed() 与 rerank()，选档走 chat()；重排未配 RERANK_* 时跳过，不算失败</li>
+          <li>四个模型键齐全才走模型路径；缺任一键逐字走确定性回退，档位不由模型给出</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot emerald"></div>
+          <div class="card-dot amber"></div>
           <h3>校验与产物</h3>
         </div>
         <ul>
-          <li>引用必须是切片的连续子串，对不上写「引用失败」</li>
-          <li>证据不足不换算成分数，不参与加权</li>
-          <li>输出限于档位、论文原句与修改清单</li>
+          <li>原句必须是父块连续子串，对不上记「引用失败」；证据不足不换算分数，两者都不进加权</li>
+          <li>mention 约束的证据里没出现过时，该维不得为「充分」，由代码降一档</li>
+          <li>修改清单只转写上游结果，顺序固定：题目约束与数字冲突 → 证据不足 → 表述</li>
         </ul>
       </div>
     </div>

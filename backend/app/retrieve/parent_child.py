@@ -90,6 +90,9 @@ class ChildChunk:
     char_end: int
     doc_type: str = CHILD_DOC_TYPE
     embedding: tuple[float, ...] | None = None
+    # 检索必须能按本次论文隔离：同一赛题下多篇论文共用一个 collection，
+    # 少了这个键就会召回别的论文的父块，引用因此指向别人的论文。
+    review_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -181,11 +184,16 @@ def build_children(
     doc_type: str = CHILD_DOC_TYPE,
     max_chars: int = DEFAULT_MAX_CHARS,
     embeddings: Sequence[Sequence[float]] | None = None,
+    review_id: str = "",
 ) -> list[ChildChunk]:
-    """把父块全文切成子块并附上元数据。子块只带片段文本，父块全文不进 Chroma。"""
+    """把父块全文切成子块并附上元数据。子块只带片段文本，父块全文不进 Chroma。
+
+    `review_id` 缺省取父块自身的 review_id，保证检索能按本次论文隔离。
+    """
     _require_doc_type(doc_type)
     resolved_section = section_type or parent.section_type
     _require_single_value(resolved_section, parent.parent_id)
+    resolved_review = review_id or parent.review_id or ""
 
     children: list[ChildChunk] = []
     for index, chunk in enumerate(split_into_chunks(parent.content, max_chars=max_chars)):
@@ -203,6 +211,7 @@ def build_children(
                 char_end=chunk.char_end,
                 doc_type=doc_type,
                 embedding=vector,
+                review_id=str(resolved_review),
             )
         )
     return children
@@ -222,7 +231,7 @@ def _require_single_value(section_type: Any, where: str) -> None:
 
 
 def child_metadata(child: ChildChunk) -> dict[str, Any]:
-    """子块元数据：至少这八个键，全部是单值。"""
+    """子块元数据：至少这九个键，全部是单值。"""
     _require_doc_type(child.doc_type)
     _require_single_value(child.section_type, child.chunk_id)
     return {
@@ -234,6 +243,7 @@ def child_metadata(child: ChildChunk) -> dict[str, Any]:
         "section_type": str(child.section_type),
         "char_start": int(child.char_start),
         "char_end": int(child.char_end),
+        "review_id": str(child.review_id),
     }
 
 
@@ -402,12 +412,20 @@ def _where(
     rubric_id: str,
     section_types: Any = None,
     doc_types: Any = None,
+    review_id: str | None = None,
 ) -> dict[str, Any]:
-    """过滤条件全部交给向量库：先过滤，再谈排序与截断。section_type 走单值 $in。"""
+    """过滤条件全部交给向量库：先过滤，再谈排序与截断。section_type 走单值 $in。
+
+    `review_id` 必须传：同一赛题下会有多篇论文共用一个 collection，
+    只按 contest_id/rubric_id 过滤会让 A 论文召回 B 论文的父块，
+    引用因此指向别的论文，破坏「引用可回溯到本次论文」这条底线。
+    """
     clauses: list[dict[str, Any]] = [
         {"contest_id": str(contest_id)},
         {"rubric_id": str(rubric_id)},
     ]
+    if review_id:
+        clauses.append({"review_id": str(review_id)})
     if section_types:
         values = [section_types] if isinstance(section_types, str) else list(section_types)
         values = [str(value) for value in values if str(value).strip()]
@@ -426,6 +444,7 @@ def search_children_then_parents(
     *,
     contest_id: str,
     rubric_id: str,
+    review_id: str | None = None,
     section_types: Sequence[str] | str | None = None,
     limit: int = DEFAULT_LIMIT,
     client: Any = None,
@@ -436,7 +455,7 @@ def search_children_then_parents(
     candidate_factor: int = DEFAULT_CANDIDATE_FACTOR,
     doc_types: Sequence[str] | str | None = None,
 ) -> list[ParentBlock]:
-    """先按 contest_id、rubric_id、section_types 过滤子块，再按 parent_id 取回父块全文。
+    """先按 contest_id、rubric_id、review_id、section_types 过滤子块，再按 parent_id 取回父块全文。
 
     `rerank` 只能改变候选顺序，不能把被过滤掉的片段加回来；`doc_types` 用来分路
     （档位说明 / 论文子块 / 扣分点）。返回项含 parent_id、section_type、content（来自 MySQL）
@@ -448,7 +467,7 @@ def search_children_then_parents(
         raise ValueError("本版不调用嵌入模型：请显式传 query_embedding")
 
     collection = get_collection(client, embedding_function=embedding_function)
-    where = _where(contest_id, rubric_id, section_types, doc_types)
+    where = _where(contest_id, rubric_id, section_types, doc_types, review_id)
 
     available = collection.count()
     wanted = max(limit * max(int(candidate_factor), 1), limit)

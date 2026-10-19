@@ -24,6 +24,7 @@ import type {
   RubricCopyResult,
   RubricPublishResult,
   SampleListResponse,
+  AgentStepsResponse,
 } from './types'
 
 export class ApiError extends Error {
@@ -143,6 +144,10 @@ export function resumeReview(reviewId: string, sections: PaperSection[]): Promis
 /** 读取一条评审：已落档返回报告，只有会话快照时返回章节树。 */
 export function getReview(reviewId: string): Promise<ReviewArchive> {
   return request<ReviewArchive>(`/api/reviews/${encodeURIComponent(reviewId)}`)
+}
+
+export function fetchAgentSteps(reviewId: string): Promise<AgentStepsResponse> {
+  return request<AgentStepsResponse>(`/api/reviews/${encodeURIComponent(reviewId)}/agent-steps`)
 }
 
 /** 样例列表。`isDemo` 给布尔值时才带查询参数。 */

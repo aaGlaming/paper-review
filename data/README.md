@@ -6,7 +6,7 @@
 
 ```text
 data/
-├── papers/                          原始素材（按赛题归档，代码不直接读）
+├── papers/                          原始素材 PDF（**不入库**，见文末「关于原始 PDF」）
 │   ├── cumcm-2024-A/
 │   │   ├── A题.pdf                  题面（文件名以「题」结尾）
 │   │   ├── A016.pdf  A053.pdf  A163.pdf  A178.pdf  A242.pdf
@@ -67,4 +67,27 @@ python scripts/update_statements.py       # 用题面 PDF 刷新 contest.json �
 系统界面不再展示它们：`list_samples()` 优先列 `papers/` 转出的真实论文，一篇都没有时才回退到这三篇。
 ## 六、验收夹具
 
-contests/probe-critique-acceptance/ 是 Phase-2 判据 5 的验收夹具，只用于取证 mention guard 与 critique 路径，不参与真实评测集。
+`contests/probe-critique-acceptance/` 是 Phase-2 判据 5 的验收夹具：量规与 `cumcm-2024-A` **逐字段相同**，另加一条论文绝对命不中的 mention 约束（关键词「量子纠缠校准」）与量规夹具。
+
+- 用途：让 `apply_mention_guard` 有「判充分但缺必提条件」的作用对象，用于验证 critique 降档路径。
+- 结论：该夹具跑完 **critique 轨迹仍为 0**，因为模型档位本身随机、极少判「充分」，约束只能拦不能造。详见 `docs/plan/acceptance/report-V3.md` §3.4。
+- 处置：**仅用于本次取证，不参与真实评测集**，后续可删除。
+
+## 七、关于原始 PDF（不入库）
+
+`data/papers/` 已加入 `.gitignore`，原因有三：
+
+1. **体积**：10 篇 PDF 共 46 MB，而转出的 Markdown 只有 776 KB，入库会让仓库体积涨约 3 倍；
+2. **版权**：这些是 CUMCM 官方展示论文，公开仓库长期保存不合适；
+3. **可复现**：Markdown 已在库，PDF 只是转换输入。
+
+**别人拿到本仓库后如何复现**：从官方渠道下载对应 PDF，按下面的目录结构放回 `data/papers/<赛题>/`，再跑转换脚本即可。
+
+```bash
+# 需要 rapidocr-onnxruntime（CPU 单页 6~10 秒，10 篇约 2 小时）
+python scripts/batch_papers.py --workers 4     # 论文 PDF → data/samples/*.md
+python scripts/update_statements.py           # 题面 PDF → contest.json 的 statement
+python scripts/retitle_md.py --all            # 按最新规则重排标题（不重跑 OCR）
+```
+
+脚本会扫描 `data/papers/` 的子目录**自动发现赛题**，无需改代码；题面 PDF 按文件名后缀「题.pdf」识别并从论文批次中排除。

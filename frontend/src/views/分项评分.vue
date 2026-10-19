@@ -10,6 +10,7 @@ import artUrl from '../assets/sketch/sketch-bg-scoring.svg'
 import spotUrl from '../assets/sketch/sketch-spot-scoring.svg'
 import ScoringEmptyIllustration from '../components/illustrations/ScoringEmptyIllustration.vue'
 import StageTracker from '../components/StageTracker.vue'
+import AgentTracePanel from '../components/AgentTracePanel.vue'
 import { isArchivedReview } from '../composables/reviewShape'
 import { readReviewFlow } from '../composables/useReviewFlow'
 
@@ -49,6 +50,8 @@ const status = computed(() => report.value?.status ?? '')
 const source = computed(() => report.value?.source ?? '')
 const modelName = computed(() => report.value?.model_name ?? archive.value?.model_name ?? '')
 const score = computed(() => report.value?.score ?? null)
+const reviewId = computed(() => readReviewFlow().reviewId || report.value?.review_id || '')
+const terminatedBy = computed(() => report.value?.agent_terminated_by ?? null)
 
 // 加权是否真的产生过：只有非确定性回退、且 weight_sum 非 0 才算。页面不自算。
 const weightProduced = computed(
@@ -244,6 +247,7 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
         <h2 class="scoring__subtitle">命中处前后文</h2>
         <pre class="scoring__located-body">{{ sections[located.sectionIndex]?.content.slice(0, located.start) }}<mark ref="locatedEl" data-testid="located-mark">{{ located.quote }}</mark>{{ sections[located.sectionIndex]?.content.slice(located.start + located.quote.length) }}</pre>
       </section>
+      <AgentTracePanel v-if="reviewId" :review-id="reviewId" :terminated-by="terminatedBy" />
       <p v-if="locateError" class="scoring__locate-error" data-testid="locate-error">{{ locateError }}</p>
     </template>
 
