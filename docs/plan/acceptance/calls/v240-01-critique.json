@@ -1,0 +1,1094 @@
+{
+  "contest_id": "probe-critique-acceptance",
+  "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+  "create_response": {
+    "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+    "status": "待确认",
+    "sections": [
+      {
+        "title": "基于动态搜索的“板凳龙”运动状态及路线研究",
+        "section_type": "未分类",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "摘要",
+        "section_type": "未分类",
+        "level": 1,
+        "content": "板凳龙作为浙闽地区的一种传统民俗活动，以其高观赏性和舞龙队的协调配合著称。本文针对板凳龙表演的三个阶段盘入、调头和盘出，通过分析舞龙队的行进路线及各节板凳之间的几何关系，建立了运动模型和行进路线优化模型。采用多种优化方法，对舞龙队在不同条件下的运动状态以及行进路线进行研究。\n\n针对问题一：构建盘入运动模型。首先，根据盘入路线为等距螺线的特征，建立极坐标系。针对龙头位置，建立有关极角的微分方程，利用微积分及二分法求解龙头前把手的极坐标，继而利用余弦定理，递推求解相邻板凳的位置关系，获得各把手的位置函数。通过对位置函数求导，得到相应的速度函数。最终，将极坐标转换为直角坐标，求得各把手在各时刻的位置和速度，结果详见表2，表3和result1.xlsx。\n\n针对问题二：构建碰撞检测模型。首先，证明最易发生碰撞的区间为最内圈与其外侧一圈的板凳，缩小检测范围。随后，确定碰撞条件为：内圈板凳顶点与外圈板凳把手连线的距离小于板凳宽度的一半（0.15m），并通过几何关系算出距离函数，判断该函数的最小值是否小于0.15m以确定碰撞是否发生。最后，采用动态搜索策略，先用变步长搜索确定时间范围，再进行二分搜索，确定首次碰撞的准确时间。我们得到停止盘入时间为412.473838s，此时各把手的位置和速度详见表4和result2.xlsx。\n\n针对问题三：构建最短螺距的单目标优化模型。其中目标函数和决策变量为螺距大小。在约束条件方面，基于板凳的几何参数和问题二中的参数限定螺距范围，基于盘入运动模型确定龙头前把手进人调头空间的时间，并利用碰撞检测模型判断进入调头空间前是否发生碰撞，建立相应约束。在优化求解过程中，对比后选用粒子群算法求解板间最小距离，并结合变步长搜索求得最短螺距为0.450337m。\n\n针对问题四：基于问题一的模型，构建调头运动模型。首先证明在给定条件下，调头曲线长度为常数，无法进一步减小。随后，将调头路线划分为四个部分，通过几何关系求解出各部分的曲线方程。沿用问题一的推导方法，首先求解龙头前把手位置函数，再通过递推关系和求导计算其余把手的位置函数和速度函数。我们对调头空间附近的递推进行了详细的分类讨论，并给出了相应的递推方程。最终，将极坐标转换为直角坐标，求得各板凳把手在各时刻的位置和速度，详见表5，表6和result4.xlsx。\n\n针对问题五：在调头运动模型的基础上，构建各把手最大速度的优化模型。首先，通过比例转换，将目标转化为在龙头速度仍为1m/s的条件下，求解各把手在所有时刻的最大速度。随后，基于问题四的速度规律及物理规律确定最大速度出现的大致时间范围，接着通过大步长搜索确定了最大速度出现的区间为14s，15s。由于函数在该区间内呈单峰性，应用三分搜索算法进一步精确定位最大速度。最后，通过比例关系还原龙头的最大速度，得到龙头最大速度约为1.246266m/s。\n\n关键字：板凳龙等距螺线动态搜索粒子群算法单目标优化"
+      },
+      {
+        "title": "问题重述",
+        "section_type": "未分类",
+        "level": 1,
+        "content": "1.1问题背景作为一项国家级非遗传统民俗活动，“板凳龙”可谓匠心独运之作。精美的龙身制作，壮观的演出形式都赋予了“板凳龙”极高的技术难度和观赏价值。一条“板凳龙“通常由“龙头”，“龙尾”和上百节“龙身”组成，长达上百米。表演时，舞龙队一般沿螺线形向螺线中心盘入，在一定范围的调头空间内完成调头，再换方向逆时针盘出。在此期间，需要保持整个舞龙队型的完整，相邻“龙身”之间不能发生碰撞，行进速度越快，占地面积越小，则效果越佳。\n\n然而由于舞龙队通常人数众多，队伍较长，往往难以确保“板凳龙”的完美呈现。\n\n因此为了能够给观众提供最佳演出，需要研究舞龙队盘入、调头、盘出线路和行进速度等相关参数。\n\n1.2问题提出基于上述背景，要求建立数学模型解决下列问题。\n\n一条板凳龙由223节板宽均为0.3m的板凳组成，其中包含1节龙头（板长3.41m），221节龙身（板长2.20m），1节龙尾（板长2.20m）。每节板凳上均有两个孔，孔径（孔的直径）为5.5cm，孔的中心距离最近的板头27.5cm。\n\n问题一：舞龙队以螺线第16圈A点处为起点，龙头前把手行进速度保持速度为1m/s情况下，沿螺距为0.55m的等距螺线顺时针盘入，据此计算出从初始时刻至第300s，每秒龙头前把手、龙尾前后把手以及各节龙身前把手的位置与速度。\n\n问题二：在问题一的条件下，为了避免在不断盘入过程中任意两节板凳发生碰撞，舞龙队需要在某时刻停止继续盘人，给出停止盘人时刻。并且计算出此时刻各把手的位置和速度。\n\n问题三：舞龙队从顺时针盘入到逆时针盘出需要经过调头过程。给定一个以螺线中心为圆心，直径为9m的圆形调头空间，在保证龙头前把手进入圆形调头空间前，板凳间不发生碰撞的条件下，求解满足要求的最小螺距。\n\n问题四：在给定的调头路径及约束条件下，判断是否能够优化调头路径，使得调头曲线长度变短。以开始调头时间为零时刻，给出从一100s到100s，每秒各把手的位置和速度。\n\n问题五：沿着问题四的调头路径行进过程中，龙头速度保持不变。在保证各把手速度均不超过2m/s的条件下，确定龙头的最大行进速度。"
+      },
+      {
+        "title": "问题分析",
+        "section_type": "未分类",
+        "level": 1,
+        "content": "2.1问题一问题一的核心是构建一个运动模型，以确定板凳龙沿螺旋路径运动时各个把手在各时刻的位置和速度。由等距螺线的特征，我们可以建立极坐标系简化计算。鉴于龙头前把手的速度为常量，可依据速度公式推导龙头前把手的位置随时间变化的函数表达式。\n\n在此基础上，考虑相邻把手之间的几何关系，构建各把手位置坐标的递推关系，并对时间求导，就能获得各把手速度的递推公式。基于龙头前把手的位置变化函数及递推关系，可以进一步递推出其他所有板凳在任意时刻的位置和速度。由于计算过程在极坐标系中完成，最终需要将结果转换为直角坐标系下的相应坐标。求解过程可以使用二分搜索法完成模型实现。\n\n2.2问题二问题二中需要确定碰撞发生的判定条件。根据问题一中的各把手极角变化结果及刚体运动的物理规律，可初步确定最可能发生碰撞的区域，从而缩小检测范围。接着，利用相邻板凳之间的几何关系，计算在指定范围内的两板凳间最小距离。结合碰撞的物理定义，确定两板凳间的安全距离國值。当最小距离小于该國值时，即可判定发生碰撞。\n\n在求解过程中可以使用以变步长搜索为基础的动态搜索方法确定首次发生碰撞的区间。\n\n在该区间内使用二分搜索法，得到精度较高的停止盘入时间。\n\n2.3问题三问题三中需要构建一个优化模型，求解螺距的最小值。首先，需明确优化模型的约束条件。根据问题一中在已知螺距下的计算结果及板凳的几何特性，可以缩小符合条件的螺距范围。通过计算龙头前把手到达调头空间边界的时刻，确定进入调头空间的最小螺距。在此过程中，还需利用问题二中的碰撞检测模型，确保在进人调头空间前未发生碰撞。模型求解采用变步长遍历的方法，逐步缩小步长以提高计算精度，结合启发式算法优化最短距离的计算过程。\n\n2.4问题四问题四是在问题一模型基础上的扩展。基于题目提供的调头路径条件，通过几何相关知识可判断是否存在最优路径。由于路径较为复杂，可将其视作由四段曲线构成，并通过几何关系求解其中两段圆弧的参数方程。延续问题一的建模方式，先求出龙头前把手的每秒位置变化函数，再通过递推关系求解其余把手的位置函数。递推关系的求解需要区分相邻把手位于相同或不同曲线上的情况，速度的计算也需遵循类似的方法。\n\n2.5问题五问题五的目的是建立一个优化模型，求解最大速度。首先需要在问题四的基础上，计算全过程中各把手的最大速度。其次需要对问题四的结果进行分析，结合物理规律，缩小搜索范围。最后依据速度最大值函数的特征，采用适当的算法求解最大速度。"
+      },
+      {
+        "title": "模型假设",
+        "section_type": "假设",
+        "level": 1,
+        "content": "1.忽略外力因素：外部阻力对板凳龙的运动无影响。\n\n2.忽略把手粗细，认为把手是理想无厚度的几何连接点：把手粗细只有0.055m，与题中其余长度相比，可忽路不计。\n\n3.忽略板凳厚度，认为每一张板凳都平行于地面：由于题目未给出板凳厚度，而其尺度较小，因此可忽路不计，进而所有的板凳都平行于地面且在同一高度。\n\n4.每节板凳和连接的把手是刚体，不会发生形变：板凳和把手的长度、宽度等尺寸保持不变，各部分的相对位置不随时间变化。"
+      },
+      {
+        "title": "符号说明",
+        "section_type": "未分类",
+        "level": 1,
+        "content": "表1符号说明符号说明单位P螺距mt时间S某块板凳两孔中轴线的距离m(ci,yi)编号为的把手的直角坐标表示(m,m)（r0）（盘入和盘出曲线）\n\n编号为的把手的极坐标表示(m,rad)0（调头曲线）\n\n编号为的把手的参数表示radU编号为的把手速度大小m/s编号为的板凳前后把手所在直线A;编号为的板凳外侧前顶点B:编号为的板凳外侧后顶点dA(t,e,))时刻点A到y的距离mdB(t,e,))t时刻点B到的距离m"
+      },
+      {
+        "title": "1盘人运动模型的建立",
+        "section_type": "模型",
+        "level": 1,
+        "content": "对于该螺线形盘入的运动模型，我们不妨考虑极坐标系进行求解。在极坐标系下，龙头前把手对应的极径ro和极角0满足以下关系：dro=2π其中，d=0.55m为螺距。\n\n在极坐标系下，我们可以根据速度公式得出龙头前把手的速度uo：(1)其中0o<0为极角速度，20=1m/s为常量。通过分离变量，上述微分方程可变为：p/1 + 0d0o=vodt2元将上式两边分别积分，可得：4πuot= 32π√1 +(32π)² + 1n (32π + √1 + (32π)²P-0o√1+0-1n(0o+√1+0(2)我们已知初始时刻龙头前把手位于螺线第16圈A点处，即0o（t=0)=32π，又因为该方程右边为关于0的单调函数，所以我们便可以解得0(t)，即为龙头前把手随时间变化的位置函数。\n\n由于题目中给出的坐标系为直角坐标系，因此我们需要将极坐标系转化为直角坐标系内的相应坐标，公式如下：d0oCo = ro cos 0o =cos 0o2πdoo sinfoy0=rosinθo=2π由于已知相邻板凳之间存在一定的几何关系，因此我们可以利用几何关系和龙头前把手的位置函数，通过递推关系求出其余各节板凳相应位置的坐标以及速度。\n\n我们仍在极坐标系下考虑相邻板凳间的几何关系：从龙头前把手开始依次用0，1，2，给各个把手编号，设编号为n的把手极坐标为（r8）.同样，通过极径和极角的关系，有：以编号为n和n+1的两个把手为例，在如图2所示的三角形中运用余弦定理可得²=²+1-2rnn+1cos（0n+1-0n）\n\nn+1其中为板凳上两孔之间距离：2.86m，若n=01.65m，若n≥1(rmo)(rn+1m+1)图2相邻把手几何关系示意图将极径和极角关系代人可得：=θ²+θ2+1-20n0n+1cos（0n+1-θn)(3)通过该递推关系式与8（t）的函数表达式即可得到8（t）的函数表达式.同样由于我们所要求的为直角坐标系里的相应坐标，通过下列坐标变换：dn=rncos0n=Oncos0n2πdyn=sinOn=-OnsinO2π便可求得任意时刻舞龙队的位置坐标。\n\n对于速度的求解，我们将（3）式两边分别对时间求导，整理后可得角速度的递推关系：0n+120n-20n+1cos（0n+1-0n）-20n0n+1sin（0n+1-0n)0n20n+1-20ncos（0n+1-0n)+20n0n+1sin(0n+1-0n)通过上文（1）式可以求得0，因此可以得出编号n+1的龙身速度+1：PUn+110n+1√1+02(4)2π"
+      },
+      {
+        "title": "2盘人运动模型的求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": "根据前文所述的计算方法，我们通过二分搜索法解方程（2）求得从初始时刻至300s内每秒钟龙头前把手的位置信息。\n\n接着我们通过极角的递推关系式（3）和速度表达式（4）求出在给定的时间范围内，每秒龙身各节把手的位置坐标以及速度。表2和表3中是部分龙身把手的相应求解结果（保留小数点后六位），全部把手的位置及速度见表格文件result1.xlsx。\n\n表2部分把手坐标随时间变化情况0s60s120 s180s240s300s龙头x（m）\n\n8.8000005.799209-4.084887-2.9636092.5944944.420274龙头y（m）\n\n0.000000-5.771092-6.3044796.094780-5.3567432.320429第1节龙身x（m）\n\n8.3638247.456758-1.445473-5.2371184.8212212.459489第1节龙身y（m）\n\n2.826544-3.440399-7.4058834.359627-3.5619494.402476第51节龙身x（m）\n\n-9.518732-8.686317-5.5431492.8904555.980011-6.301346第51节龙身y（m）\n\n1.3411372.5401086.3779467.249289-3.8277580.465829第101节龙身x（m）\n\n2.9139835.6871165.3619391.898795-4.917371-6.237722第101节龙身y（m）\n\n-9.918311-8.001384-7.557638-8.471614-6.3798743.936008第151节龙身x（m）\n\n10.8617266.6823122.3887571.0051542.9653787.040740第151节龙身y（m）\n\n1.8287538.1345449.7274119.4247518.3997214.393013第201节龙身x（m）\n\n4.555102-6.619664-10.627210-9.287720-7.457151-7.458662第201节龙身y（m）\n\n10.7251189.0255701.359848-4.246673-6.180726-5.263384龙尾（后）x（m）\n\n-5.3054447.36455710.9743487.3838953.2410511.785033龙尾（后）y（m）\n\n-10.676584-8.7979920.8434737.4923719.4693369.301164表3部分把手速度随时间变化情况0s60s120s180s240s300s龙头（m/s)1.0000001.0000001.0000001.0000001.0000000000001第1节龙身（m/s）\n\n0.99997119666600.9999450.9999170.9998590.999709第51节龙身（m/s）\n\n0.9997420.9996620.9995380.9993310.9989410.998065第101节龙身（m/s）\n\n0.9995750.9994530.9992690.9989710.9984350.997302第151节龙身（m/s）\n\n0.9994480.9992990.9990780.9987270.9981151989660第201节龙身（m/s）\n\n0.9993480.9991800.9989350.9985510.9978940.996574龙尾（后）（m/s）\n\n0.9991360.9988830.9984890.9978160.996478通过对求解结果分析，我们可以得到以下规律：·如图3所示，龙头前把手的位置关于时间均匀分布在螺线上，符合题目中龙头前把手速度恒为co=1m/s的条件。\n\n7.55.02.50.0-2.5-5.0-7.5-7.5-5.0-2.50.02.55.07.5X图3t=0s至t=300s龙头前把手位置·各把手坐标随时间变化不断在正负之间波动，体现了舞龙队的螺旋轨迹特征。\n\n·如图4所示，随着时间增加，各节龙身把手以及龙尾速度均在减小，且龙身把手位置越靠后（即n越大），速度减少得越多。这也符合物理运动学规律，因为板凳龙越靠近外侧，轨迹就会越接近一条直线，各节的速度也就会越来越接近。\n\n1.00000.99950.99900.99850.99800.99750.99700.996530000.9960板把手编号图4不同时刻下板凳龙把手的速度情况·若作出极角的变化图像（如图5所示），我们可以发现越靠内圈的把手，极角变化速度越快。这是因为越靠内圈，把手的运动半径就越小，为了保持相同的速度，极角的变化率就会变快。这也验证了我们建立的模型的合理性。\n\n龙头前肥手极角第51节龙身前把手极角第101节龙身前把手楼角第151节龙身前把手极角第201节龙身前把手楼角龙尾后把手极角时间t(s)图5t=0s至t=300s部分把手的极角变化情况"
+      },
+      {
+        "title": "2问题二模型的建立与求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "【模型准备】",
+        "section_type": "模型",
+        "level": 1,
+        "content": "本题需要给出舞龙队的停止盘入时间，也就是要判定第一次碰撞发生的时间。考虑到螺旋线的几何特征以及问题一中得出的各把手极角变化情况，我们不妨假设“碰撞一定先发生于龙头所在的最内圈和其外侧相邻的一圈”从而缩小碰撞检测区域，提高模型检测效率。\n\n下面是对该假设的证明：正如我们在问题一中所作的分析（如图5所示），内圈板凳的极角变化速度更快，这意味着在同一时间内，内圈板凳的角度变化比外圈板凳更大。\n\n由于内圈和外圈板凳之间的相对角度变化更大，它们之间的相对位置变化也更快。\n\n也就是说，内圈板凳相对外圈板凳更快地靠近或远离它们原本的相对位置。面碰撞条件是两个板凳之间的距离小于某个安全阈值，显然内圈板凳的极角变化更快，它们在绕中心点旋转时，更可能相对外圈板凳迅速靠近。当内圈板凳的角度变化足够大时，它们与外圈板凳的间距就会快速缩短，从而更容易达到碰撞鼠值。\n\n而且龙头相较于龙身和龙尾更长，所以它的角更靠近外侧，也就更容易与外圈发生碰撞。因此我们的假设成立，即可以将模型的检测范围缩小至龙头所在的最内圈和其外侧相邻的一圈。"
+      },
+      {
+        "title": "1碰撞检测模型的建立",
+        "section_type": "模型",
+        "level": 1,
+        "content": "设内圈编号为的板凳前把手坐标为（x9），则其后把手坐标为（x+1，9+1）。不妨设与之发生碰撞的外圈板凳的前把手编号为，其坐标（9），后把手坐标为（x+1.9+1）。\n\n由于任意前后两块板凳都是重叠的，因此和还应满足≤-2。\n\n编号为的板凳前后把手所在直线的解析式为：C-xjy-yjxj+1-jyj+1-yj化简得：lj:y=xj+1-xxj+1-xj接着我们需要求解内圈编号为的板凳靠近外圈的两个顶点的坐标，设其坐标为A（xA，yA）和B（xB，yB）。为了简化表达，我们通过题目给定的板凳参数，记孔中心与最近的板头距离为a=0.275m，与板凳上下两边距离为b=0.15m，如图6所示。\n\n顶点（xAyA）存在如图6所示的几何关系。图中，角α满足：-△ysino=(△x)²+（△y）2-△xcoSOi(△x)²+（△g）)²(xpydB;(xi+tyia图6编号为的板凳几何关系示意图其中△=+1-x，△y=9+1-%。因此通过几何关系，我们可以求出该顶点的坐标：A=x+acoso-bsino(5)yA=y+asina+bcosα同理可得另一个顶点的坐标：B：=+1-acosQ-bsin(6)yB:=y+1-asinα+bcoso于是我们以编号为的板凳的两个顶点到编号为的板凳前后把手所在直线的距离dA，d：为判定函数。通过点到直线距离公式求出两个函数表达式：1(y+1-y）xA-（x+1-2）3A+xg+1y-xy+1dA（t3）=√（x+1-x）²+（y+1-g）²(3+1-3）xB—（x+1-）y++139+1dB（t,,）=√(x+1-x）²+（y+1-y）²若dA或d：中任意一个函数值小于安全國值即b，则我们可以判定两个板凳间发生碰撞。此时舞龙队需停止盘人。至此，本题中的碰撞判断模型已全部建立完毕。"
+      },
+      {
+        "title": "2碰撞检测模型的求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": "根据假设，我们只需要在最内图以及其外侧相邻一图间，运用碰撞检测模型，就能判断舞龙队是否发生碰撞。首先从龙头开始遍历最内圈的板凳（即模型中编号为的板凳），再找到与其相邻一离它最近的第一个板凳以及其前后各两张板凳（即模型中编号为的板凳），运用碰撞检测公式检查板凳之间的距离。如果任意一对板凳的最小距离小于0.15m，则认为发生了碰撞。\n\n题目所要求的舞龙队盘人的终止时刻即为板凳第一次发生碰撞的时刻。我们设计了一个以变步长搜索为基础的动态搜索过程。其过程如下：确定时间范围确定硬撞时刻按步长增大求此时最胆距离时间r确定首次威憧达到精度二分搜囊精确设定搜索步长的时间范围要求否一碰撞时刻绵小是d接近duis >是0.15m0.15m得到碰撞时刻"
+      },
+      {
+        "title": "图7问题二求解流程图",
+        "section_type": "求解",
+        "level": 1,
+        "content": "Step1:确定首次碰撞的大致时间范围。由于板凳间的距离整体随时间t的增大有减小趋势且变化连续，我们先以较大的步长（1s），从某一较早时刻开始，判断每个时刻是否发生碰撞，同时关注板凳间的最小距离。当最小距离逐渐接近0.15m时，逐渐适当地缩小搜索步长。当首次遇到某个时刻发生碰撞，我们便能够确定首次碰撞时刻的所在区间。\n\nStep2:确定首次碰撞的精确时刻。对于Step1中确定的时间区间，我们在其中使用二分搜索法，以逐步提高所求时刻精度，直至满足题目要求。\n\n通过上述算法，我们成功求解出在题目所给条件下，即螺距保持为0.55m时，在t=412.473838s会发生第一次碰撞，且碰撞发生在龙头与其外侧的板凳间，因此舞龙队的停止盘人时间应为412.473838s。表4是此时刻龙头前把手、部分龙身前把手，以及龙尾前后把手的位置坐标与速度表格。全部把手的位置和速度信息见表格文件result2.xlsx。\n\n表4终止时刻各节龙身坐标和速度横坐标x(m)纵坐标y(m)速度(m/s)龙头1.2099311.9427841.000000第1节龙身-1.6437921.7533990.991551第51节龙身1.2812014.3265880.976858第101节龙身-0.536246-5.8801380.974550第151节龙身0.968840-6.9574790.973608第201节龙身-7.893161-1.2307640.973096龙尾 (后)0.9562178.3227360.972938"
+      },
+      {
+        "title": "3碰撞检测模型的验证",
+        "section_type": "检验",
+        "level": 1,
+        "content": "求解结束后，我们作出了t=412.473838s时板凳龙状态的模拟图像，如图8。不难发现，此时龙头的外侧前顶点Ao恰要与外侧板凳相撞，正处于临界情况，而整条龙其他位置均未有碰撞出现。这验证了我们的答案，也证实了模型准备中的假设。\n\n图8停止盘人时刻板凳龙碰撞情况我们还绘制了图9所示图像（红色虚线为y=0.15m），描绘了最内圈板凳的外侧顶点距其外一圈板凳中心线的最短距离与时间t的关系。\n\nA点和B点距其他板凳中心线的最短距离（m）\n\n0.220.200.140.12时间：（)图9最内圈板凳的外侧顶点距其他板凳中心线的最短距离与时间t的关系可见该距离随时间整体呈下降趋势，但处于不断波动。在时间t大约为412s时，该距离第一次降至0.15m，表明此时发生了第一次碰撞，这与我们的求解结果相吻合。"
+      },
+      {
+        "title": "3问题三模型的建立与求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "1最短螺距优化模型的建立",
+        "section_type": "模型",
+        "level": 1,
+        "content": "我们先建立调头空间的几何模型，以螺线中心O点为圆心，半径为rmin=4.5m的圆的方程为r=Tmin。\n\n根据要求，本题需要建立一个单目标优化模型，在进入给定的调头空间（即圆O）\n\n前保证不发生碰撞的情况下，最小化螺距d。其中决策变量为螺距d。\n\n目标函数：minPd约束条件：·螺距d取值范围：鉴于每块板凳宽0.3m，且把手中心均位于行进螺线上，因此容易得出螺距d的下界：0.3m。由问题二可知，当d=0.55m时，舞龙队会在第412秒左右发生第一次碰撞，此时龙头前把手坐标为（1.209931，1.942784），显然在圆0内。由于该碰撞为d=0.55m第一次碰撞，说明在舞龙队到达调头范围前并未发生过碰撞，因此可将0.55m设为螺距d的上界。即d的取值范围为0.30m，0.55m]：0.30≤d≤0.55·进人调头空间时间to：运用问题一中建立的盘入运动模型，调整螺距d的取值，即可得到龙头前把手任意时刻的坐标（ro（t），0o（t））。当龙头前把手按照路线进人调头空间时，时间to满足：ro（to)=rmin·在进人调头空间前板凳间不发生碰撞：根据在问题二提出的碰撞模型，调整螺距d，我们可以判断在任意时刻t，最内圈的任意板凳是否与其相邻一圈的板凳发生碰撞。由问题二可知，第一次碰撞会发生在任意板凳外侧的前顶点A：和后顶点B：到其相邻一圈任意板凳的前后把手所在直线l的距离dA和dB大于安全國值0.15m。\n\nminmin{dA（t,i,j）,dp（t,i,j）}0.15m(7)t=[0,to]因此，我们确定螺距d的单目标优化模型为min0.30m≤d≤0.55m,To(to) = Tmin,s.t.min min(dA(t,2, j),dp(t,2, j)} > 0.15m.te[0.to]1.J"
+      },
+      {
+        "title": "2最短螺距优化模型的求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": "对于螺距优化问题，我们可以采用逐步优化的方法。确保优化过程中始终满足约束条件是一个难点，我们结合了变步长搜索和粒子群优化（PSO）算法来求在[0,to]的时间范围内，最内圈任意板凳外侧前后两个顶点到任意龙身中心线L最短距离，即min min{da(t, i,5),dB(t,a,5))te[0,to]1.j以确保优化过程中始终满足约束条件。下面是算法的具体步骤：Step1:从螺距的下界d=0.30m开始，以较大的步长（0.01m）逐步增加螺距d。对于每一个d，根据t与d的关系式，求出to。\n\nStep 2:计算在时间范围[0,t]内以及给定的该螺距下，是否满足(7)式。如果满足条件，则进人Step3；否则，继续增加螺距。同时关注（7式左侧的值，当其接近0.15m时，适当地缩小搜索步长。\n\nStep3:在当前确定的螺距范围中，进一步用更短的步长，逐步增加螺距d，检查其是否满足（7)式。若满足，则缩小搜索范围及步长，重复Step3，直至结果精确到6位小数。\n\n香"
+      },
+      {
+        "title": "求解进人背员",
+        "section_type": "求解",
+        "level": 1,
+        "content": "空间的时间面定螺完的搜索范围是否达到设定邮到4"
+      },
+      {
+        "title": "求解们的",
+        "section_type": "求解",
+        "level": 1,
+        "content": "开始结束范润及步长精应要录品小值香判阶最小血是否大于0.15m"
+      },
+      {
+        "title": "图10问题三求解流程图",
+        "section_type": "求解",
+        "level": 1,
+        "content": "其中，在 Step2寻找最短距离时，就是要求如下函数dis(t)在t∈[0,to]上的最小值：dis(t) = min min{da(t,i,j),dg(t,i, 5)}1.J鉴于目标函数的复杂性，我们采用了启发式搜索算法。在算法选择上，我们初步考虑了两种优化算法：模拟退火以及粒子群算法。然而经过我们的尝试以及对于函数dis(t)的性质探究后，发现模拟退火并不适用于该函数的最小值求解，因为该函数局部极小值过多且函数峰值过大，使得算法极容易陷人局部极小值附近，难以越过“能量障碍”，因此我们选用了更高效的粒子群优化算法求解。与模拟退火算法相比，粒子群优化算法全局搜索能力强，能避免高蜂障碍（见[1]），每个粒子不仅会基于自身的经验，还会根据全局最优解进行调整速度，从而避免陷人局部最小值。\n\n更新每中粒于的速度和位置初始化每个粒子评估每个粒子更新每个粒子的更新粒子群的达到最大选开始是一结束的速度和位置的适应度历史最优置全局最优依置代次数图11 粒子群(PSO)算法流程图图11是粒子群算法的一般流程图。在该问题中，我们设置初始参数设为：粒子数量（40），最大迭代次数（50），惯性权重（0.8)，个体认知权重（0.5)，群体社会权重（0.5)，用函数dis(t)衡量粒子适应度，并顺利得到函数dis(t)在t∈[0,to]上的最小值。\n\n根据以上算法步骤，我们最终求出：在保证龙头前把手能够进人调头空间且板凳龙不发生碰撞的情况下，最小螺距dmm=0.450337m。"
+      },
+      {
+        "title": "3最短螺距优化模型的验证",
+        "section_type": "检验",
+        "level": 1,
+        "content": "我们设定螺距d=0.450337m（即dmm），通过验证约束条件的实验，来证明我们所建立的优化模型的合理性。图12和图13展示了d=dn面时，利用粒子群优化算法找到的函数dis(t)最小值（图中+号标注)，以及该算法的收敛过程。\n\n0.23点点所其他板党中心践的量知胞算0.220.14750.210.20D.1TB.160.153%0ft()悦了即选代次款图12dis(t)函数图像及最小值图13粒子样算法收敛过程通过图12的函数图像，可以发现在最小螺距dmin的情况下，dis(t)恰好略大于安全阙值0.15m，因此满足了约束条件“在龙头进人调头空间前不会发生碰撞”。\n\n通过图13，可以看出粒子群算法在前10次迭代中就已经快速收敛到一个较优解。\n\n并且10次迭代后函数值趋于平稳，最终收敛到略大于0.15m的约束条件。经过多次实验，我们发现粒子群算法在求解不同螺距d下的最短距离时，均表现出良好的收敛性和稳定性。这再一次证明了我们选择粒子群算法的合理性。\n\n0.25龙头前把手到达调头空间前0.150.100.050:000.350.400.450.500.55螺距d（m)图14最小螺距下龙头进人调头空间图15dis（t）最小值随螺距d变化图像的状态图14是在最小螺距dmn情况下，龙头前把手恰好进人调头空间时附近的板凳状态情况。我们可以发现在此状态下，龙头后顶点刚好快要与外圈发生碰撞，从图像上验证了对于不能发生碰撞的约束条件，同时也验证了最小螺距din的正确性以及我们选用的相关算法的合理性。\n\n接着，我们还绘制出了dis（t）的最小值关于螺距d的函数图像，如图15所示（红色虚线为y=0.15m）。从图中可以看出，dis（t）在龙头前把手进人调头空间前的最小值随螺距d增大而单调增加，且呈较明显的线性关系。这表明变步长搜索并不会遗漏满足要求的更小螺距，证明了我们算法选择的合理性。"
+      },
+      {
+        "title": "4问题四模型的建立与求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "1调头曲线路径儿何模型",
+        "section_type": "模型",
+        "level": 1,
+        "content": "我们根据题目中所给定条件，建立调头路径几何模型，如图16所示。\n\n其中盘人螺线与第一段圆弧BD相切于点B，切线为I：盘出螺线与第二段圆弧DF相切于点F切线为m。圆弧BD的圆心为O，圆弧DF圆心为O2，两圆弧相切于点D。需要注意这两段圆弧的半径之比不一定是2：1，而是可以任意选取。我们发现B.D，F三点共线，从而调头曲线长度之和BD+DF为定值，无法调整。\n\n盘入螺线图16调头曲线示意图证明1直线1与直线m关于点O中心对称，故l//m。又因为B和F是圆的切点，所以OBl=LO2Fm=π/2，因此OB//O2F。\n\nD是两段图弧的公切点，O，D，O2共线，因此由内错角相等，BOD=DO2F。\n\n注意到△OBD和△O2DF都是等腰三角形，所以ZODB=LODF，因此B.D，F三点共线，也就是说BD+DF为定值，由相似可知OD+O2D也是定值。\n\n由于圆心角BOD和DOF相等，弧BD和弧DF的长度之和为定值。"
+      },
+      {
+        "title": "2调头运动模型的建立",
+        "section_type": "模型",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "【模型准备】",
+        "section_type": "模型",
+        "level": 1,
+        "content": "首先，我们要求解调头曲线的轨迹方程。为了方便计算，我们将从-100s至100s舞龙队经过的路径分为四块，如图17所示·曲线P：调头空间前的盘人螺线区。\n\n·曲线M：调头空间内，弧BD·曲线N：调头空间内，张DF·曲线Q：调头空间后的盘出螺线区。\n\n由于已经确定调头曲线不可调整，我们可以根据相应几何关系如图17所示求出相关点的坐标，从而方便我们在运动模型中建立运动方程。\n\n根据题意，记螺距为d=1.7m，调头空间半径为rmin=4.5m。圆O半径BO（记为R）是圆O半径FO（记为R）的两倍，且△BOD~△FOD。同时，易得BD+DF=2r，结合相似，我们可以求出BD=6m，DF=3m。\n\n曲线P：曲线：曲线N：曲线Q："
+      },
+      {
+        "title": "图17板凳龙调头路径儿何模型以及区城划分",
+        "section_type": "模型",
+        "level": 1,
+        "content": "当龙头前把手恰好进入调头空间内的时候，其所对应的极角最小。记此时龙头前把手坐标为（rmin，0mm）。根据极坐标与极角的关系，有Tmin0min=2π.d同时，为了计算龙头前把手运动轨迹，我们还需要知道龙头前把手进入调头空间，以及盘出调头空间时的速度方向。因此需要知道调头空间半径所在直线OB与盘入螺线切线/的夹角大小a。由于盘入螺线与盘出螺线的中心对称性，直线n与盘出螺线切线m的夹角大小也为α。\n\n根据相切关系以及运动方程，我们可以得到关于α的以下关系式；\n\nTmindotanoOmindrFmin因此，我们可以得到a的表达式：α=arctanOmin代入相关数值计算，可得0mi5.294118π，Q0.480885π。\n\n根据几何关系，我们便可以推导出圆心OO坐标：O:（7mincos0min-Rsin（0min+a），rmin sinθmin+Rcos（0min+a））\n\nO2:（-rmncos0min+Rsin（0mn+a），-Tmin sin0min-R2cos（0min+a）)我们设编号i的把手与轨迹圆心O连线和x轴正方向所成角度为0-k·2π（k∈N），其中0;∈[0min-a-π/2,0mn+a-π/2]。\n\n因此可列出第一段弧BD参数方程如下：=o+Rcos0;(8)y=yo+Rsin0第二段弧DF参数方程如下：C=o-Rcos0(9)y=yo-R2sin0此外易得盘出螺线的方程如下：d（=+0）\n\n2π盘入螺线盘出螺线调头路径-10-15-10-5X图18板凳龙调头路径示意图"
+      },
+      {
+        "title": "【龙头前把手调头运动模型】",
+        "section_type": "模型",
+        "level": 1,
+        "content": "我们考虑时刻时，龙头前把手位置。为了能够更清晰的表示龙头前把手的运动，我们需要首先求出龙头前把手进入各曲线的时间点。\n\n依题，我们设开始调头为零时刻，因此进入曲线M的时刻为t=0。由于龙前把手速度为co=1m/s.且：9aBDDFsinosina则龙头前把手进入曲线N的时刻为tN=s进入曲线Q的时刻为tsino由此对于t∈[100s，100s，我们根据前把手所处不同曲线分别建立位置模型。\n\n·t∈[-100s，0s：此时龙头前把手位于曲线P内，其运动轨迹依然为等距螺线，与问题一条件相同。因此，可以通过模型一中的方法求解位置。\n\n·t∈[Os，tN]：此时龙头前把手位于曲线M内，其运动轨迹为弧BD，可以通过参数方程（8）求解。\n\n·tEtN，to]：此时龙头前把手位于曲线N内，其运动轨迹为弧DF，可以通过参数方程（9）求解。\n\n·t∈[tQ，100s]：此时龙头前把手位于曲线Q内，运动轨迹同样为等距螺线，可用模型一中方法求解。"
+      },
+      {
+        "title": "【龙身及龙尾调头运动模型】",
+        "section_type": "模型",
+        "level": 1,
+        "content": "在求解龙身及龙尾的运动模型时，我们仍然递推方法。但需要注意的是，在调头的过程中，可能会出现前后两个把手不在同一曲线上。\n\n由于板凳长小于3m，因此相邻把手必定在相邻曲线或同一曲线上。\n\n对于编号为n的把手，我们只需要判断其与三个分界点的距离D与其前后把手之间距离1的大小关系。其中当n=0时，1=2.96m；n∈{1，2，...223}时，1=1.75m。\n\n若D>1，则说明编号为n+1与n的两个把手位于同一曲线上。反之，则说明二者位于不同曲线。但是需要特别注意，因为螺距比较小，所以对于编号为n的把手在曲线Q上的情况不能使用这种判别方法，正确的判别方法是：若D>或6>9min，则说明二者位于同一曲线上，反之则位于不同曲线上。\n\n位置递推关系推导·编号为n与n+1的两个把手位于同一曲线上。\n\n位于曲线P：与问题一相同，可套用模型一中的递推公式：=02+0n+1-20n0n+1cos（0n+1-0n)其中0n+1的求解范围为：[0n，0n+π]。\n\n位于曲线Q：与问题一类似，仍然套用该递关系，但由于盘出螺线与盘入螺线成中心对称，需要将递推公式里的0替换为0n+π，将0n+1替换为0n+1+π。其中0n+1的求解范围为：[0-π，0]位于曲线M：直接计算0n+1=0n+△9，其中△9=2arcsin（1/2R）。\n\n位于曲线N：直接计算0n+1=0n-△9，其中△9=2arcsin（l/2R2）\n\n·编号为n与n+1的两个把手位于相邻曲线上。\n\n位于曲线P和曲线M：通过求解方程：（xn-x）²+（yn-y）²=1²(10)其中，x=0n+1cos0n+1,，y=0n+1sin0n+1，0n+1求解范围为：[0min，0min+π]位于曲线M和曲线N：通过求解方程：（xn-xo-Rcos0n+1)²+（yn-y0-Rsin0n+1）²=12(11)其中，0n+1求解范围为：[0min-α-π/2,0min+0-π/2]位于曲线N和曲线Q：通过求解方程：（xn-xo+R2cosθn+1)²+（yn-yo+R2sin0n+1）²=2(12)其中，0n+1求解范围为：[0min-α-π/2，0min+α-π/2]速度递推关系推导龙头前把手的速度恒为o=1m/s，但是为了方便后续计算，我们需要先计算0：t∈[100s，0s]：此时龙头前把手位于曲线P内，其运动轨迹依然为等距螺线，与问题一条件相同。因此，可以直接用模型一中的（1）式求解0。\n\n·t∈[0s，tN]：此时龙头前把手位于曲线M内，其运动轨迹为弧BD，有0=-o/R1。\n\n·t∈[tN，tQ]：此时龙头前把手位于曲线N内，其运动轨迹为弧DF，有0=vo/R2。\n\n·t∈[tQ，100s]：此时龙头前把手位于曲线Q内，运动轨迹同样为等距螺线，可用模型一中方法求解。但是需要注意，需要将（1）式中的0替换为0+π，而且0>0，因此在去绝对值的时候不需要添负号。\n\n然后递推得到其余把手速度：·编号为n与n+1的两个把手位于同一曲线上。\n\n位于曲线P：与问题一相同，可套用模型一中的递推公式：On+120-20n+1cos（0n+1-0n)-20n0n+1sin（0n+1-0n)(13)0n20n+1-20ncos(0n+1-0n）+20n0n+1sin（0n+1-0n)从而得出编号n+1的把手速度+1dUn+l+02(14)2π+1位于曲线Q：与问题一类似，但是要将（13）式和（14）式中的所有0替换为0+π，所有0n+1替换为0n+1+π。\n\n位于曲线M或曲线N：因为处在同一段圆弧上，所以有Vn+1=Un,0n+1=0n·编号为n与n+1的两个把手位于相邻曲线上。\n\n2πA位于曲线P和曲线M：将（10）式两边同时对时间求导，整理得0+1=dB其中PPA=（xn0n+1cos0n+1）cn+（yn-0n+1sin0n+1）gn2π2πpB=（xn-0n+1cos0n+1)（cos0n+1-0n+1 sin0n+1)2πp+（yn2π0n+1sin0n+1）（sin0n+1+0n+1cos0n+1）\n\nin=unsinOngn=-UnCos0n因此卫Un+12π位于曲线M和曲线N：将（11）两边同时对时间求导，整理得（xn-xO-Rcos0n+1）in+（yn-yO-Rsin0n+1）gn0n+I=-R（xn-xO-Rcos0n+1）sin0n+1-（yn-yo-Rsin0n+1）cos0n+1其中in=Unsin0n，gn=-Uncos0n。因此un+1=|0n+1|R1。\n\n位于曲线N和曲线Q：将（12）两边同时对时间求导，整理得=I+u0（xn-xO+R2cos0n+1）n+（yn-yO+R2sin0n+1）gnR2（xn-xO+R2cos0n+1）sin0n+1-（yn-yO+R2sin0n+1）cos0n+1其中n=UncosBn，gn=Unsinβn，βn=0n+arctan（On+π）。因此un+1=0n+1|R2。"
+      },
+      {
+        "title": "3调头运动模型的求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": "对于龙头把手在盘入螺线及盘出螺线上运动时，其位置与速度的求解方式与模型一相同，可以运用二分搜索法分别求出龙头前把手在曲线P和曲线Q上每秒钟其位置信息。对于龙头前把手位于调头空间内，即曲线M和曲线N上的情况，我们则通过求解参数方程得到其每秒钟的位置信息。图19展示了龙头前把手在tE【-100，100时间范围内的路径。\n\n对于龙身以及龙尾部分，我们仍根据龙头前把手数据递归计算得到相应位置和速度。由于调头路径的复杂性，需要首先判断相邻把手在不同时间点所属路径。再按照位置推导关系中所给出的分类求解方程，在给定求解范围内，逐步更新各把手的角度和坐标。表5和表6是从t=-100s至t=100s时部分时刻以及部分把手的位置与速度表格。\n\n全部把手每秒的位置速度信息见表格文件result4.xlsx。\n\n10.0人线欧出螺线调头路径7.55.02.50.0-2.55.0-7.5-10.0-10.0-7.5-5.0-2.50.05.010.0X图19=-100s至t=100s之间龙头前把手的位置表5调头过程中各节龙身坐标随时间变化情况-100s-50s0s50s100s龙头x（m）\n\n7.7780346.608301-2.7118561.332696-3.157229龙头y（m）\n\n3.7171641.898865-3.5910786.1753247.548511第1节龙身x（m）\n\n6.2092735.366911-0.0635343.862265-0.346890第1节龙身y（m）\n\n6.1085214.475403-4.6708884.8408288.079166第51节龙身x（m）\n\n-10.608038-3.6299452.459962-1.6713852.095033第51节龙身y（m）\n\n2.831491-8.963800-7.778145-6.0767134.033787第101节龙身x（m）\n\n-11.92276110.1257873.008493-7.591816-7.288774第101节龙身y（m）\n\n-4.802378-5.97224710.1085395.1754872.063875第151节龙身x（m）\n\n-14.35103212.974784-7.002789-4.6051659.462513第151节龙身y（m）\n\n-1.980993-3.81035710.337482-10.386988-3.540357第201节龙身x（m）\n\n-11.95294210.522508-6.8728420.3369528.524374第201节龙身y（m）\n\n10.566998-10.80742512.382609-13.1776108.606933龙尾（后）x（m）\n\n-1.0110590.189809-1.9336275.859094-10.980157龙尾（后）y（m）\n\n-16.52757315.720588-14.71312812.612894-6.770006表6调头过程中各节龙身速度随时间变化情况-100s-50s0s50s100s龙头（m/s）\n\n1.0000001.0000001.0000001.0000001.000000第1节龙身（m/s）\n\n0.9999040.9997620.9986871.0003631.000124第51节龙身（m/s）\n\n0.9993460.9986420.9951340.9499351.003966第101节龙身（m/s）\n\n0.9990910.9982480.9484821.096263第151节龙身（m/s）\n\n0.9989440.9980470.9941560.9480381.095306第201节龙身（m/s）\n\n0.9988490.9979250.9939940.9478231.094933龙尾（后）（m/s）\n\n0.9988170.9978850.9939440.9477601.094833（a）t=5s(b）t=10s（e）t=15s（d）t=20s图20调头过程中不同时刻板凳龙示意图"
+      },
+      {
+        "title": "4调头运动模型的验证",
+        "section_type": "检验",
+        "level": 1,
+        "content": "使用以上模型求得各时刻每个龙把手的位置与速度后，我们需要简单验证其合理性。\n\n首先，通过使用电脑绘图，可以从视觉上验证位置的正确性。图20是用我们所求坐标绘制的不同时刻板凳龙状态示意图，可以发现板凳龙的把手均按照预定曲线移动，在直观上证实了我们所求坐标的正确性。\n\n其次，我们采用数值微分法，通过选取小时间间隔（如0.01s），计算把手前后位移，再据此计算出平均速度，在时间间隔趋于0的情况下，该平均速度应收敛于我们使用求导算出的速度。通过与我们利用模型求得的结果对比，可以看出二者之间确实差异较小。利用不同的速度求解方式，我们再一次验证了所求得相关数据的准确性以及所建立模型的合理性。并且相较于直接通过把手位置信息和速度公式求解速度，我们选取的模型能够直接得到更加精确的瞬时速度。\n\n通过对各时刻各节把手的速度分析，我们发现未进人调头空间时，各把手的速度最大值出现在龙头前把手处，这与我们模型一中得出的结论相符。而在龙头前把手进入调头空间后，各把手的速度最大值出现变化。我们发现，在第14s时，速度最大值出现了短暂的突增。我们猜测是由于龙头开始进人盘出螺线，路径的曲率半径出现较大变化。\n\n通过对每时刻舞龙队状态的可视化，我们可以发现在第14s附近，龙头前把手开始进人曲线N，符合我们的猜想。对速度最大值的分析将会对下一问模型的建立有所帮助。"
+      },
+      {
+        "title": "5问题五模型建立与求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "1最大速度计算模型的建立",
+        "section_type": "模型",
+        "level": 1,
+        "content": "题目要求全过程中，所有人的速度不能超过2m/s，求龙头前把手的最大行进速度max。注意到在相同位置上，所有把手的速度都成一定比例，也就是说，若龙头的速度从原来的o=1m/s变为max，那么在相同位置上，所有把手的速度都会变为原来的max/倍。所以在o=1m/s时，所有把手速度的最大值一定是2m/smaxUn=-uUmax/00因此，只要我们借助问题四的模型，求出vo=1m/s时所有把手速度的最大值，就可以算出问题五龙头前把手最大行进速度max。\n\n根据要求，本题需要建立一个单目标优化模型，在板凳龙行进的全过程中，最大化速度（t）。其中决策变量为时间t。\n\n目标函数：maxun(t)t,n约束条件：·时间t的取值范围：观察问题四得到的各把手的速度数据，不难发现：当t≤0时，速度的最大值一定出现在龙头，恒为2；而当t>0时，速度的最大值一开始出现在龙头，后面随着t的增大，整体呈现向龙尾方向移动的趋势。而且在t=14s~15s附近（也就是龙头在F点附近时），速度的最大值突然出现一个极大值。在这之后，速度的最大值整体呈现缓慢变大的趋势。\n\n因此，我们只需要在龙头在F点附近和龙尾在F点附近时计算速度的最大值即可（经计算，该时间间隔为t=376s~384s）。\n\ntE[13s,16s]U[376s,384s]n∈{0,1,223}因此，我们确定所有把手速度最大值的单目标优化模型为maxon(t)t,n∈[13s,16s]U[376s,384s],S.t.[n∈{0,1,223}."
+      },
+      {
+        "title": "2最大速度计算模型的求解",
+        "section_type": "求解",
+        "level": 1,
+        "content": "目标时间范围内t∈[13s，16s]U[376s,384s]，我们以先以0.1s为步长计算不同时刻下所有把手的最大速度，并比较每个时刻的最大速度。结果表明，所有把手最大速度的最大值出现在t∈[14s,15s区间内。\n\n通过分析该区间内最大速度的函数变化趋势，我们发现在该时间范围内，把手最大速度的函数图像呈单峰特征，即先增后减。根据此函数性质，我们选用了三分搜索法[2]进一步精确查找在该时间范围内把手的最大速度。\n\n下面是三分搜索法的具体步骤以及示意图：lefright图21三分搜索法示意图Step1:初始化参数。设定初始搜索区间为[14s.15s]Step2:计算两个中间点：根据当前区间[left，right]，计算两个三分点：2xleft+rightleft+2xrightt1=t2=分别计算在这两个时间点上的所有把手速度的最大值maxvn（t）和maxu（t2）。\n\nStep3:比较中间点的函数值：·如果maxun（t1）<maxun（t2），则极大值位于区间[t.right]，更新left=t1；\n\n·如果maxn（t）>maxn（t2），则极大值位于区间[left,t2]，更新right=t2Step4:迭代过程：重复步骤2和步骤3，逐步缩小搜索区间，直到区间的长度小于预设的精度c=10-8，即｜right-left|<∈。\n\nleft+rightStep5：求解结果：在最后的迭代结束时，计算最终得到的中点t=对应的所有把手速度（t）。根据最小速度限制公式计算龙头前把手的最大速度：2m/sUmax=un(ts)maxUoStep6：输出结果：输出最大行进速度max，并验证在此速度下所有把手的速度均不超过2m/s。\n\n经计算，我们得出在t=14.47997148s时，maxv（t）达到其最大值1.60479338m/s。\n\n故题目所求结果为max1.246266m/s。"
+      },
+      {
+        "title": "3最大速度优化模型的验证",
+        "section_type": "检验",
+        "level": 1,
+        "content": "通过将所有把手最大速度随时间的变化可视化（图22）后，我们可以发现显然在14s附近出现了所有把手的最大速度，并且出现在靠近龙头部分。这验证了我们在利用三分法求解速度最大值时选定的时间范围的合理性。\n\n时图22t=-100s至t=500s把手速度最大值1.6001.575把手最大速度（m/）\n\n1.5501.5251.5001.4751.4501.42514.014.214.414.614.815.0时间（）\n\n图23t=14s至t=15s把手速度最大值通过画出第14s至第15s的所有把手最大速度函数图像（图23，*号标注为求得的最大值），我们验证了在该范围区间内使用三分搜索法的合理性，即该函数在给定定义域内仅存在一个极大值，且函数图像呈现先增后减趋势。"
+      },
+      {
+        "title": "模型的评价",
+        "section_type": "模型",
+        "level": 1,
+        "content": ""
+      },
+      {
+        "title": "1模型的优点",
+        "section_type": "模型",
+        "level": 1,
+        "content": "·模型建立过程中，问题二通过完整证明合理假设，缩小了求解范围，简化了相关模型；问题四中，对于龙把手不同位置情况进行详细的分类讨论。问题五中，通过巧妙转化求解目标，同样简化了相关模型。\n\n·模型求解过程中，通过二分法、粒子群算法、三分搜索法等算法进行优化，并且对比了不同优化方式的适配与各个模型的适配度，从而选择最优的求解方式，提高求解效率以及结果的精确度。\n\n·每个模型都通过不同方式对于最后的求解结果进行验证与分析。"
+      },
+      {
+        "title": "2模型的缺点",
+        "section_type": "模型",
+        "level": 1,
+        "content": "·在碰撞检测方法中，并未充分考虑碰撞时物体的物理特性可能会带来的影响。"
+      },
+      {
+        "title": "参考文献",
+        "section_type": "参考文献",
+        "level": 1,
+        "content": "[1]MeetuJain,VibhaSaihjpal,NarinderSingh,andSatya BirSingh.Anoverviewofvariantsand advancements ofpso algorithm.AppliedSciences,12（17):8392,2022.[2]Manpreet Singh Bajwa,ArunPrakash Agarwal,and SumatiManchanda.Ternary searchalgorithm:Improvementofbinary search.In20152ndIntermational Conference onComputingforSustainableGlobalDevelopment(INDIACom),pages1723-1725.IEEE,2015."
+      },
+      {
+        "title": "附录A支撑材料文件列表",
+        "section_type": "未分类",
+        "level": 1,
+        "content": "表7文件列表文件名说明dragon.py问题一至问题三计算位置与速度dragon2.py问题四至问题五计算位置与速度probleml_1.py问题一计算位置probleml_2.py问题一计算速度problem2_1.py问题二求解碰撞时刻problem22.py问题二计算碰撞时刻的位置和速度problem3.py问题三求解最小螺距problem4_1.py问题四计算位置problem4_2.py问题四计算速度problem5.py问题五求解全局把手最大速度result1.xlsx问题一所有时间所有把手的位置与速度result2.xlsx问题二碰撞时所有把手的位置与速度result4.xlsx问题四所有时间所有把手的位置与速度附录B支撑材料的所有Python代码文件名：dragon.py途：第1-3间板凳龙模型（元调头）\n\ninport numpy as np1=port pandas as pd1port matplotlib.pyplotaspltfro= mathi=portfrou matplotlib.font_nanageri=portFontPropertiesben_wid=0.3#板凳宽度（m）\n\nben_len_head=3.41#龙头板长（m）\n\nben_len=2.20#龙身及龙尾板长度（m）\n\nhole_dis=0.275#孔离板头距离（m）\n\nhole_dia=0.055#孔的直径（m）\n\ndra_len=223#板凳个数font=FontProperties(fnane=*/System/Library/Fonts/Supplenental/Ti=es New Roman.ttf)font2=FontProperties(fname=\"/System/Library/Fonts/Supplemental/Songti.ttc)class Dragon(）:def__init__（self，d=0.55，v0=1，theta0=32*p1）:d为螺距（m），v0为龙头前把手速度（=/s）\n\nself.d=d#螺距（m）\n\nself.v0=v0#龙头前把手速度（m/s）\n\nself.theta0=theta0#O时刻龙头前把手角度self.angNone#把手角度列表self.pos=None#把手坐标列表self.vol=None把手速度列表self.time=None当前时间设定时间t（s）\n\ndef set_ti=e(self,t,need_vol=False):self.time=t#更新当前时间求解龙头前把手位量theta_n=self.head_pos(t)self.ang=[theta_n]self.pos=[（self.arc_x（theta_n),self.arc_y（theta_n))]ifneed_vol:self.vol=[self.v0]（90**（**u+）P）/0-u求解龙身及龙尾前把手，龙尾后把手位置for n in range(223):ifn!=0:theta_n=self.next_pos(theta_n)else:theta_n=self.next_pos(theta_n.is_head=True)self.ang.append(theta_n)self.pos.append((self.arc_x（theta_n),self.arc_y（theta_n)))ifneed_vol:theta_n0=self.ang[n]theta_nl=self.ang[n+1]theta_nl*sin(theta_n1-theta_n0)+-theta_nl*sin(theta_n1-theta_n0)d_theta_n1=-（par1/par2)*d_theta_nv=self.d/（2*pi）*abs（d_theta_n1)*（1+theta_n1**2）**0.5self.vol.append（v)d_theta_n=d_theta_nl判断是否碰def judge_col(self):dis_min=1#最短距离（m）\n\n找到距龙头一画外的第一个板凳i_max=0whileself.ang[1_=ax]-self.ang[0]<=2*pi:1_max+=1for 1inrange（0,1_max+1）:1_1=2.86if1==0else1.65找到距第1个板凳一圈外的第一个板凳j0j0=1_maxwhile self.ang[jo]-self.ang[i]<=2*pi:j0+=1遍历jo及前后各两个板凳判断是否相碰forjinrange（jo-2,j0+3）:1j=1.65delta_xi=self.pos[1+1][o]-self.pos[i][o]delta_yi=self.pos[1+1][1]-self.pos[i][1]delta_x]=self.pos[j+1][o]-self.pos[j][o]delta_y]=self.pos[j+1][1]-self.pos[j][1]s=-delta_yi/11#sin(alpha)c=-delta_xi/1_i#cos（alpha）\n\nx1=self.pos[i][o]+hole_dis·c-（ben_id/2）*sy1=self.pos[i][1]+hole_dis*s+（ben_vid/2）*cx2=self.pos[i+1][o]-hole_dis*c-（ben_wid/2）*sy2=self.pos[1+1][1]-hole_dis*s+（ben_wid/2)*c[]+c+x-.)e=self.pos[j][o]*self.pos[j+1][1])/1_j[]]odo[0]++.x-x.)sqe=self.pos[j][o]*self.pos[j+1][1]）/1_]ifdis1<=0.15ordis2<=0.15:return True,=in(dis1,dis2)dis_min ==in（dis_min,dis1,dis2)return False,dis_min判断龙头前把手到外围板凳的最短距离defmin_dis（self，t）:self.set_time(t)dis_min=1#最短距离（=）\n\n找到距龙头一外的第一个板凳jo=owhile self.ang[jo]-self.ang[0]<=2·pi:j0+=11_1=2.86forjinrange（j0-2,j0+3）:1.j=1.65delta_xi=self.pos[1][0]-self.pos[o][o]delta_yi=self.pos[1][1]-self.pos[0][1]delta_xj=self.pos[+1][o]-self.pos[j][o]delta_y]=self.pos[j+1][1]-self.pos[j][1]s=-delta_y1/1_1#sin（alpha)c=-delta_xi/1_i#cos（alpha）\n\nx1=self.pos[0][0]+hole_dis*c-（ben_vid/2）*sy1=self.pos[0][1]+hole_dis*s+（ben_vid/2）*cx2=self.pos[1][o]-hole_dis*c-（ben_vid/2）▪sy2=self.pos[1][1]-hole_dis*s+（ben_vid/2）*c[][][+]s+x-x)q=/（+dis2=abs（delta_yj·x2-delta_xj·y2+self.pos[j+1][0]▪self.pos[j][1]-self.pos[j][o]*self.pos[j+1][1]）/1_jdis_min==in（dis_min，dis1,dis2）\n\nreturn dis_min求解相碰时间及此时龙头前把手距中心的距离def time_col(self):time=o设定初始状态self.set_time(time)whilenotself.judge_col(）[o]:time+=1self.set_time(time)returntime，self.arc_r（self.ang[o]）龙头前把手离中心距离求解龙头前把手到达调头空间的时间def arr_time(self):return binary_search(self.if_arrive,0,421,incre=True)打印板凳龙状态（无析凳）\n\ndef print_status(self):theta=np.1inspace（0,20▪2*pi,1500)x=self.d/(2*pi）*theta*np.cos（theta)y=self.d/(2*pi）▪theta*np.sin（theta）\n\nx_lst=[ben_pos[o] for ben_pos in self.pos]y_lst=[ben_pos[1] for ben_pos in self.pos]plt.figure()plt.plot(x,y,color='black',linewidth=2,alpha=0.5)plt.scatter(x_lst,y_lst,color=red',marker=)plt.xlabel(x)plt.ylabel('Y\")plt.grid(True,alpha=0.3)plt.show()打印板凳龙图像（有板凳）\n\ndef print_img(self,save_pth=None,magn=None,shov=True,circle=False):#ave_pth保存路径，默认不保存magn是否放大中心，默认不放大a=hole_disb=ben_uid/2初始化医像plt.figure(figsize=(8,8))绘制把手theta=np.1inspace（0,16*2*p1,1500)x=self.d/(2*pi)·theta*np.cos（theta)y=self.d/(2*pi)▪theta *np.sin（theta)x_lst=[ben_pos[o] for ben_pos in self.pos]y_lst=[ben_pos[1] for ben_pos in self.pos]plt.plot(x,y.color=black',linewidth=2,alpha=0.2)plt.scatter(x_lst,y_lst,color='red',marker=)绘制板凳for 1in range（223）:11=2.86if1==0else1.65delta_xi=self.pos[1+1][0]-self.pos[1][0]delta_yi=self.pos[1+1][1]-self.pos[i][1]s=-delta_yi/li#sin（alpha)c-delta_xi/1i#cos（alpha）\n\nx1=self.pos[1][o]+ac-b*sy1=self.pos[i][1]+a*s+b*cx2=self.pos[1+1][0]-a*c-bsy2=self.pos[1+1][1]-a*s+b▪cx3=self.pos[1+1][o]-a*c+b·sy3=self.pos[1+1][1]-a*s-b·cx4=self.pos[i][o]+a*c+b*sy4=self.pos[1][1]+a*s-b*crect=[（x1.y1）.（x2.y2）.（x3，y3）.（x4，y4）]x,y=zip（*rect)plt.plot（x+（x[0].），y+（y[o].）.b-)ifcircle:circle=plt.Circle（（0,0),4.5,color=′yellov',fill=True,alpha=0.5)plt.gca().add_artist(circle)设重图形属性plt.xlabel('X',fontproperties=font,size=12)plt.ylabel(Y',fontproperties=font,size=12)plt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)放大区城if agn is not None:plt.xlim(-magn,magn)plt.ylim(-magn,magn)示图形plt.axis（'equal'）#设盟坐标轴等比例plt.grid（True，alpha=0.3）#显示网格if save_pth:plt.savefig(save_pth,dpi=300)ifshov:plt.show()plt.close()（辅助函数）求解龙头前把手角度def head_pos(self,t）:par1=self.theta0·（1+self.theta0+*2）**0.5par2=1og（self.theta0+（1+self.theta0**2）**0.5)par3=4*pi*self.v0*t/self.ddeffn（x):（SO**（乙**x+I)+x）8o-S'0**（Z**x+I)*x-xed-zxed+xeduxnxreturn binary_search(fn,O,self.thetaO,incre=False)（辅助函数）判断龙头前把手是否进入调头空间def1f_arrive(self,t）:ang= self.head_pos(t)ifself.arc_r（ang）<=4.5:return1else:return-1（辅助函数）求解龙身及龙尾把手角度defnext_pos（self，theta_n，is_head=False）:theta_n为前一把手角度1=2.86if1s_headelse1.65#两孔距离（=）\n\npara1=（2*pi*1/self.d）**2deffn（x):-（-x)*x**-**x+**return binary_search(fn,theta n, theta_n+pi,incre=True)（辅助函数）角度转换为x坐标def arc_x（self,arc):returnself.d/(2*pi）arc·cos(arc)（辅助函数）角度转换为y坐标def arc_y(self,arc):return self.d/(2*pi)*arc*sin（arc)（辅助函数）角度转换为半径def arc_r(self,arc):returnself.d/(2*pi)*arc#二分搜索函数def binary_search(fn,lb,ub,incre,eps=1e-8):cur=（1b+ub）/2while ub-1b>eps:cur_res=fn（cur)若函数递增ifincre:ifcur_res<0:1b=curelif cur_res>0:ub=cur若函数递减else:if cur_res>0:1b=curelif cur_res<0:ub=curcur=（1b+ub）/2return cur临时测试函数deftest():dragon=Dragon()dragon.set_tine(412)dragon.print_1mg(magm=4)if-_nane_.maintest()开文件名：dragon2.py用途：第4-5问板凳龙模型（含调头）\n\nHH请注意本文档中所有把手角度均为·二元组第一个数表示所在曲线（1/2/3/4）\n\n第二个数表示极角iaportnumpy asnp1=port pandas as pdiport matplotlib.pyplot aspltiport matplotlib.patches as patchesfrommathimport*fronmatplotlib.font_manageri=portFontProperties1=portosfont=FontProperties(fnane=\"/System/Library/Fonts/Supplenental/Tines New Homan.ttf\")ben_wid=0.3#板凳宽度（=）\n\nben_len_head=3.41#龙头板长（m）\n\nben_len=2.20龙身及龙尾板长度（=）\n\nhole_dis=0.275#孔离板头距离（m）\n\nhole_dia0.055#孔的直径（m）\n\ndra_len=223#板凳个数d=1.7#螺距（m）\n\nr=4.5#调头空间半径（=）\n\ntheta=2*pi*r/d#图中theta角alpha=atan（theta）#图中alpha角R1=3/sin（alpha）#大四半径R2=3/（2▪sin（alpha））#小图半径大画圆心坐标01x=r*cos(theta)-R1*sin(theta+alpha)O1y=r*sin(theta）+R1*cos（theta+alpha)#本画圆心坐标02x=-r*cos（theta)+R2*sin（theta+alpha）\n\n02y=-r*sin（theta)-R2*cos（theta+alpha）\n\n盘入切点坐标x1=d/(2*pi）*theta*cos（theta）\n\ny1=d/(2*pi)*theta*sin(theta)盘出切点坐标x3=-x1y3=-y1两图初点坐标x2=x1/3+x3·2/3y2=y1/3+y3*2/3class Dragon():def_init__（self，v0=1）：v0为龙头前把手速度（m/s）\n\nself.d=d#螺距（m）\n\nself.v0=v0#龙头前把手速度（m/s）\n\nself.ang=None#把手角度列表self.pos=None#把手坐标列表self.vol=None#把手速度列表self.time=None当前时网设定时间t（a）\n\ndef set_ti=e(self,t,need_vol=False):solf.timet#更新当前时间求解龙头前把手位置theta_n=self.head_pos(t)self.ang=[theta_n]self.pos =[（self.arc_x（theta_n）,self.arc_y(theta_n))]求解龙身及龙尾前把手、龙尾后把手位置for n in range(223）:ifn!=0:theta_n=self.next_pos(theta_n)else:theta_n=self.next_pos(theta_n,is_head=True)self.ang-append(theta_n)self,pos.append((self,arc_x(theta_n),self.arc_y(theta_n)))求解各把手速度if need_vol ==False:return求解龙头前把手速度ifself.ang[o][o]==1:（**[1]0]ue+）xb/P/od-=elif self.ang[o][o]==2:d_theta=-self.v0/R1Z01elif self.ang[o][o]==3:d_theta=self.vO/R2elif self.ang[O][o]=4:（**（Td+[][]ues）+）xbs/P/o=eself.vol=[self.vo]d_theta_1=d_theta解龙身及龙尾前把手、龙尾后把手速度for n in range（223):1=2.86ifn==0else1.65theta1=self.ang[n][1]theta2=self.ang[n+1][1]（x1,y1）=self.pos[n]（x2,y2）=self.pos[n+1]前一把手位于盘入螺线（当前把手位于盘入螺线）\n\nifself.ang[n][o]== 1:par1=theta1-theta2*cos（theta2-theta1)-thetal*theta2*sin（theta2theta1)par2=theta2-theta1*cos（theta2-theta1)+theta1*theta2*sin（theta2-thetai)d_theta1=-par1/par2*d_theta（（乙**zeq+T）xbs+（Ieq2P）sqe*（rd*Z）/PFs）puddeToTos前一把手位千大圆弧elif self.ang[n][o]==2:当前把手位于大图弧ifself.ang[n+1][o]==2:d_thetal=d_thetaself.vol.append(self.vol[n])当前把手位于盘入螺线elif self.ang[n+1][o]==1:x1d=self.vol[n]*sin（theta1)y1d=-self.vol[n]•cos（theta1)（d▪z）/P-）+px*（（zeq）s0·e·（Td·z）/P-x）=xedtheta2·sin(theta2))*y1d-（2）)*（（)s.2（）/-x)=sin（theta2）)+（y1-d/（2*pi)*theta2▪sin（theta2))+（sin(theta2)+theta2*cos(theta2))d_theta1=2*pi/d·par1/par2（（*Zeu+I）xbs*（IeuP）qe*（td*）/Ps）puoddeoo前一把手位于小图弧elif self.ang[n][o]==3:当前把手位于小圆圆弧ifself.ang[n+1][o]==3:d_thetal-d_thetaself.vol.append(self.vol[n])当前把手位千大圆医弧=[0][+u]ueFTx1d=self.vol[n]▪sin（theta1)y1d=-self.vol[n]•cos(theta1)（（*--）+x*（（-x0-)yid-0-)-（）*（（）-x0-x)=sin(theta2))*cos(theta2)dthetal=-par1/（R1*par2)self.vol.append(abs(d_theta1)*R1)前一把手位于盘出螺线elif self.ang[n][o]==4:当前把手位于盘出螺线ifself.ang[n+1][o]=4:theta1,theta2=theta1+pi，theta2+pi*-（-*-=-thetal)par2=theta2-thetal*cos（theta2-theta1)+theta1*theta2*sin（theta2-thetal)d_thetal=-par1/par2*d_theta（（乙*+）bs*（IeP）qe*（dZ）/P）puddeotheta1,theta2=theta1-pi,theta2-pi当前把手位于小圆弧elif self.angn+1][o]==3:beta=thetal+atan(thetal+pi)x1d=self.vol[n]*cos(beta)y1d=self.vol[n]*sin(beta)（（+-)+x（+x0-yid+-)（*（（+-）\n\nsin(theta2))*cos（theta2)d_theta1-par1/（R2*par2)self.vol.append(abs(d_theta1)*R2)d_theta=d_theta1打印板凳龙状态（无板凳）\n\ndef print_status(self):计算盘入盘出螺线ang=np.1inspace（theta,10·2*pi,1000)xx1=d/（2·pi）▪ang*np.cos（ang)yy1=d/（2*pi）*ang*np.sin（ang）\n\nxx2=-xx1yy2=-yy1plt.figure(figsize=(8,8))绘制盘入盘出螺线plt.plot（xx1，yy1,color=red,linevidth=2,label=盘入螺线，alpha=0.5)plt.plot（xx2，yy2.color=blue，1inewidth=2，label=盘出螺线，alpha=0.5)plt.plot（[]，[]，color='black'，linevidth=2，label=调头路径.alpha=0.5）\n\n绘制调头空间circle=plt.Circle（（0,0),4.5,color=′yellov,fill=True,alpha=0.4）\n\nplt.gca().add_artist(circle)绘制两画心#plt.scatter（01x,01y,color='black',marker=,alpha=0.5)#plt.scatter（02x,02y,color='black',=arker=,,alpha=0.5)绘制调头路径arc1=patches.Arc（（01x,01y).vidth=R1*2,height=R1*2,thetal=np.rad2deg（thetalinewidth=2,alpha=0.5)plt.gca().add_patch(arc1)arc2=patches.Arc（（02x，02y）.vidth=R2·2,height=R2*2,theta1=np.rad2deg（theta-linewidth=2,alpha=0.5)plt.gca().add_patch(arc2)x_lst=[ben_pos[o]forben_pos in self.pos]y_lst=[ben_pos[1] for ben_pos in self.pos]plt.scatter(x_lst,y_lst,color='black',=arker=,)plt.axis('equal')plt.xlabel('I',fontproperties=font,size=12)plt.ylabel(Y',fontproperties=font,size=12)plt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.grid(True,alpha=0.3)plt.show)打印板凳龙围像（有板凳）\n\ndef print_img(self,save_pth=None.magn=None,shov=True):save_pth保存路径，默认不保存magn是否放大中心，默认不放大show是否展示，默认展示初始化图像plt.figure(figsize=(8,8))#计算盘入盘出螺线ang=np.1inspace(theta,10·2*pi,1000)xx1=d/（2·pi）·ang*np.cos（ang）\n\nyy1=d/(2·p1）*ang*np.sin（ang)xx2=-xx1yy2=-yy1绘制盘入盘出螺线plt.plot（xx1，yy1,color=red',linevidth=2，label=入螺线，alpha=0.5）\n\nplt.plot（xx2，yy2,color='blue，linewidth=2，label=盘出螺线，alpha=0.5）\n\nplt.plot（[]，[，color='black，linevidth=2，label=调头路径，alpha=0.5）\n\n绘制调头空网circle=plt.Circle（(0,0）,4.5,color=*yellov,fill=True,alpha=0.4)plt.gca().add_artist(circlo)#plt.scatter(01x,01y.color='black′,marker=′,alpha=0.5)#plt.scatter（02x,02y.color='black'.=arker=,,alpha=0.5)绘制调头路径arc1=patches.Arc（（01x,01y),vidth=R1*2,height=R1*2,theta1=np.rad2deg（theta1inevidth=2,alpha=0.5)plt.gca().add_patch(arc1)arc2=patches.Arc（（02x,02y).vidth=R2•2,height=R2*2,theta1=np.rad2deg（thetaalpha+pi/2),theta2=np.rad2deg（theta+alpha+pi/2）,color=blacklineidth=2,alpha=0.5)plt.gca().add_patch(arc2)绘制把手x_lst=[ben_pos[o] for ben_pos in self.pos]y_lst=[ben_pos[1] for ben_pos in self.pos]plt.scatter(x_lst,y_lst,color=′black',arker=)绘制板死a=hole_disb=ben_vid/2for 1in range(223):11=2.86if1==0else1.65delta_xi=self.pos[1+1][o]-self.pos[1][o]delta_yi=self.pos[i+1][1]-self.pos[i][1]s=-delta_yi/li#sin（alpha)c-delta_xi/1i#cos（alpha）\n\nx1=self.pos[1][o]+ac-b*sy1=self.pos[i][1]+a*s+b*cx2=self.pos[1+1][0]-a*c-bsy2=self.pos[1+1][1]-a*s+b▪cx3=self.pos[1+1][o]-a*c+b·sy3=self.pos[1+1][1]-a*s-b·cx4=self.pos[i][o]+a*c+b*sy4=self.pos[1][1]+a*s-b*crect=[（x1，y1），（x2.y2）.（x3，y3）.（x4，y4）]x,y=zip（*rect)plt.plot（x+（x[0].），y+（y[o].）.b-)设置图形属性plt.xlabel('X,fontproperties=font,size=12)plt.ylabel('Y,fontproperties=font,size=12)plt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)放大区城ifagn is not None:plt.xlim(-magn,magn)plt.ylim（-magn,magm)示图形plt.axis（'equal'）#设置坐标轴等比例plt.grid(True,alpha=0.3)if save_pth:plt.savefig(save_pth,dpi=300)ifshov:plt.show()plt.close()保存板凳龙围像def save_i=gs(self,start_t,end_t,save_pth=photos2*,magn=8）:for tine in np.arange（start_t,end_t+1,1）:print（time=\",time)self.set_time(time)self.print_i=g(os.path.join（save_pth,f(time}.png).magn=magn,shov=False)（辅助函数）求解龙头前把手角度def head_pos(self,t):位于盘入螺线ift<=0:par1=theta·(1+theta**2）**0.5par2=1og（theta+（1+theta**2）**0.5)par3=4*pi*self.v0▪t/self.ddeffn（x）:（S0**（Z**x+)+x）o·du-90**（Z**x+)*x-gxed-zxed+xedux2xreturn 1,binary_search(fn,theta,theta *2,incre=False)位于大圆圆张elift<6*alpha/（sin（alpha)*self.v0):theta_n=theta+alpha-pi/2-self.v0*t/R1return 2,theta_n位于小四圆弧elift<9+alpha/（sin（alpha)·self.v0):-0+--return 3,theta_n位于盘出螺线else:par1=theta*（1+theta**2）**0.5par2=1og（theta+（1+theta**2）**0.5)deffn（x):xed-zxed-xed-（s0**（Z**x+）+x)oTdu+0**（Z**x+）▪xuxm2xreturn 4,binary_search（fn,theta,theta *20,incre=True)-pi（辅助函数）龙头前把手路径图def head_i=g(self):计算盘入盘出螺线ang=np.1inspace（theta,6*2*pi,1000)x1=d/（2·p1）*ang*np.cos（ang)y1=d/(2*pi）*ang*np.sin（ang)x2=-x1y2=-y1plt.figure(figsize=(8,8))#绘制盘入盘出螺线plt.plot（x1，y1,color=red'，1inewidth=2,label='盘人线，alpha=0.5)plt.plot（x2，y2,color=′blue’，1inevidth=2,label=′盘出螺线',alpha=0.5)plt.plot（[]，[]，color='black'，1inevidth=2，label=调头路径,alpha=0.5）\n\n绘制调头空间circle=plt.Circle（（0,0),4.5,color=′yellov,fill=True,alpha=0.4)plt-gca().add_artist(circle)绘制两画心plt.scatter(01x,01y,color=′black',arker=,alpha=0.5)plt.scatter（02x,02y，color='black,arker=,alpha=0.5)绘制调头路径arc1=patches.Arc（（01x,01y).vidth=R1*2,height=R1*2,thetal=np.rad2deg（thetalinewidth=2,alpha=0.5)plt.gca().add_patch(arc1)arc2=patches.Arc（（02x，02y).vidth=R2·2,height=R2•2,theta1=np.rad2deg（theta-alpha+pi/2）,theta2=np.rad2deg（theta+alpha+pi/2).color=black,linewidth=2,alpha=0.5)plt.gca().add_patch(arc2)x=[]y=□]fortinnp.arange(-100,101）:ang=self.head_pos(t)x.append(self.arc_x（ang))y.append(self.arc_y（ang))plt.scatter(x,y，marker=,color='black')plt.axis('equal')plt.xlabel('X',fontproperties=font,size=12)plt.ylabel('Y',fontproperties=font,size=12)plt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.legend(prop=font2)plt.grid(True,alpha=0.2)#plt.savefig(\"Figure_8.png\")plt.show()（助函数）求解龙身及龙尾把手角度def next_pos（self，theta_n，1s_head=False）:#theta_n为前一把手角度1=2.86ifis_headelse1.65#两孔距离（=）\n\n前一把手位于盘入螺线（当前把手位于盘入螺线）\n\niftheta_n[o]==1:theta_n=theta_n[1]par1=（2*pi*1/self.d）*2deffn(x):-（u-x）x*-*x+*return 1,binary_search(fn,theta_n,theta_n+pi,incre=True)前一把手位于大图画弧elif theta_n[o]==2:xm=self.arc_x（theta_n)yn=self.arc_y(theta_n)当前把手位于盘入螺线ifdist（（xn，yn）,（x1，y1））<=1:deffn（x）:par1=d/（2*pi）*x*np.cos（x）\n\npar2=d/(2*pi）*x*np.sin（x）\n\nreturn（xn-par1）**2+（yn-par2）**2-1**2return 1.binary_search（fn,theta_n[1],theta_n[1]+pi,1ncre=True)当前把手位于大圆图弧else:delta_theta=2*asin（1/（2*R1）)return 2,theta_n[1]+delta_theta前一把手位于小圆圆弧elif theta_n[o]==3:xm=self.arc_x（theta n)ym=self.arc_y(theta_n)当前把手位于大图圆强ifdist（（xn，ym）.（x2,y2））<=1:deffn（x):par1=xn-01x-R1*np.cos（x）\n\npar2=ym-01y-R1*np.sin（x)returnpar1**2+par2**2-1**2incre=True)#当前把手位于小圆四弧else:delta_theta=2*asin（1/（2*R2))return 3,theta_n[1]-delta_theta前一把手位于盘出螺线elif theta_n[o]==4:xn=self.arc_x（theta_n)yn=self.arc_y（theta_n)#当前把手位于小圆圆弧ifdist（（xm，ym）,（x3，y3）)<=1andtheta_n[1]<=theta:deffn（x）:par1=xn-02x+R2*np.cos（x）\n\npar2=yn-02y+R2*np.sin（x)returnpar1**2+par2**2-1**2incre=False)当前把手位于盘出螺线else:theta_n=theta_n[1]par1=（2*p1▪1/self.d）*2def fn（x):（Td+x）*（Td+ue2q2）*乙-Z*（Td+x）+乙*（Td+ueq）uxncos（x-theta_n）-par1return 4,binary_search(fn,theta_n-pi,theta_n,incre=False)（辅助函数）角度转换为x坐标def arc_x（self,arc）:位于盘入爆线ifarc[o]==1:return self.d/（2*pi）*arc[1]*cos（arc[1])位于大凹圆弧elif arc[o]==2:return 01x+R1*cos(arc[1])位于小四图张elif arc[0]==3:return02x-R2*cos（arc[1])位于盘出螺线lifarc[0]=4:return self.d/(2*pi）*（arc[1]+pi）*cos（arc[1])（辅助函数）角度转换为y坐标defarc_y（self,arc):位于盘入螺线ifarc[0]==1:return self.d/(2▪pi）*arc[1]*sin（arc[1])位于大国圆张elif arc[o]==2:return O1y +R1*sin(arc[1])位于小凹面弧elifarc[o]==3:return02y-R2*sin（arc[1])位于盘出螺线elifarc[0]==4:returnself.d/(2*pi）*（arc[1]+pi）*sin（arc[1])#二分搜索函数def binary_search(fn,lb,ub,incre,eps=1e-8):cur=（1b+ub）/2whileub-1b>eps:cur_res=fn（cur)若函数递增ifincre:ifcur_res<0:1b=curelifcur_res>0:ubcur若函数递藏else:ifcur_res>0:1b=curelif cur_res<0:ub=curcur=（1b+ub）/2return cur求两点间距离def dist(p1,p2):return（（p1[0]-p2[0]）**2+（p1[1]-p2[1]）**2）**0.5临时测试函数def testO):dragon =Dragon()dragon.set_time(300)dragon.print_img(magn=8)if._name....maintest()文件名：proble=l_1.py用途：求解0-300s各把手位置frondragonimport.col_0=[龙头x（=），龙头y（=）]for 1in range（1,222）:col_0.append（f第（i}节龙身x（m））\n\ncol_0.append（f第{i}节龙身y（m））\n\ncol_0.extend（[龙尾x（m），龙尾y（=），龙尾（后）x（=），龙尾（后）y（m）*]）\n\ndata=[：col_0}dragon =Dragon()for time in range(301）:iftime%10=0:print（f\"已求解{time}s)dragon.set_time(time)xy_lst=[for x,y in dragon.pos:xy_lst.append(x)xy_lst.append(y)data[f[time}s']=xy_lstdf=pd.DataFrame(data)df.to_csv('result1_pos.csv',index=False)HH文件名：problem1_2.py用途：求解0-300a各把手速度ufros dragon import·[.（/=）￥.]=0for 1 inrange（1,222）:col_0.append（f第（1}节龙身（=/s）)col_0.extend（[龙尾（m/s）.龙尾（后）（m/a）]）\n\nZ1data=[:col0}dragon=Dragon()for time in range（301）:iftime%10==0:print（f\"巳求解(tine}s)dragon.set_time(time,need_vol=True)data[f{time} s]=dragon.voldf=pd.DataFrame(data)df.to_csv('result1_vol.csv,index=False)文件名：problem2_1.py用途：变步长求解碰撞时刻fron dragon i=port·dragon =Dragon()def check_col（start,end,step):for time in np.arange(start,end,step):dragon.set_time(time)coll=dragon.judge_co1()print（time=,time,if_collision=,coll[o].min_dis=coll[1])check_co1（412.413,0.1)文件名：problem2_2.py用途：求解碰撞时刻各把手的位置和速度froa dragon importcol_t1me=412.47383777#碰撞时刻（s）\n\ndragon=Dragon()dragon.set_time(col_time,need_vol=True)Z1co1_0=[龙头]for 1in range(1,222）:col_0.append（f'第（1}节龙身）\n\ncol_0.extend（[龙尾，龙尾（后）·]）\n\ndata=[:col_0}data['横坐标x（=)]=[ben_pos[o]for ben_posin dragon.pos]data[纵坐标y（=）]=[ben_pos[1]forben_posindragon.pos]OAuxP=[.（/=）.]pdf=pd.DataFrame(data)df.to_csv('result2_al1.csv',1ndex=False)文件名：problem3.py用途：求解龙头前把手能进入调头空间的最小螺距fro dragonimport.fron sko.PSO import PSOdef min_pitch(start,end,step,fig1=False,fig2=False):for d in np.arange(start,end,step):dragon=Dragon(d=d)time = dragon.arr_time()print（f*当前距为（d}m）\n\npso=PS0（func=dragon.min_dis,n_dim=1,pop=40,max_1ter=50,1b=0,ub=time,=0.8,c1=0.5，c2=0.5)pso.run()dist=pso.gbest_yprint（'best_x 1a*,pso.gbest_x,*best_y is',pso.gbest_y)#作图1if:figl:xx=np.1inspace（0,time,1000)yy=np.array（[dragon.min_dis(x) for x in xx])plt.figure()plt.plot(xx，yy)plt.plot(pso.gbest_x,pso.gbest_y.*r')plt.xlabel（时网t（s）',fontproperties=font2,size=12)plt.ylabel（'A点和B点距其他板凳中心线的最短距离，fontproperties=font2，size=12）\n\nplt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.savefig(“Figure_4.png\",dpi=300)plt.show()作图2iffig2:plt.figure(figsize=（7,5))plt.plot(pso.gbest_y_hist)plt.xlabel（子群选代次数，fontproperties=font2，size=12）\n\nplt.ylabel（'全局景优解的函数值'，fontproperties=font2，size=12）\n\nplt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.savefig(Figure_6.png\",dpi=300)plt.show()ifdist>0.15:breakifname==main.min_pitch（0.45,0.46,0.001)#三#文件名：problem4_1用途：求解-100-100s各把手的位置fron dragon2 import*co1_0=[龙头x（=）龙头y（=）]for 1 in range(1,222）:col_0.append（f第1}节龙身x（m））\n\ncol_0.append（f第[i下节龙身y（m））\n\nco1_0.extend（[龙尾x（m），龙尾y（m），龙尾（后）x（m）龙尾（后）y（m）]）\n\nZ1data={:col_0}dragon=Dragon()fortime innp.arange(-100,101,1）:iftime%10==0:print（f“已求解到{time}s\"）\n\ndragon.set_time(tine)xy_lst=[]for x,y in dragon.pos:xy_lst.append(x)xy_lst.append(y)data[f{time}s]=xy_lstdf=pd.DataFrame(data)df.to_csv('result4_pos.csv',index=False)文件名：problen4_2.py用途：求解-100-100s各把手的速度fron dragon2inport*co1_0=[龙头（=/s）]for 1in range（1,222）:col_0.append（f第f1}节龙身（=/s）)col_0.extend（[龙尾（=/a）.龙尾（后）（=/s）]）\n\ndata=[:col_0}dragon =Dragon()for ti=e in np.arange（-100,101,1）:ift1me%10==0:print（f\"已求解到[time}s\"）\n\ndragon.set_time(tine,need_vol=True)data[f[ti=e}s]=dragon.voldf=pd.DataFrame(data)df.to_csv(result4_vol.csv',index=False)文件名：proble=5.py用途：求解全局把手最大速度fros dragon2 inport*dragon =Dragon()#求某时刻的最大速度def max_vt（time):dragon.set_ti=e(time,need_vol=True)return max(dragon.vol)#承某时间段内的最大速度def max_v（start,end,step.save_pth=None):glo_max_v=0全局最大速度max_time=0#最大速度对应时间for ti=e in np.arange(start,end,step):dragon.set_ti=e(time,need_vol=True)cur_max_v=max（dragon.vol）\n\nifcur_max_v>glo_ax_v:A\"xexmo=Axeo8max_tine = tineprint(\"time=tine,max_v=，cur_max_v)print（glo_=ax_v,max_time)plt.figure(figsize=(20,7))xx=np.arange（start,end,step)yy=[=ax_vt（x） forxin xx]plt.plot(xx,yy.color=#00c5D7,1inevidth=2)plt.xlabel（'时网t（s）,fontproperties=font2,size=12)plt.ylabel（把手最大速度（m/s），fontproperties=font2，size=12）\n\nplt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.grid（True,alpha=0.3)if save_pth:plt.savefig(save_pth,dpi=300)plt.show()三分搜索算法（求极大值）\n\ndef ternary_search(fn,1b,ub,eps=1e-8):whileub-1b>=eps:margin=（ub-1b）/3x1=1b+=arginx2=ub-marginiffn（x1）<=fn（x2）:1b=x1else:ub=x2return（lb+ub）/2三分搜索法求最大速度def main(save_pth=None,show=True):t=ternary_search（max_vt,14,15)f_t=max_vt（t）\n\nprint(t,f_t)if shov:plt.figure()xx=np.arange（14,15,0.01)yy=[ax_vt（x） forx 1n xx]plt.plot(xx,yy,color=#00A7E3,linevidth=2)plt.plot（t,f_t,=arker=+,color=red)plt.xlabel（'时网t（s）,fontproperties=font2,size=12)plt.ylabel（把手最大速度（m/s），fontproperties=font2，size=12）\n\nplt.xticks(fontproperties=font,size=12)plt.yticks(fontproperties=font,size=12)plt.grid（True,alpha=0.3)if save_pth is not None:plt.savefig(save_pth,dpi=300)plt.show()if-_name_..ain..main(save_pth=\"Figure_10.png\")"
+      }
+    ]
+  },
+  "resume_response": {
+    "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+    "status": "完成",
+    "contest_id": "probe-critique-acceptance",
+    "rubric_id": "probe-critique-acceptance-v1",
+    "rubric_version": 1,
+    "model_name": "deepseek-flash",
+    "source": "model",
+    "dimensions": [
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chunk_ids": [
+          "6015ed3b3f1e4e8fbc430efab3204320-0020-01"
+        ],
+        "quote": "通过图12的函数图像，可以发现在最小螺距dmin的情况下，dis(t)恰好略大于安全阙值0.15m，因此满足了约束条件“在龙头进人调头空间前不会发生碰撞”。",
+        "status": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chunk_ids": [
+          "6015ed3b3f1e4e8fbc430efab3204320-0022-00"
+        ],
+        "quote": "圆弧BD的圆心为O，圆弧DF圆心为O2，两圆弧相切于点D。需要注意这两段圆弧的半径之比不一定是2：1，而是可以任意选取。",
+        "status": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chunk_ids": [
+          "6015ed3b3f1e4e8fbc430efab3204320-0037-00"
+        ],
+        "quote": "[1]MeetuJain,VibhaSaihjpal,NarinderSingh,andSatya BirSingh.Anoverviewofvariantsand advancements ofpso algorithm.AppliedSciences,12（17):8392,2022.",
+        "status": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chunk_ids": [
+          "6015ed3b3f1e4e8fbc430efab3204320-0007-00"
+        ],
+        "quote": "根据前文所述的计算方法，我们通过二分搜索法解方程（2）求得从初始时刻至300s内每秒钟龙头前把手的位置信息。",
+        "status": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chunk_ids": [
+          "6015ed3b3f1e4e8fbc430efab3204320-0009-02"
+        ],
+        "quote": "碰撞一定先发生于龙头所在的最内圈和其外侧相邻的一圈",
+        "status": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      }
+    ],
+    "score": {
+      "total": 0,
+      "weight_sum": 0,
+      "rubric_weight_sum": 100,
+      "weighted": [],
+      "excluded": [
+        {
+          "dimension_code": "",
+          "band": "基本",
+          "status": "基本",
+          "weight": 0,
+          "contribution": 0,
+          "reason": "量规里没有这一维，权重按 0 计"
+        },
+        {
+          "dimension_code": "",
+          "band": "基本",
+          "status": "基本",
+          "weight": 0,
+          "contribution": 0,
+          "reason": "量规里没有这一维，权重按 0 计"
+        },
+        {
+          "dimension_code": "",
+          "band": "基本",
+          "status": "基本",
+          "weight": 0,
+          "contribution": 0,
+          "reason": "量规里没有这一维，权重按 0 计"
+        },
+        {
+          "dimension_code": "",
+          "band": "基本",
+          "status": "基本",
+          "weight": 0,
+          "contribution": 0,
+          "reason": "量规里没有这一维，权重按 0 计"
+        },
+        {
+          "dimension_code": "",
+          "band": "基本",
+          "status": "基本",
+          "weight": 0,
+          "contribution": 0,
+          "reason": "量规里没有这一维，权重按 0 计"
+        }
+      ]
+    },
+    "change_list": [
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:据此计算出从初始时刻至第",
+        "target": "据此计算出从初始时刻至第",
+        "evidence": [
+          {
+            "char_start": 1788,
+            "char_end": 1792,
+            "text": "300s"
+          },
+          {
+            "char_start": 20279,
+            "char_end": 20282,
+            "text": "15s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:d=",
+        "target": "d=",
+        "evidence": [
+          {
+            "char_start": 3713,
+            "char_end": 3718,
+            "text": "0.55m"
+          },
+          {
+            "char_start": 9684,
+            "char_end": 9689,
+            "text": "0.55m"
+          },
+          {
+            "char_start": 9756,
+            "char_end": 9761,
+            "text": "0.55m"
+          },
+          {
+            "char_start": 10452,
+            "char_end": 10457,
+            "text": "0.30m"
+          },
+          {
+            "char_start": 11409,
+            "char_end": 11418,
+            "text": "0.450337m"
+          },
+          {
+            "char_start": 11445,
+            "char_end": 11454,
+            "text": "0.450337m"
+          },
+          {
+            "char_start": 12897,
+            "char_end": 12901,
+            "text": "1.7m"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:..X图t=",
+        "target": "..X图t=",
+        "evidence": [
+          {
+            "char_start": 6380,
+            "char_end": 6382,
+            "text": "0s"
+          },
+          {
+            "char_start": 17902,
+            "char_end": 17905,
+            "text": "10s"
+          },
+          {
+            "char_start": 17910,
+            "char_end": 17913,
+            "text": "15s"
+          },
+          {
+            "char_start": 17918,
+            "char_end": 17921,
+            "text": "20s"
+          },
+          {
+            "char_start": 20253,
+            "char_end": 20256,
+            "text": "14s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:至t=",
+        "target": "至t=",
+        "evidence": [
+          {
+            "char_start": 6385,
+            "char_end": 6389,
+            "text": "300s"
+          },
+          {
+            "char_start": 6798,
+            "char_end": 6802,
+            "text": "300s"
+          },
+          {
+            "char_start": 16524,
+            "char_end": 16528,
+            "text": "100s"
+          },
+          {
+            "char_start": 16665,
+            "char_end": 16669,
+            "text": "100s"
+          },
+          {
+            "char_start": 20155,
+            "char_end": 20159,
+            "text": "500s"
+          },
+          {
+            "char_start": 20259,
+            "char_end": 20262,
+            "text": "15s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:在t=",
+        "target": "在t=",
+        "evidence": [
+          {
+            "char_start": 8699,
+            "char_end": 8710,
+            "text": "412.473838s"
+          },
+          {
+            "char_start": 18969,
+            "char_end": 18972,
+            "text": "14s"
+          },
+          {
+            "char_start": 19957,
+            "char_end": 19969,
+            "text": "14.47997148s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:·t∈[",
+        "target": "·t∈[",
+        "evidence": [
+          {
+            "char_start": 13915,
+            "char_end": 13919,
+            "text": "100s"
+          },
+          {
+            "char_start": 15184,
+            "char_end": 15186,
+            "text": "0s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "数字冲突",
+        "finding_kind": "数字冲突",
+        "upstream_id": "finding:数字冲突:求解",
+        "target": "求解",
+        "evidence": [
+          {
+            "char_start": 38083,
+            "char_end": 38087,
+            "text": "300s"
+          },
+          {
+            "char_start": 40667,
+            "char_end": 40671,
+            "text": "100s"
+          },
+          {
+            "char_start": 41135,
+            "char_end": 41139,
+            "text": "100s"
+          }
+        ],
+        "action": "把两处数值改成同一口径，并在正文说明取值来源"
+      },
+      {
+        "section": "题目约束与数字冲突",
+        "kind": "题目约束",
+        "finding_kind": "未提到条件",
+        "upstream_id": "finding:未提到条件:probe-critique-acceptance-probe-required",
+        "target": "自检验证：正文须出现「量子纠缠校准」字样",
+        "evidence": [],
+        "action": "在假设或模型一节补上这条题目条件"
+      },
+      {
+        "section": "表述",
+        "kind": "表述",
+        "upstream_id": "dimension:presentation",
+        "dimension_code": "presentation",
+        "target": "表述与结构",
+        "evidence": [
+          {
+            "text": "[1]MeetuJain,VibhaSaihjpal,NarinderSingh,andSatya BirSingh.Anoverviewofvariantsand advancements ofpso algorithm.AppliedSciences,12（17):8392,2022.",
+            "band": "基本",
+            "status": "基本",
+            "chunk_ids": [
+              "6015ed3b3f1e4e8fbc430efab3204320-0037-00"
+            ]
+          }
+        ],
+        "action": "按问题顺序重排结果，补齐单位、图表编号与引用"
+      }
+    ],
+    "change_list_note": null,
+    "note": "source=model：各维档位来自模型选档，引用已校验为父块原句",
+    "agent_terminated_by": "all_submitted"
+  },
+  "agent_steps_response": {
+    "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+    "steps": [
+      {
+        "step_id": "07e368297994437ba0f58c2582b58b29",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 1,
+        "node": "model",
+        "action": "list_dimensions",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 2 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 1051,
+        "created_at": "2026-10-19T13:38:52"
+      },
+      {
+        "step_id": "0d22de2764e54040a5ef0d791774885b",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 2,
+        "node": "tools",
+        "action": "list_dimensions",
+        "args_digest": "44136fa3",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:38:52"
+      },
+      {
+        "step_id": "397196b65ffb4cca98cc9771686d2e33",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 3,
+        "node": "tools",
+        "action": "get_constraints",
+        "args_digest": "44136fa3",
+        "result_note": "命中 6 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:38:52"
+      },
+      {
+        "step_id": "d632c98c572542f0b01a24100ad48ea1",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 4,
+        "node": "model",
+        "action": "search_evidence",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 5 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 2325,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "b0b0a304941740f6b2a6b701929cb31b",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 5,
+        "node": "tools",
+        "action": "search_evidence",
+        "args_digest": "87a1cb50",
+        "result_note": "命中 1 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 431,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "e795adb565854532942edb093737282c",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 6,
+        "node": "tools",
+        "action": "search_evidence",
+        "args_digest": "a2e50e45",
+        "result_note": "命中 4 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 444,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "6f9e2e62b4ef4a608a3b27a53ecb99a3",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 7,
+        "node": "tools",
+        "action": "search_evidence",
+        "args_digest": "e27b6cfd",
+        "result_note": "命中 4 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 464,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "f6fb3194071b417faa88608bc4421585",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 8,
+        "node": "tools",
+        "action": "search_evidence",
+        "args_digest": "6c93270c",
+        "result_note": "命中 4 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 481,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "9711d021577d47e8840ed2ead1df931a",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 9,
+        "node": "tools",
+        "action": "search_evidence",
+        "args_digest": "ccfdbafb",
+        "result_note": "命中 4 条",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 514,
+        "created_at": "2026-10-19T13:38:54"
+      },
+      {
+        "step_id": "c316a966f1304e92ba0ef1a81bfee41c",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 10,
+        "node": "model",
+        "action": "read_parent",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 3 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 4477,
+        "created_at": "2026-10-19T13:38:59"
+      },
+      {
+        "step_id": "b1a2570415cd420b98b8b854547e1fd5",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 11,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "17b42c97",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:38:59"
+      },
+      {
+        "step_id": "0ec1149cdc3146ad8bb3460c222ef75a",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 12,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "3b2760b0",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:38:59"
+      },
+      {
+        "step_id": "0c94149ea3a14fa5ad33aa7aad50c29f",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 13,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "3a8d9827",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:38:59"
+      },
+      {
+        "step_id": "a63d2f736ca749e7b557b5b1282496cd",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 14,
+        "node": "model",
+        "action": "read_parent",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 4 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 5943,
+        "created_at": "2026-10-19T13:39:05"
+      },
+      {
+        "step_id": "38975eb9b72144fc819d0e71e3fd9c21",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 15,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "df5600f6",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:05"
+      },
+      {
+        "step_id": "ef4e6835684c46b49cf77385b53c6c25",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 16,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "9b45d518",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:05"
+      },
+      {
+        "step_id": "e1973cef68a34f4a98666e4d4cfa8c5c",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 17,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "3c54f6d4",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:05"
+      },
+      {
+        "step_id": "3285f0eb7f824fb5a20f14b05d274b55",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 18,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "badd259f",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:05"
+      },
+      {
+        "step_id": "d4f8c16c81f046039d6e8080fd62e293",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 19,
+        "node": "model",
+        "action": "read_parent",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 2 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 4958,
+        "created_at": "2026-10-19T13:39:10"
+      },
+      {
+        "step_id": "72338aeb39ab40cc86bcdc461259f185",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 20,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "0bbc22f3",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:10"
+      },
+      {
+        "step_id": "6985aaf0fc6f48a0ab7328b28f6586df",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 21,
+        "node": "tools",
+        "action": "read_parent",
+        "args_digest": "8ecda086",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:10"
+      },
+      {
+        "step_id": "78717ceb066c4198ab691e6aac7471dd",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 22,
+        "node": "model",
+        "action": "submit_dimension",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 5 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 12206,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "7fa9d9ea08a746cc953a0bd5def19fed",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 23,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "7d417412",
+        "result_note": "quote_not_substring: quote 必须是已检索父块中的连续子串",
+        "ok": false,
+        "error_code": "quote_not_substring",
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "4c8884e13997457ba86e2189094da651",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 24,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "7eee37e1",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "e9921b8f012646399117e72d2f1d6367",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 25,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "b31d06d9",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "e48e2cdbf7d947339c4774f0428c581e",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 26,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "595a8d15",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "c3ef3aadfc98425486afc77254e19d86",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 27,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "598ac438",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:22"
+      },
+      {
+        "step_id": "2420e20e18d64641ac3c347b0e288587",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 28,
+        "node": "model",
+        "action": "submit_dimension",
+        "args_digest": "44136fa3",
+        "result_note": "决定调用 1 个工具",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 2531,
+        "created_at": "2026-10-19T13:39:25"
+      },
+      {
+        "step_id": "b06b97d78e6d4ca098099aff5e1439b2",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 29,
+        "node": "tools",
+        "action": "submit_dimension",
+        "args_digest": "63cf7ad8",
+        "result_note": "ok",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:25"
+      },
+      {
+        "step_id": "aead484cb68d4fe9897c27670a4150cf",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 30,
+        "node": "model",
+        "action": "final",
+        "args_digest": "44136fa3",
+        "result_note": "五个维度都已提交完毕：假设的合理性、检验与题目约束、建模是否针对本题、表述与结构、求解与结果均为「基本」。",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 849,
+        "created_at": "2026-10-19T13:39:26"
+      },
+      {
+        "step_id": "28ec6acc3ba7434bb9b0ddaed31abd3f",
+        "review_id": "6015ed3b3f1e4e8fbc430efab3204320",
+        "idx": 31,
+        "node": "runner",
+        "action": "terminated",
+        "args_digest": "93ec9ae4",
+        "result_note": "all_submitted",
+        "ok": true,
+        "error_code": null,
+        "elapsed_ms": 0,
+        "created_at": "2026-10-19T13:39:26"
+      }
+    ]
+  },
+  "conclusion": {
+    "branch": "B",
+    "critique_downgrade_count": 0,
+    "guard_downgraded": [
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      },
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "guard": {
+          "band": "基本",
+          "downgraded": false,
+          "reasons": [],
+          "checked": 0,
+          "skipped": []
+        }
+      }
+    ]
+  }
+}

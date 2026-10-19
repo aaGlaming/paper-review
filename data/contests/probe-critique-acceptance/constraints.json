@@ -1,0 +1,100 @@
+{
+  "contest_id": "probe-critique-acceptance",
+  "constraints": [
+    {
+      "constraint_id": "probe-critique-acceptance-collision",
+      "name": "板凳之间不能相撞",
+      "check_type": "mention",
+      "params": {
+        "keywords": [
+          "碰撞",
+          "相撞",
+          "板凳宽度"
+        ]
+      },
+      "section_types": [
+        "假设",
+        "模型",
+        "求解",
+        "检验"
+      ]
+    },
+    {
+      "constraint_id": "probe-critique-acceptance-pitch",
+      "name": "盘入螺距为 1.7 m",
+      "check_type": "numeric_range",
+      "params": {
+        "min": 1.7,
+        "max": 1.7,
+        "unit": "m"
+      },
+      "section_types": [
+        "模型",
+        "求解"
+      ]
+    },
+    {
+      "constraint_id": "probe-critique-acceptance-turn-arc",
+      "name": "调头圆弧两段相切且半径 2 倍",
+      "check_type": "mention",
+      "params": {
+        "keywords": [
+          "相切",
+          "2 倍",
+          "半径"
+        ]
+      },
+      "section_types": [
+        "模型",
+        "求解",
+        "检验"
+      ]
+    },
+    {
+      "constraint_id": "probe-critique-acceptance-head-speed",
+      "name": "龙头速度为 1 m/s",
+      "check_type": "numeric_range",
+      "params": {
+        "min": 1,
+        "max": 1,
+        "unit": "m/s"
+      },
+      "section_types": [
+        "模型",
+        "求解"
+      ]
+    },
+    {
+      "constraint_id": "probe-critique-acceptance-handle-speed",
+      "name": "把手速度不超过 2 m/s",
+      "check_type": "numeric_range",
+      "params": {
+        "min": 0,
+        "max": 2,
+        "unit": "m/s"
+      },
+      "section_types": [
+        "求解",
+        "结果",
+        "检验"
+      ]
+    },
+    {
+      "constraint_id": "probe-critique-acceptance-probe-required",
+      "name": "自检验证：正文须出现「量子纠缠校准」字样",
+      "check_type": "mention",
+      "params": {
+        "keywords": [
+          "量子纠缠校准"
+        ]
+      },
+      "section_types": [
+        "假设",
+        "模型",
+        "求解",
+        "检验",
+        "结果"
+      ]
+    }
+  ]
+}
