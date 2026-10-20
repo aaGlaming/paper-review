@@ -20,6 +20,7 @@ class PaperRetriever(BaseRetriever):
     review_id: str = ""
     dimension_code: str = ""
     section_types: tuple[str, ...] = ()
+    doc_types: tuple[str, ...] = ()
     retrieve_fn: Callable[..., Any] | None = Field(default=None, exclude=True)
 
     def _get_relevant_documents(
@@ -31,13 +32,19 @@ class PaperRetriever(BaseRetriever):
         if self.retrieve_fn is None:
             raise ValueError("必须注入 retrieve_fn 后才能使用 PaperRetriever")
 
+        retrieve_kwargs = {
+            "contest_id": self.contest_id,
+            "rubric_id": self.rubric_id,
+            "review_id": self.review_id,
+            "dimension_code": self.dimension_code,
+            "section_types": self.section_types,
+        }
+        # 空过滤器保持旧适配器的调用形状；有值时再限制到对应文档类型。
+        if self.doc_types:
+            retrieve_kwargs["doc_types"] = self.doc_types
         result = self.retrieve_fn(
             query,
-            contest_id=self.contest_id,
-            rubric_id=self.rubric_id,
-            review_id=self.review_id,
-            dimension_code=self.dimension_code,
-            section_types=self.section_types,
+            **retrieve_kwargs,
         )
         parents = result.parents
         if result.status == "证据不足" or not parents:

@@ -11,6 +11,7 @@ import { createMemoryHistory } from 'vue-router'
 
 import * as api from '../../src/api'
 import type { EvalSummary, SampleItem } from '../../src/api/types'
+import { AUTH_TOKEN_KEY, resetAuthStateForTest } from '../../src/composables/useAuth'
 import { createAppRouter } from '../../src/router'
 import EvalView from '../../src/views/评测对照.vue'
 import { AWARD_WORDS, CONTEST_ID_TOKEN } from './forbidden-words'
@@ -25,6 +26,7 @@ vi.mock('../../src/api', async (importOriginal) => {
     getReview: vi.fn(),
     createReview: vi.fn(),
     resumeReview: vi.fn(),
+    authMe: vi.fn(),
   }
 })
 
@@ -72,6 +74,17 @@ const SAMPLES: SampleItem[] = [
 ]
 
 async function mountAt(path: string) {
+  // 守卫下 push 受保护路由需先登录（只 mock authMe，不打后端）；页面断言零改动。
+  resetAuthStateForTest()
+  localStorage.setItem(AUTH_TOKEN_KEY, 'eval-token')
+  vi.mocked(api.authMe).mockResolvedValue({
+    user_id: 'u1',
+    username: 'stu',
+    role: 'student',
+    permissions: [],
+  })
+  const { useAuth } = await import('../../src/composables/useAuth')
+  await useAuth().restore()
   const router = createAppRouter(createMemoryHistory())
   await router.push(path)
   await router.isReady()

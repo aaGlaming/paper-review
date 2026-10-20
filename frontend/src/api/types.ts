@@ -11,6 +11,15 @@ export interface ContestRubric {
   status: string
 }
 
+export interface AuthUser {
+  user_id: string
+  username: string
+  role: 'student' | 'teacher' | string
+  permissions: string[]
+  email?: string
+  display_name?: string
+}
+
 /** 赛题约束。check_type 只注册三种：mention / numeric_range / required_case。 */
 export interface ContestConstraint {
   constraint_id: string
@@ -36,6 +45,27 @@ export interface ContestSummary {
 
 export interface ContestListResponse {
   contests: ContestSummary[]
+}
+
+export interface ReviewListItem {
+  review_id: string
+  contest_id: string
+  rubric_id: string
+  rubric_version: number
+  model_name: string
+  created_at: string
+  user_id: string | null
+  owner_username: string | null
+  bands: Record<string, string | null>
+  finding_total: number
+}
+
+export interface ReviewListResponse {
+  reviews: ReviewListItem[]
+  total: number
+  page: number
+  page_size: number
+  scope: 'all' | 'own'
 }
 
 /** `GET /api/samples` 的 `samples[]` 一条。`has_gold` 为真才可以进评测分母。 */
@@ -226,8 +256,8 @@ export interface AgentStepsResponse {
 }
 
 /**
- * `GET /api/reviews/{id}` 的存档：只回 7 个字段，**没有** `status` / `source` / `score` /
- * `change_list` / `note`。它和 `resume` 的完整报告不是一回事，页面取加权前必须判别。
+ * `GET /api/reviews/{id}` 的存档：包含档案字段与 change_list，sections 仅在有正文快照时返回。
+ * 它和 `resume` 的完整报告不是一回事，页面取加权前必须判别。
  */
 export interface ArchivedReview {
   review_id: string
@@ -239,6 +269,7 @@ export interface ArchivedReview {
   dimensions: DimensionResult[]
   change_list: ChangeListItem[]
   change_list_note: string | null
+  sections?: PaperSection[]
 }
 
 /** `GET /api/reviews/{id}` 的两段式：已落档返回存档，只有会话快照时返回章节树。 */

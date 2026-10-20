@@ -1991,3 +1991,547 @@ P0.4 要求修改测试隔离，但本版同时禁止修改 backend/tests/ 与 c
 - report-V3 已写入；验收夹具说明已写入 data/README.md。
 - 文档检查：python scripts/check_docs_encoding.py docs --strict，退出码 0。
 - 本轮未创建 V5 分支：工作区已有前序改动，未满足干净工作区条件。
+## v3.0.0 · P16 日志底座与全链路埋点
+
+> 标题原写作 `v2.4.0`，属编号笔误：P16 是 Phase-3 的第一步，按 Phase-3 计划的命名口径应为 `v3.0.x`（第二位是期内序号，不是 P 号）。2026-10-20 收口时更正。
+
+### P0 体检与闸门
+
+- routes 装饰器计数 14；`backend/app/agent/*.py` 计数 13；tools.py 的 Literal 计数 4；parent_child.py 的 review_id 计数 18。
+- `logs/` 初始为空；3306/33060 均处于 LISTENING。
+- 用户选择 A，按“挂账项与可观测性无关”照常开工；Phase-2 判据 5 仍记录为部分满足。
+- 全量基线命令使用全新 basetemp，退出码 0，末行 `231 passed, 2 warnings in 7.98s`。
+
+### 实现与测试
+
+- 新增 `backend/app/observability/` 日志底座：十五个模块目录、JSON 行、时区时间戳、按天文件、大小滚动与保留期清理；`LOG_DISABLED=1` 时不建目录。
+- API 请求、异常、图节点与 interrupt/resume、LLM HTTP 结果、逐维检索、逐维评分均接入埋点；未记录请求体、论文全文、密钥或 DSN。
+- `backend/tests/conftest.py` 新增 `isolate_logging`，测试默认关闭文件日志；新增日志测试 5 条。
+- 全量 pytest 退出码 0，末行 `236 passed, 2 warnings in 7.42s`。
+
+### 一次真实预审取证
+
+- review_id：`f2294c85f3d8404bbbb360942cf4f39d`；创建与 resume 均成功，resume 约 28.8 s，返回 `source=model`、`status=完成`、`agent_terminated_by=all_submitted`。
+- `agent_step` 共 24 行；观测日志按该 review_id 串出 api/request、graph/node_enter/node_exit/interrupted/resumed、retrieve/dimension_retrieved；LLM 日志记录 embed/chat/rerank 调用，未写 URL、请求头或密钥。
+- 日志筛选命令输出的事件序列已核对，文件位于 `logs/api/`、`logs/graph/`、`logs/llm/`、`logs/retrieve/`、`logs/scoring/` 的当天日志。
+
+### 其他门禁
+
+- `.gitignore` 已加入 `logs/`。
+- `python scripts/check_docs_encoding.py docs --strict` 待本节写入后执行；若失败，停止交付并修复编码，不改业务语义。
+- 前端门禁：`npm run build` 退出码 0；`npx vitest run --reporter=dot` 退出码 0，末行 `17 files / 113 tests passed`。
+- `npx playwright test` 在空白模型键占位下为 36 passed、9 failed。失败集中在既有完整链路确认卡超时，以及数据库当前含验收夹具后 `/api/contests` 返回 4 个赛题；本版未修改前端断言或放宽等待条件，作为环境/数据挂账记录。
+
+### 收口复核（2026-10-20 10:05–10:15）
+
+复核时发现并修掉三个问题，其中前两个是本版自身的缺口。
+
+**1. 滚动测试用例在全量跑时崩掉（沙箱限制，非产品缺陷）**
+
+`pytest backend/tests -q` 首次跑 236 条出现 `1 failed`：`test_size_rollover_keeps_at_most_five_backups`。单独跑该用例通过，全量跑失败。取证后确认不是逻辑问题——`JsonDailyHandler._roll()` 里的 `target.unlink()` 触发了本机沙箱的批量删除保护：
+
+```text
+[safe-delete][SAFE_DELETE_BULK_CONFIRM_REQUIRED] {"count":50,"threshold":50,...api-20261020.log.5"}
+```
+
+原用例 `range(80)` 在 256 字节阈值下产生 40 次以上滚动，删除次数累计越线，进程被直接终止。改为 `range(24)`（十余次滚动），**断言不变**（备份数 ≤ 6、出现 `.1`），只缩小样本量，并在用例内注明原因。
+
+**2. `llm` 与 `scoring` 的日志不带 `review_id`，导致「一条 review_id 串起全过程」判据不成立**
+
+按 P4 要求用 jq 串联时发现，某次评审只串出 api/graph/retrieve，**没有 llm 和 scoring**。逐模块统计：
+
+| 模块 | 总条数 | 带 `review_id` |
+|---|:-:|:-:|
+| graph | 1250 | 1250 |
+| retrieve | 1348 | 1348 |
+| api | 993 | 143（仅路径含评审的端点） |
+| **llm** | **2244** | **0** |
+| **scoring** | **1183** | **67** |
+
+根因有两层：`llm/client.py` 是最底层 HTTP 客户端，调用链上根本拿不到 `review_id`；`scoring.selection.apply_mention_guard` 虽新增了 `review_id` 形参，但三处调用方都没传，落库为 `null`。
+
+修复方式：在 `observability/logging.py` 加 `ContextVar`，提供 `bind_review_id()` / `unbind_review_id()`；`log_event` 在字段缺失（`None` 或空串）时自动回填上下文里的 `review_id`，**显式传值优先**。绑定点放在 `review_graph.create_review` 与 `resume_review` 的 `try/finally` 里，异常时不会串到下个请求。这样无需给底层客户端加签名，也无需改三处调用方。
+
+**3. 验证**
+
+- 修复后单跑 `backend/tests/observability`：**7 passed**（原 5 条 + 新增 2 条：上下文回填、显式值不被覆盖）。
+- 全量：`238 passed, 2 warnings in 22.06s`，退出码 **0**。
+- 真实预审（a016）：`review_id=e6526a8438f0406bbb4f0e2d379d358d`，30.6 s，`source=model`，`terminated_by=all_submitted`，五维 = 基本 / 基本 / **充分** / **充分** / 基本。
+- 同一 `review_id` 串出的模块分布：**api 1 / graph 14 / llm 22 / retrieve 8 / scoring 10**，时序为 parse → confirm(interrupt) → resumed → retrieve → score → llm(chat/embed/rerank) → dimension_retrieved → dimension_scored。
+
+**4. 本版仍未闭环的**
+
+- Playwright 9 failed 未处理，留待 `v3.0.2` 逐条定级（需先区分「模型键占位导致的既有用例超时」与「真实回归」）。
+- `logs/agent/` 目录已建但无写入者：Agent 轨迹当前落 `agent_step` 表，日志是否重复记录留待 `v3.0.2` 决策。
+## v3.0.1 · P16 监听三件套
+
+### P0 前置体检
+
+- routes 装饰器 14；`bind_review_id` 计数 3；`logs/*/` 目录 15 个；3306 LISTENING。
+- 全新 basetemp 测试退出码 0，末行 `238 passed, 2 warnings in 7.80s`。
+
+### 三个端点
+
+- `/health` 返回 200，示例：`{"status":"ok","uptime_s":23,"version":"0.3.0"}`；不访问数据库。
+- `/readyz` 全通返回 200，MySQL 与 Chroma 各自带 `ok` 和 `elapsed_ms`，集合计数为 3854。
+- 临时使用 3399 端口验证：`/readyz` 返回 503，`failing=["mysql"]`，Chroma 仍被检查且为 true；同一进程的 `/health` 仍返回 200。已恢复正常 DSN 并重启，`/health=200`、`/readyz=200`。
+- `/metrics` 返回 `text/plain; version=0.0.4`，包含五个规定指标族、`+Inf` 桶和末尾换行；三个端点均跳过 api/request 日志。
+
+### 指标与真实预审
+
+- 新增 8 条观测测试；全量 pytest 退出码 0，末行 `246 passed, 2 warnings in 8.35s`。
+- 真实预审 review_id=`366f089d33564fceae8a5268692e5c61`，resume 约 20.8 s，`source=model`。
+- 预审后指标增量：`reviews_total{status="完成"}=1`；LLM 调用 17 次（embed 6、rerank 5、chat 6，均 success）；retrieve 父块直方图 `le="4"` 为 5，`+Inf` 为 5。
+- 日志中间件未为 health/readyz/metrics 写 request 行；健康、就绪、指标端点不计入评审计数。
+
+### 门禁
+
+- `python scripts/check_docs_encoding.py docs --strict`：退出码 0，65 个文档通过 UTF-8 严格检查。
+- 本版未修改前端；Playwright 红灯沿用 v3.0.2 定级，不在本版处理。
+
+### 收口复核（2026-10-20 10:30–10:40）
+
+独立复跑一遍，并把上一轮遗留的两处弱断言补掉。
+
+**1. 全量复跑**
+
+```text
+BT=".pytest_tmp/run-$(date +%H%M%S)"; mkdir -p "$BT"
+PYTEST_DEBUG_TEMPROOT="$BT" python -m pytest backend/tests -q --basetemp="$BT"
+→ 250 passed, 2 warnings in 28.19s   EXIT=0
+```
+
+首次复跑出现 `3 failed, 247 passed`，失败项为 `test_review_indexing` 两条与 `test_resume_uses_model_graph_*`。原因是 3306 未监听（mysqld 进程此前被停），与代码无关；`mysqld.exe --defaults-file=D:/MySQL/my.ini` 拉起后同一命令转为 250 全过。**这条再次证明 P0 第 4 项「3306 必须有输出」不是形式检查。**
+
+**2. 指标测试从「断言子串存在」改成「整段必须可解析」**
+
+原 `test_labels_are_minimally_escaped_and_parseable` 只断言 `status="a\"b\\c"` 出现在文本里，**没有把整段文本送进解析器**——标签转义写错、混进科学计数法、`+Inf` 丢失都不会被它发现。现在 `test_metrics.py` 改为 7 条：
+
+| 用例 | 断言要点 |
+|---|---|
+| `test_render_always_prints_required_families` | 五个族 HELP/TYPE 齐全、两个直方图有 `+Inf` 桶、`reviews_total{status="完成"} 0` 零值基线 |
+| `test_llm_buckets_are_cumulative_and_match_sum_count` | 累计桶必须单调（0.2/1.5/7.0 三次观测 → 1/1/2/2/3/3）、`_sum` 与 `_count` 自洽 |
+| `test_labels_are_minimally_escaped_and_still_parseable` | 引号/反斜杠/换行三个字符都转义后**整段仍可解析**，且换行没有把样本截成两行 |
+
+每个用例末尾统一过 `_assert_parseable()`：逐行匹配「指标名 + 可选标签 + 数值」、禁科学计数法、禁空标签。
+
+**3. 冷启动零值行**
+
+`reviews_total` 原来在第一次评审前只有 HELP/TYPE、没有样本行（看板显示「无数据」）。现补一条 `_SEED_REVIEW_STATUSES = ("完成",)` 播零值基线；**故意不给 `失败` 播零值**——失败路径在 `save_review` 之前就抛异常，播一条恒 0 的行会让人以为没有失败。同理 `llm_calls_total` 保持「第一次调用前无样本行」。三条口径写进 `metrics.py` docstring，避免下一个人把它当 bug 改掉。
+
+**4. 复核后重测（全部真机）**
+
+| 项 | 结果 |
+|---|---|
+| `/health` | 200，`uptime_s` 从 0 起算，DSN 改成不可达时仍 200 |
+| `/readyz` 正常 | 200，mysql 177 ms、chroma 1352 ms、count 4155 |
+| `/readyz` 故障 | DSN 指向 `127.0.0.1:3399` → 503，`failing=["mysql"]`，且 `chroma.ok=true`（证明两项都探完才汇总） |
+| 凭据泄漏 | 该响应中 `baduser`/`badpass`/`3399` 命中 0 次 |
+| 真实预审 | review_id `2c409aa8…`，33.4 s，五维 基本/充分/充分/基本/基本，`all_submitted` |
+| 指标增量 | reviews +1、`llm_calls{deepseek-flash,ok}` +8、`latency_count` +27、`retrieve_parents{le="4"}` +9 |
+| 日志噪音 | `logs/api/api-20261020.log` 中三端点命中 0 条 |
+| 数据库核对 | `review` 30 条、`agent_step` 792 行，含本版两次复核记录 |
+
+**5. 复核同时暴露的 P16 缺口（留给 v3.0.2）**
+
+按 §3.5 的清单逐模块核对当天日志条数，十五个目录里**只有五个有写入者**：
+
+```text
+api 106 / graph 182 / llm 254 / retrieve 82 / scoring 120
+agent 0 / ai_chat 0 / audit 0 / auth 0 / dashboard 0 / errors 0
+frontend 0 / importing 0 / report 0 / review 0
+```
+
+其中 `auth` `ai_chat` `dashboard` `audit` `frontend` 属 P17/P19/P20，空是设计如此；`errors` 为空说明本次没有异常，正常。**但 `report` `review` `importing` 三个模块已经实现却一处 `log_event` 都没有**（`review/consistency.py`、`report/store.py`、`importing/catalog.py`），而 §3.5 明确要求这三个模块埋点。这直接卡住 §3.6 判据 1「每个相关目录都有当天日志」，因此 v3.0.2 除了脚本化门禁，还要把这三处补上。
+
+## v3.1.0 · P17 账号与鉴权底座（后端四接口）
+
+### P0 前置体检（7 项全过才开工）
+
+- routes 装饰器 14；`@app.get("/health")` 1（health/readyz/metrics 共 3 端点）；`backend/app/auth` 不存在；collect `255 tests`；3306 LISTENING。
+- `scripts/check_logs.py` 初跑退出码 1：`required writer empty: review / report / importing`——v3.0.2 埋点还没被真实预审触发。起后端跑一次真实预审（demo 样例 `cumcm-2024-A-a178`，create→resume，`status=完成`，`source=model`），再重导 `probe-critique-acceptance` 包触发 `import_finished`，脚本转 `[ok] 15 dirs, 8 writers, 0 issue`，退出码 0。
+- 全新 basetemp 全量：`255 passed`，退出码 0。
+
+### 实现（只做后端账号体系，不碰前端）
+
+- `backend/app/auth/models.py`：`AuthBase` + `User`（`quoted_name("user", True)`，照 constraint 先例）+ `Permission`（`UNIQUE(user_id, permission, resource)`）+ 幂等 `create_auth_schema`。
+- `backend/app/auth/security.py`：标准库 `hashlib.scrypt(n=2**14, r=8, p=1, dklen=32)`，格式 `scrypt$16384$8$1$<salt_b64>$<dk_b64>`；`verify_password` 用 `hmac.compare_digest`，脏格式返回 False；用户名 3~32 `[A-Za-z0-9_-]`，密码 8~64 字母+数字无空白。
+- `backend/app/auth/token.py`：自签三段 `v1.<b64url>.<b64url(hmac)>`（明确不是 JWT），payload `{uid, role, exp, pv}`，`pv=sha256(password_hash)[:16]`；`AUTH_SECRET` 环境变量独供、长度<32 直接 RuntimeError；`TokenError(reason)` 五枚举。
+- `backend/app/auth/permissions.py`：7 个权限常量 + `DEFAULT_PERMISSIONS`（学生 3 / 教师 7，以 §4.2 表格为准）。
+- `backend/app/auth/store.py` + `deps.py`：`current_user` 取 Bearer→解 token→查库→active，失败一律 401「未登录或登录已过期」，日志只写 reason。
+- `backend/app/api/auth_routes.py`：register 201 / login 200 / logout 204 / me 200；注册 409 与登录 401 均为统一文案（防枚举）；登录成功 `touch_login` + `inc_auth(True)`，失败 `inc_auth(False)`。
+- `metrics.py`：`auth_total` 从硬编码 0 改为 `_auth` 计数器渲染，`reset_metrics_for_tests` 同步清；`test_metrics.py` 加 `test_auth_counter_success_and_failure_tracked_separately`（数值断言，原来只断子串存在）。
+
+### P8 真实环境验证（MySQL + 8077）
+
+- `.env` 追加 `AUTH_SECRET`（值不记），`.env.example` 只加键名。
+- `create_auth_schema()` 连跑两次无错；`user` 9 列、`permission` 表均在库。
+- register 201 `{user_id, username, role}`；login 200 三段 `v1` token、学生 3 权限；me 200；logout 204。
+- 重复注册 409「该注册信息不可用」；错密码 401「用户名或密码错误」；无 token 401「未登录或登录已过期」。
+- 查库：`password_hash` 前缀 `scrypt$16384$`，stu001 权限数 3；重启后端后表与登录都在。
+
+### 门禁
+
+```text
+BT=".pytest_tmp/run-$(date +%H%M%S)"; mkdir -p "$BT"
+PYTEST_DEBUG_TEMPROOT="$BT" python -m pytest backend/tests -q --basetemp="$BT"
+→ 269 passed, 2 warnings in 15.38s   EXIT=0
+```
+
+- `python scripts/check_logs.py` → `[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0（`auth` 目录已有 register/login_success/login_failed/logout/token_rejected 写入者）。
+- `npm run build` → `✓ built in 687ms`；`npx vitest run` → `113 passed`；`check_docs_encoding.py docs --strict` → 68 文件全 ok，EXIT=0。
+- Playwright `37 passed / 8 failed`（smoke 那条 B 类断言已修，见下）。8 条剩余归类：
+  - A 类环境 6 条（consistency/scoring/sketch-fix×2/suggestions/visual 的确认链路）：`load_dotenv(override=False)` 会覆盖空字符串，七键空白占位在 E2E 后端无效，后端实际走 model 路径调真实模型失败（`LLMResponseError`）→resume 500→确认卡不出。归环境，不修产品。
+  - B 类数据 2 条（parse×2 的 `demo-item` 期望 3 实际 10）：`data/samples` 现有 13 稿，断言写死数量。P17 只许修 smoke 那一条，此处不动。
+  - B 类已修 1 条（smoke contests 期望 3 实际 4）：`probe-critique-acceptance` 验收探针包已 published 入库。断言改为不断总数、改断三道正式赛题（cumcm-2024-A/C、2025-A）都在且 published 且带 rubric——比数数更严，已验证通过。
+- 新增 14 条（`backend/tests/auth/test_auth.py` 13 条 + metrics 更严 1 条），既有 255 条一条没红；冻结文件 `test_interrupt.py` / `test_rerank_cap.py` 零改动；`requirements.txt` 零新增。
+
+## v3.1.1 · P17 权限细化与评审归属（只做后端，不碰前端页面）
+
+### P0 前置体检（7 项全过才开工）
+
+- `@router.` 装饰器 14 与 4；collect `269 tests collected`；`:3306 LISTENING`；`check_logs.py → [ok] 15 dirs, 8 writers, 0 issue` EXIT=0；DB 基线 REVIEW-COUNT 54（user_id 列尚无）；全新 basetemp 全量 `269 passed`。
+- 第 6 项缺 `docs/plan/acceptance/report-P16.md`：补写 7 行（5 条判据 + 红灯分类 + 带病进 P17 备注），并在 `findings.md` 追加「P16 部分收口，允许带病进 P17」裁决。
+
+### 实现（P1–P4）
+
+- P1 `backend/app/auth/deps.py`：抽 `_resolve()`（唯一解析器）；`current_user` 调它（None 即 `_reject("missing_token")`）；新增 `optional_user`（唯一允许缺 token 放行的地方，无头→None、有头坏→401）；`require_permission` / `require_any_permission` 工厂（ keyword-only `request: Request` 注入，403 定文「没有权限执行该操作」+ `audit/permission_denied`，不透露所需权限）。401 `auth/token_rejected` 与 403 `audit/permission_denied` 永不混用。
+- P2 `backend/app/api/user_routes.py`（新）+ `api/app.py` 装配：`GET /api/users`（`PERM_READ_ALL` 门卫，403 列表；created_at 倒序、同秒 user_id 升序；page_size 静默夹 100；`email_masked` 打码，无 password_hash）；`GET /api/users/{id}`（本人 200 含 email+permissions+最近 20 评审；别人→固定文案 404 防枚举，与不存在逐字节相同）。
+- P3 `report/models.py`：`Review`/`ReviewSession` 加 `user_id VARCHAR(64) NULL`；`create_report_schema` 幂等补两列（沿用 change_list 补列先例）；`store.save_review/save_session` 加 `user_id=""` kwargs（空串统一转 NULL，无主只有 NULL 一种表示；`_to_dict` 回吐 user_id）。
+- P4 `api/routes.py`：create/resume 加 `optional_user` 依赖，写 session 快照与 review 记录时带 `user_id`（v3.1.2 翻强制鉴权注释已留）；`_check_review_access`（列表 403→详情 404 规则在评审侧的对应：无主仅教师、有主本人或教师，404 定文「找不到评审记录」与不存在共用同一 detail；无主+匿名放行保旧链路与 E2E 裸调，否则 `test_review_flow` 裸调用例红）。`agent-steps` 加归属检查但 `missing_ok=True`（不存在仍 200 空列表，保 `test_agent_steps` 旧断言）。
+- 冲突裁决两处（纪律优先于实现清单）：①agent-steps 不存在→保持 200 空（不改既有测试）；②无 token 读无主记录→放行（同上）。
+
+### P5 测试
+
+- 新 `backend/tests/auth/test_permissions.py` 13 条全过：列表 403 定文 + audit 落盘、教师 200 无哈希 + 打码 + 分页夹 100、无/过期 token 401、本人 200、别人 404 与不存在逐字节相同、教师看学生权限+评审、token 创建归属、匿名创建 NULL、无主仅教师。
+- 全新 basetemp 全量：`282 passed (269+13), 2 warnings`，EXIT=0；冻结文件零改动；零新依赖。
+
+### P6 真实环境验证（MySQL + 8077）
+
+- `create_report_schema()` 连跑两次；review/review_session 各 8 列（末列 user_id）；review 54/54 全 NULL（历史无误写）。
+- 新建教师 tea001（7 权限含 `review:read:all`）。四条 curl：学生列表 403 / 教师列表 200（`t***@example.com`）/ 教师看学生详情 200（含 3 权限）/ 学生看教师 404。
+- 学生 token 建评审→session.user_id=学生 uid；匿名建→NULL。audit 首条 `permission_denied`（user_id/required/path，无 token 原文）；auth 目录 0 混入。
+
+### 门禁
+
+- 全新 basetemp：`282 passed, 2 warnings` EXIT=0；`check_logs.py → [ok] 15 dirs, 8 writers, 0 issue` EXIT=0（P7 按要求：`auth` 移出 ALLOWED_EMPTY 白名单、audit 注释改为"只拒绝时写、空允许"，白名单只减不增已写进脚本注释）。
+- `npm run build ✓ built`；vitest `113 passed`（中途修 1 条：P17 改 smoke 断言时引入 `cumcm-` 字面量触发 source-scan 禁令，改为年份+题号定位，已过）；`check_docs_encoding.py docs --strict` EXIT=0。
+- Playwright `37 passed / 8 failed`：失败集合与 v3.1.0 基线逐条一致（6 环境确认链路超时 + 2 数据 demo-item 数量），无新增；smoke 2/2 含新严格断言通过。单跑 parse 确认失败为 `demo-item` 5s 数量超时类，与权限改动无关。
+- 过程修：`Request | None` 参数被 FastAPI 当 Pydantic 字段报 422——门卫改 keyword-only `request: Request` 注入解决。
+
+## v3.1.2 · P17 前端登录与守卫（后端不动，评审仍可选鉴权）
+
+### P0 前置体检（7 项全过才开工）
+
+- `npm run build` EXIT=0；vitest `113 passed`；Playwright 基线 `37 passed / 8 failed`；`path: '` 计数 7；`check_logs.py → [ok] 15 dirs, 8 writers, 0 issue`；`/api/auth/me` 无 token 401（后端残留进程 01:16 起，v3.1.1 最新代码）；构建产物 1,085,091 bytes。
+
+### 实现（P1–P6）
+
+- P1 `frontend/src/composables/useAuth.ts`（新）：模块级单例 token/user/ready；login 存 token 写 user；logout 调 `/auth/logout`（失败也清本地，服务端本就不撤销）；
+  restore 有 token 拉 me、401 清 token；`hasPermission`/`isTeacher`。键 `pr.auth.token`，localStorage（跨标签页与刷新，代价 XSS 可读——token 永不进 URL/日志/console），读写 try/catch 照 useTheme。api 层不 import useAuth，经 `setAuthToken` 同步模块变量。
+- P2 api 层：核验通过，零改动——四函数与 `setAuthToken`/Authorization 头上一版已建好；204 空 body（`text` 为空→body=null，无 JSON.parse）；401 无跳转。
+- P3 `views/登录.vue` + `views/注册.vue`（新，中文文件名）：登录居中卡片 + 背景图、ApiError.message 原样显示、redirect 只收站内相对路径（`resolveRedirect` 放 router 可单测）、回车提交、防连点；
+  注册只做「两次一致」「8~64」两条前端校验、201 后自动登录跳 `/parse`、409 定文「该注册信息不可用」。
+- P4 `scripts/compress_login_background.py`（新，Pillow）：1672×941→1600×900；PNG-8 仍 1.34MB，改存 WebP quality=82 → **2,460,096 → 81,514 字节（3.3%），PSNR 39.0dB**；
+  原 png 已删、登录页引用 `.webp`；连跑两次 93KB→81KB 单调递减（幂等成立）。教训：本机 `convert` 是 NTFS 工具，压图只能走 Pillow。
+- P5 `router/index.ts`：+2 路由（login/register，`meta.public`）；beforeEach（public 放行+已登录反跳 `/parse`；无 token 跳 `/login?redirect=`；
+  有 token 但未 ready 则 `await restore()`，401 清 token 跳登录、非 401（后端不可达）放行各页降级）；afterEach 统一标题 `页面名 · 竞赛论文预审工作台`（7 页全接）。
+- P6 `AppNav.vue`：用户区（username + 学生/教师 + 退出，ThemeToggle 左边）；教师 pending 三项（记录总览 P18 / AI 问询 P19 / 数据大屏 P20，`data-nav-pending` + disabled + `title="Pxx 上线"`，span 非链接）。
+   P8 回归：用户区致移动视口横向溢出（polish-audit 5 条新红）→ `.nav` 与 `.nav__user` 加 `flex-wrap: wrap` 修好。
+
+### P7 单测（125 全过，EXIT=0）
+
+- router.spec：原断言逐条保留（登录态前置下跑原匹配表）+ `/login` `/register` 入表 + 长度 7→9 + 未登录跳登录/已登录反跳两条。
+- app-shell.spec：原 5 文案 `toEqual` 保留（改对 `[data-nav-item]:not([data-nav-pending])` 断言）+ 用户区/退出清 token。
+- 新增 useAuth（3）/ login-view（3，背景 URL + 原文 message + redirect 守卫）/ register-view（2，不一致不发请求 + 409 定文）/ nav-role（2）。
+- 过程修三处：① `<script setup>` 不许 export——`safeRedirect` 移 router 为 `resolveRedirect`；② 新页 `#b3261e` 回退触发 source-scan——改纯变量；
+  ③ 守卫 decoration：旧 spec 无登录 push 受保护路由 params 丢——eval-view 的 mountAt 加登录前置（断言零改），另给守卫加「非 401 放行降级」语义。
+- 纪律 6 说明：除 router/app-shell 外，仅动了 eval-view 的 mountAt 前置（3 行登录准备，断言零改动）——守卫是全局新行为，
+  单篇测试依赖路由 params，直挂无登录是旧假设；api 层与组件契约零改动（其余 14 个 spec 文件未碰）。
+
+### P8 E2E（45 条零改动，37/8 与基线持平）
+
+- `tests/e2e/global-setup.ts`（新）：经 5173 代理注册固定 `e2e_student`（409 则 login），token 写 `tests/e2e/.auth/user.json`；
+  config 加 `globalSetup` + `storageState`；`.gitignore` 追加 `.auth/`。
+- 中途 storageState 生效后 polish-audit 5 条新红（用户区移动溢出），修 CSS 后全绿；终局 `37 passed / 8 failed`，失败集合与基线逐条一致。
+- 烟雾 2/2（含年份+题号严格断言）。
+
+### 门禁
+
+```text
+cd frontend && npm run build → ✓ built in 794ms EXIT=0（产物 1,092,004 bytes，+7KB 登录注册页）
+npx vitest run --reporter=dot → 125 passed (113+12) EXIT=0
+npx playwright test --reporter=list → 37 passed / 8 failed（与 P0 基线一致）
+BT=".pytest_tmp/run-$(date +%H%M%S)"; PYTEST_DEBUG_TEMPROOT="$BT" pytest backend/tests -q --basetemp="$BT"
+→ 282 passed, 2 warnings EXIT=0（后端零改动）
+python scripts/check_logs.py → [ok] 15 dirs, 8 writers, 0 issue EXIT=0
+python scripts/check_docs_encoding.py docs --strict → EXIT=0
+```
+
+## v3.1.5 · 强制鉴权翻转与 P17 收口
+
+### P0 复检与执行环境
+
+- 收集命令：`D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only` → `282 tests collected`，EXIT=0。
+- `rg -n optional_user backend/app -g '*.py'` → 四个评审端点使用，加上 `deps.py` 定义/注释；3306 LISTENING；`check_logs.py` → `[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- E2E 基线 37 passed / 8 failed，2026-10-20 17:19 由另一执行器在同一机器实测
+  （命令：npx playwright test --reporter=list，2.0 min，EXIT=1），非本轮本地复跑；
+  失败集合：consistency / parse×2 / scoring / sketch-fix×2 / suggestions / visual。
+- `spawn EPERM` 归属是执行沙箱拦子进程：`node spawnSync(cmd)` 返回 EPERM，Chromium 1248 已安装，Playwright 单条测试也返回 `spawn EPERM`。本轮未在当前 shell 重跑任何 E2E，也未改 `playwright.config.ts`。
+- 8077 翻转前残留监听 PID 28088 已于本轮停止，确认端口释放后才启动新后端验证；验证结束后再次停止，8077 已释放。
+
+### 翻转与测试
+
+- 四个评审端点改用 `require_user`，移除 `optional_user` 及匿名无主记录放行；`agent-steps` 的 `missing_ok=True` 保留。`rg -n optional_user backend -g '*.py'` 无命中。
+- `conftest.py` 新增 `anonymous` marker 注册与默认教师身份 fixture；带 Authorization 的请求走原 `_resolve`。冻结文件未改。
+- 既有测试仅改动三条：`test_me_needs_bearer_token`、`test_list_users_without_or_expired_token_401` 加 marker；原 `test_create_review_without_token_stores_null` 拆成 `test_create_review_without_token_401`（标记 anonymous，确保没有默认身份注入）和 store 层空串转 NULL 测试。其他既有断言未改。
+- 新增 `backend/tests/api/test_auth_required.py` 八条，覆盖四端点匿名 401、学生创建归属、本人/他人/无主记录读权限和篡改 token。
+- 指定解释器全量后端测试，使用全新 `%TEMP%/pytest-p17-full-<本轮时间戳>` basetemp：`291 passed, 2 warnings in 39.41s`，EXIT=0。沙箱内 pytest 收尾时曾在 basetemp 枚举遇到 WinError 5；在批准的沙箱外运行得到完整成功汇总。
+
+### P6 MySQL 与 8077 取证
+
+- 无 token 请求：POST `/api/reviews`、POST `/api/reviews/whatever/resume`、GET `/api/reviews/whatever`、GET `/api/reviews/whatever/agent-steps` 均为 401，四个 body 都是 `{"detail":"未登录或登录已过期"}`。
+- `stu001` 登录 200（role=student），创建评审 201；随后在确定性评审配置下完成 resume 200。按 review_id 查 `review` 与 `review_session`，两行 `user_id` 均与 `stu001.user_id` 相同（SQL 比对结果 True）。
+- 注册流程取证创建了 MySQL 证据账号 `p17ev1020030843`（密码不写入文档或日志）；因模型端点不可达的首次尝试留下两条未完成会话快照，另有一条确定性 resume 成功的评审记录。
+- 学生访问 `/api/users` 返回 403：`{"detail":"没有权限执行该操作"}`；学生 403 与教师 200 的 API 测试也单独通过（2 passed）。
+- auth 当日日志 43 条：login_success 18、login_failed 4、logout 2；字段摘录：`{"ts":"2026-10-20T03:08:45.150-07:00","module":"auth","event":"login_success","user_id":"4eb2c044e79443849258a00a42e0a2ab"}`。日志不含 token。
+
+### 门禁与外送 E2E
+
+- 全量后端：EXIT=0，`291 passed, 2 warnings in 39.41s`。
+- `python scripts/check_logs.py`：EXIT=0，`[ok] 15 dirs, 8 writers, 0 issue`。
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 970ms`；`npx vitest run`：EXIT=0，`125 passed (21 files)`。两项因当前 shell 的 `spawn EPERM` 在沙箱外重跑通过。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_docs_encoding.py docs --strict`：75 个文档全部通过，0 错误，EXIT=0。
+- E2E 当前 shell 未复跑。下列是复用的外部基线，来源严格按原始记录保留：
+  「E2E 基线 37 passed / 8 failed，2026-10-20 17:19 由另一执行器在同一机器实测
+  （命令：npx playwright test --reporter=list，2.0 min，EXIT=1），非本轮本地复跑；
+  失败集合：consistency / parse×2 / scoring / sketch-fix×2 / suggestions / visual。」
+- 等待人类按全量命令复跑 E2E 并回贴版本、完整失败名单及退出码；在收到前不宣称本轮 E2E 未劣化，P17 判据 6 暂记部分满足。
+
+## v3.2.0 · P18 教师端记录总览后端
+
+### P0 基线
+
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`291 tests collected`，EXIT=0。
+- `list_users` 检查确认分页使用 `min(page_size, 100)`、created_at 倒序并按 user_id 升序，教师权限由 `require_permission(PERM_READ_ALL)` 控制。
+- `netstat -ano | Select-String ':3306 .*LISTENING'`：MySQL 0.0.0.0 与 IPv6 均 LISTENING，PID 19672。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- SQL 前置基线：`select count(*) from review` = 81；`select count(*) from review where user_id is null` = 80；`show index from review` 只有 PRIMARY。
+- P17 尾项仍是「E2E 未复测，判据 6 部分满足」；**E2E 仍待回贴**。沿用同机外部 37/8 基线，不记作本轮复跑。
+
+### 实现与验证
+
+- 新增 `GET /api/reviews`：教师全量/指定归属/空串筛无主，学生强制本人归属；contest 过滤、稳定排序、分页、用户名 join、单次维度批查、仅统计带 finding_kind 的条目；返回 scope。
+- 新增 `ix_review_user_created` 模型索引与建表后的幂等补建；抽取分页 helper 并由用户列表复用。
+- GET 详情延续本人/教师允许、其他 404 的相同 detail；教师打开他人记录写 `record_viewed`，含他人结果的列表每页汇总写一条 `records_listed`。
+- 新增列表接口测试 14 项（含 contest 两角色参数化两例）；首轮新接口红灯 15 项，修复后接口与分页定向验证 `16 passed`，EXIT=0。
+- P17 的报告保持 E2E 待回贴状态；E2E 未在本版本地复跑，也未改前端。
+
+### 门禁与 MySQL 真机
+
+- 指定解释器全量后端测试（新 basetemp .pytest_tmp/run-033029）：306 passed, 2 warnings，62.39 秒，EXIT=0。覆盖既有 291 条及新增 15 个参数化展开测试用例。此前一次运行中既有 test_tampered_signature_rejected 短暂报红，单测独立复跑与本次全量均通过；既有断言未改。
+- MySQL 执行 create_report_schema() 后 show index from review：PRIMARY + ix_review_user_created（列顺序 user_id、created_at）；再次执行补建逻辑退出码 0。表仍 81 行、无主仍 80 行。
+- MySQL 原始索引输出（缩进字段为 NULL）：
+
+  ```text
+  ('review', 0, 'PRIMARY', 1, 'review_id', 'A', 81, NULL, NULL, '', 'BTREE', '', '', 'YES', NULL)
+  ('review', 1, 'ix_review_user_created', 1, 'user_id', 'A', 2, NULL, NULL, 'YES', 'BTREE', '', '', 'YES', NULL)
+  ('review', 1, 'ix_review_user_created', 2, 'created_at', 'A', 80, NULL, NULL, '', 'BTREE', '', '', 'YES', NULL)
+  ```
+- 8077 真机 API：学生 scope=own 共 1 条；学生额外传另一用户 user_id 后 review_id 集合相同；教师 scope=all、total=81；无 token 返回 401 {"detail":"未登录或登录已过期"}；教师详情读取他人记录 200。
+- logs/audit/ 实际摘录：records_listed 返回 5、others=5、scope=all；record_viewed 含 viewer_id、review_id、owner_id。未记录 token、邮箱或论文正文。
+- 审计日志原始字段摘录：
+
+  ```json
+  {"event":"records_listed","viewer_id":"c5817d0370de42b790de65a038d16cfe","returned":5,"others":5,"scope":"all"}
+  {"event":"record_viewed","viewer_id":"c5817d0370de42b790de65a038d16cfe","review_id":"3e91479f18c3461bafe40ace43a790ca","owner_id":"765293c95c3e4abd8b8f204f4d649ea5"}
+  ```
+- cd frontend && npm run build：EXIT=0，✓ built in 984ms（仅门禁验证，本版无前端改动）；npx vitest run：EXIT=0，125 passed (21 files)。
+- 指定解释器 scripts/check_logs.py：EXIT=0，[ok] 15 dirs, 8 writers, 0 issue；scripts/check_docs_encoding.py docs --strict：76 个文档通过、0 错误，EXIT=0。
+- E2E 仅引用 P17 已记来源的同机外部基线 37/8；本轮没有本地运行。P17 外测回贴仍待收，因此不宣称已确认不劣化。
+
+## v3.2.2 · P18 记录总览页面与筛选
+
+### P0 修正版基线
+
+- 指定解释器 `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`306 tests collected`，EXIT=0。
+- `cd frontend && npx vitest run tests/unit/router.spec.ts --reporter=dot`：4 passed，EXIT=0；路由基线来自 `router.spec.ts` 的 `toHaveLength(9)`，本版新增一条后更新为 10。
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 948ms`；登录背景 WebP 产物 81.51 kB。
+- `cd frontend && npx vitest run --reporter=dot`：初始保护测试发现新增页面测试标记影响旧的 data-testid 数量断言；移除新增标记后全量 `132 passed (23 files)`，EXIT=0，旧断言文件未改。
+- `netstat -ano | Select-String ':3306 .*LISTENING'`：MySQL LISTENING，PID 19672。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- 后端原先未监听；本轮启动后端并保留运行，PID 6536。`GET /api/auth/me` 无 token 返回 401，`GET /api/reviews` 无 token 返回 401；本轮结束不停止该进程。
+- P0 判据已修正：路由看 `router.spec.ts`，后端就绪看 `/api/auth/me` 是否 401。路由 grep 会把守卫返回对象计入，不能作为路由数基线。
+
+### 实现与验证
+
+- `GET /api/reviews` 增加 `owner=owned|orphan`：教师可与现有 user_id/contest_id 过滤叠加；学生忽略该参数并继续强制只读本人记录。新增两条后端测试，原有 14 条列表测试断言未改。
+- 新增 `ReviewListItem` / `ReviewListResponse` 类型和 `listReviews()` URLSearchParams 封装；未把未定义参数序列化成字符串。
+- 新增中文页面 `记录总览.vue` 和记录筛选/表格组件：七列表格、赛题与有主筛选、分页、空态、ApiError 降级、scope 驱动的范围说明与学生列；行带 review_id 标识但无点击行为。维度码原样显示，最多五个档位标签。
+- 新增 `/records` 权限路由和教师菜单链接；学生无权限时菜单不渲染，直连路由显示提示并回到 `/parse`。现有路由数断言从 9 更新为 10，并补 `/records -> records`。
+- 新增 6 条页面单测、1 条守卫单测；按要求更新 `nav-role.spec.ts`。完整 Vitest 132 passed，包含原有 125 条与新增 7 条。
+- 新增学生侧 E2E：`frontend/tests/e2e/records.spec.ts`，检查菜单无「记录总览」且直连 `/records` 最终到 `/parse`。本轮未复测：沿用 P17 已记录的外部 37 passed / 8 failed 基线；新增用例未验证，不计入通过数，也不写成 38/8。复测命令：`cd frontend && npx playwright test --reporter=list`。
+- 后端全量测试（新 basetemp `.pytest_tmp/run-035917`）：`308 passed, 2 warnings in 81.37s`，EXIT=0；包含原有 306 条及新增两条 owner 筛选测试。
+
+### 收口门禁
+
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- `cd frontend && npm run build`：EXIT=0；`cd frontend && npx vitest run --reporter=dot`：`132 passed (23 files)`，EXIT=0。
+- E2E 状态：未复测。可比较基线仍为 37 passed / 8 failed，来源为上一轮记录的同机外部执行；本版新增用例 `records.spec.ts` 未运行，不能推算新的通过/失败总数。
+- 本版允许的既有测试改动仅为 `nav-role.spec.ts` 的菜单角色断言与 `router.spec.ts` 的路由数/映射；后端既有 306 条断言未改。其余页面与守卫测试均为新增。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_docs_encoding.py docs --strict`：78 个文件通过，0 错误，EXIT=0。
+
+## v3.2.3 · P18 详情抽屉、教师 E2E 与收口
+
+### P0 基线与环境
+
+- 指定解释器 `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`308 tests collected`，EXIT=0。
+- `cd frontend && npx vitest run tests/unit/router.spec.ts`：4 passed，EXIT=0；路由长度断言为 10，未新增路由。
+- `cd frontend && npm run build`：EXIT=0；`cd frontend && npx vitest run --reporter=dot`：132 passed，EXIT=0。
+- MySQL 3306 LISTENING，PID 19672；`scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- 后端从旧进程重启为本版代码，监听 127.0.0.1:8077 的 PID **19708**；匿名 `GET /api/reviews` 返回 401。服务在本轮结束后保持运行。
+
+### 实现与验证
+
+- `GET /api/reviews/{review_id}` 的落档分支读取同一 review_id 的会话快照并补 `sections`；没有快照时返回 `sections: []`。权限判断与 `record_viewed` 审计位置保持不变。
+- 新增两条落档详情测试：有快照返回标题与正文，无快照为空数组且原档案字段保留。先观察到两条因响应缺 `sections` 而失败，再实现修复后 `2 passed`。
+- `ReviewArchive` 增加可选 `sections`；沿用既有 `getReview()`，请求函数原样返回整个响应体。
+- 新增 `RecordDrawer.vue`：五维卡复用 `DimensionCard`；原句区通过 `concatSections` + `locateEvidence` 定位并呈现前后各最多 60 字，命中高亮，近似匹配显示提示，无快照时保留 quote 并说明不能定位；修改建议和 findings 按 kind 分组，复用 `SuggestionItem` / `ConflictItem`。失败 message 留在抽屉中。
+- `RecordsTable` 行点击、指针样式和「查看详情」title 已接线；`记录总览.vue` 以 `selectedId` 控制抽屉。未加新路由。
+- 新增 `scripts/promote_e2e_teacher.py`，经 `get_engine()` 将 `e2e_teacher` 设置为教师并幂等重写 7 条默认权限；两次均输出 `role=teacher permissions=7`。首次直接运行发现脚本入口未把项目根放入 `sys.path`，修正后通过。
+- E2E `global-setup.ts` 注册/登录学生与教师账号、验证教师含 `review:read:all` 后分别写入 `.auth/user.json` 与 `.auth/teacher.json`。根 `.gitignore` 已忽略 `frontend/tests/e2e/.auth/`。
+- 新增教师 E2E 两条：总览可见数据行、点击行打开抽屉并显示维度卡与修改建议区块。定向执行 `npx playwright test tests/e2e/records-teacher.spec.ts --reporter=list`：2 passed，EXIT=0；学生 `records.spec.ts` 亦在全量执行中通过。
+
+### 门禁
+
+- 全量后端（全新 basetemp `.pytest_tmp/run-041444`）：`310 passed, 2 warnings in 92.50s`，EXIT=0。
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 1.06s`；`cd frontend && npx vitest run --reporter=dot`：`138 passed (24 files)`，EXIT=0。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0；`D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_docs_encoding.py docs --strict`：80 个文件通过、0 错误，EXIT=0。
+- 全量 E2E `cd frontend && npx playwright test --reporter=list`：`40 passed / 8 failed (1.4m)`，EXIT=1。8 条红灯与已有集合一致；本轮新增的学生 1 条与教师 2 条全部通过，没有 spawn EPERM。
+- 既有 8 条失败名称：
+  - `consistency.spec.ts`：解析 → 确认 → 一致性审查：冲突列表、412/386、点击定位、刷新仍在
+  - `parse.spec.ts`：完整链路：选赛题 → 点第一篇演示 → 章节树 → 确认 → 已确认结果卡；粘贴正文这条：内联一小段 Markdown → 创建 → 确认
+  - `scoring.spec.ts`：解析 → 确认 → 评分页：维度卡、原句定位、刷新仍在
+  - `sketch-fix.spec.ts`：完整链路 → /scoring：圈中心与「基本」档位文本中心偏差 ≤ 4px；/consistency：冲突数值的圈中心偏差 ≤ 4px
+  - `suggestions.spec.ts`：解析 → 确认 → 修改建议：三段分组、上游指针、刷新仍在
+  - `visual.spec.ts`：完整链路 → /scoring：维度卡可见、点击定位仍高亮
+
+### P18 判定
+
+P18 五条完成判据均满足。`docs/plan/acceptance/report-P18.md` 已逐条记录命令、输出和结论。全量 E2E 的 8 条既有失败集合未变化，新增 3 条 E2E 全部通过。P18 收尾，允许进入 P19。
+
+## v3.3.0 · P19 AI 问询会话与消息底座
+
+### P0 基线与环境
+
+- 指定解释器 `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`310 tests collected`，EXIT=0。
+- `cd frontend && npx vitest run tests/unit/router.spec.ts`：4 passed，EXIT=0；`toHaveLength(10)` 路由基线保持不变。
+- MySQL 3306 LISTENING，PID 19672；`scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- 8077 初始监听 PID 19708；匿名 `GET /api/reviews` 返回 401。为加载本版路由，使用指定解释器重启；当前启动进程 PID 18728、实际监听 PID 12784；匿名接口仍返回 401，本轮结束保持运行。
+- 建表前查询：`chat_session absent`、`chat_message absent`。建表后查询：`chat_message`、`chat_session` 均存在；`ix_chat_session_user_updated(user_id, updated_at)` 与 `ix_chat_message_session_created(session_id, created_at)` 均存在。
+
+### 实现与真机验证
+
+- 新增 `backend/app/chat/models.py`：独立 `ChatBase`、两张表、两个复合索引和消息外键；`create_chat_schema()` 显式调用且幂等，不接入启动流程。
+- 新增 `backend/app/chat/store.py`：会话/消息 CRUD、UUID hex ID、稳定双键排序、role 校验；删除时显式先删消息后删会话。
+- 新增 `/api/chat` 四条路由，全部使用 `require_permission(PERM_CHAT)`；学生返回 403。会话所有权只按身份中的 `user_id` 判定，越权与不存在共用 404 文案「找不到问询会话」。列表消息数用单次 `GROUP BY` 查询。
+- 新增 `session_created`、`session_deleted`、`messages_read` 三类 `ai_chat` 审计事件，不记录 content；`check_logs.py` 保持 `ai_chat` 在 `ALLOWED_EMPTY`，补充无问询时为空属常态的注释。
+- MySQL `create_chat_schema()` 连跑两次成功。`SHOW TABLES` 返回 `chat_message`、`chat_session`；`SHOW INDEX` 可见两个指定复合索引及其列顺序。
+- 8077 教师实测：创建会话成功、列表包含该会话、删除返回 204。学生请求列表：HTTP 403，响应 `{"detail":"没有权限执行该操作"}`。`logs/ai_chat/ai_chat-20261020.log` 出现 `session_created` 与 `session_deleted`，仅含 session_id/user_id/messages 等字段，无 content。
+- 新增 `backend/tests/chat/test_chat_sessions.py` 12 条：权限、标题默认/截断、排序、消息计数与读取、所有权 404、防级联残留、role 校验、建表幂等与审计。先运行时因 chat 模块尚不存在而按预期收集失败；实现后定向测试 `12 passed`。
+
+### 门禁
+
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 560ms`（有既有 chunk size 提示）；`cd frontend && npx vitest run --reporter=dot`：`138 passed (24 files)`，EXIT=0。
+- 全量 E2E `cd frontend && npx playwright test --reporter=list`：`40 passed / 8 failed (1.6m)`，EXIT=1；与 v3.2.3 的 40/8 及 8 条失败集合一致。失败为 consistency 1、parse 2、scoring 1、sketch-fix 2、suggestions 1、visual 1；本版没有新增前端代码。
+- 全量 pytest（全新 basetemp `.pytest_tmp/run-p19-final-043031`）：`322 passed, 2 warnings in 102.03s`，EXIT=0；本版新增 12 条，原有 310 条通过。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`322 tests collected in 2.80s`。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_docs_encoding.py docs --strict`：81 个文件通过、0 错误，EXIT=0。
+
+## v3.3.1 · P19 评审记录索引与赛题检索
+
+### P0 基线
+
+- 指定解释器 `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe -m pytest backend/tests -q --collect-only`：`322 tests collected`，EXIT=0。
+- 同一解释器查询 Chroma：`get_collection().count()` 为 15072。
+- MySQL 基线：`review=95`、`review_dimension=475`、`paper_parent=5260`；3306 LISTENING PID 19672。
+- `scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0；匿名 `GET /api/chat/sessions` 为 401，8077 监听 PID 12784。
+
+### 实现与回填
+
+- `DOC_TYPES` 增加第六项 `review_record`；`_where` 对空 contest_id / rubric_id 不加条件，并明确论文检索必须传 review_id、评审记录按 contest_id 检索是唯一例外。既有论文检索调用仍传具体 rubric_id，`tests/retrieve/` 回归全绿；`PaperRetriever` 空 doc_types 时保持旧调用参数形状，非空时透传文档类型。
+- 新增 `backend/app/chat/records.py`：每个有效维度生成一对 `rr-{review_id}-{dimension_code}` 父子块，元数据含 review_record、维度、赛题、量规和 review_id；相关建议最多三项。索引和搜索仅复用现有 embedding 客户端与 `search_children_then_parents`，不调用聊天/回答模型。
+- 新增 `backend/app/chat/retrieval.py`：`search_records()` 固定按 contest_id 与 review_record 类型过滤，空命中返回空数组；维度码由 parent_id 尾段解析。
+- 新增 `scripts/index_review_records.py`，支持 `--all`、`--review-id`、`--all --dry-run`；逐条处理失败并汇总，dry-run 不写父表与 Chroma。
+- `--all --dry-run`：`indexed=95 reviews, 475 children, skipped=0`；Chroma 15072 → 15072。
+- 首次 `--all`：`indexed=95 reviews, 475 children, skipped=0`；Chroma 15072 → 15547。
+- 幂等复跑 `--all`：`indexed=95 reviews, 475 children, skipped=0`；Chroma 15547 → 15547，增量 0。
+- 自然语言检索（同一查询、limit=3）：`cumcm-2024-A` 返回 3 条，`cumcm-2024-C` 返回 3 条，review_id 交集为空；两侧结果均含 review_id、dimension_code 与父块内容首行。
+- MySQL 回填后 `paper_parent=5735`（+475）；`review=95`、`review_dimension=475` 未变。两张业务表未改动。
+- 新增 `backend/tests/chat/test_record_indexing.py` 10 条；`test_parent_child.py` 白名单长度断言从 5 更新为 6（唯一既有断言规格变更）。定向检索回归 `27 passed`。
+
+### 门禁
+
+- 全量 pytest（全新 basetemp `.pytest_tmp/run-p19-v331-044353`）：`332 passed, 11 warnings in 114.14s`，EXIT=0；命令 `PYTEST_DEBUG_TEMPROOT=<basetemp> python -m pytest backend/tests -q --basetemp=<basetemp>`，使用指定解释器。
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 1.28s`；`cd frontend && npx vitest run --reporter=dot`：`138 passed (24 files)`，EXIT=0。
+- 全量 E2E `cd frontend && npx playwright test --reporter=list`：`40 passed / 8 failed (1.6m)`，EXIT=1；与 v3.3.0 的 40/8 比较基线一致，8 条既有失败集合不变（consistency 1、parse 2、scoring 1、sketch-fix 2、suggestions 1、visual 1）。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- `D:/LEARN/AI/programs/AgentTask/env/agent-task/Scripts/python.exe scripts/check_docs_encoding.py docs --strict`：82 个文件通过、0 错误，EXIT=0。
+
+## v3.3.5 · P19 问答回答、聚合统计与教研摘要（合并版）
+
+本版取代 v3.3.2 与 v3.3.3；两份未单独执行，合并复用一次检索入口、模型注入、引用校验和审计口径。
+
+### P0 与实现
+
+- 前序闸：`v3.3.1` progress 段存在；`records.py`、`retrieval.py` 存在；`answering.py`、`analytics.py` 起初不存在；收集数 `332` 与 v3.3.1 门禁末行一致。
+- 数据复核：`review=102`、`review_dimension=510`；档位为「基本」346、「充分」70、「不足」18、「证据不足」76。两种不足档位均存在，聚合兼容两者，未改库。
+- `change_list` 原始类型 `str`、原始长度 657 字符；`json.loads` 后为 list、2 条。不得用字符串 `len()` 作为条目数。
+- LLM_BASE_URL、LLM_API_KEY、LLM_MODEL、EMBEDDING_MODEL 均已配置（只核验配置状态）；3306 LISTENING；问询会话匿名请求 401；`check_logs.py` EXIT=0。
+- 新增 `backend/app/chat/answering.py`：空检索不调生成模型；片段限 8 条且每条 800 字；逐字 system 纪律；一次重试；共用双向引用校验器。messages 路由验证长度与赛题，答复成功后同事务依次写 user、assistant、更新会话；两次模型失败返回 502 且不落消息。
+- 新增 `backend/app/chat/analytics.py`：横向档位、冲突汇总、证据缺口只查库并在 Python 层聚合；`INSUFFICIENT_BANDS` 同时识别两种不足值；`change_list` 字符串经 `json.loads`，不可解析项计入 `unparsable`。
+- `/api/chat/analytics` 三类统计均挂 `chat:use`；`/api/chat/summary` 先取三类统计，再取最多 8 个可用引用，模型只组织文字；共用引用校验，少于 3 条时追加固定提示；仅传 `session_id` 才落 assistant 消息。
+- 新增两批各 12 条测试：`test_answering.py` 12 passed；`test_analytics.py` 12 passed；chat 目录定向全测 `46 passed, 9 warnings`，EXIT=0。
+
+### P5 真实库与模型验证
+
+- 教师身份来自已有 E2E storageState；真实统计 API（赛题 `cumcm-2024-A`）：bands `reviews=92`、`students=2`、`orphan_reviews=70`、`insufficient_total=83`；SQL `review where contest_id` 计数同为 92。
+- conflicts：`数字冲突=110`、`表述=67`、`证据不足=72`、`题目约束=32`，`finding_total=142`、`unparsable=0`。与此前提供的全库参考数 144/76/76/45、189 不同；本次按赛题过滤，记录实际结果，不手填参考值。
+- gaps：`count=72`；抽样 review `069942c70e7c4c59bcee359341396ced` 的 `constraint_check` 档位 API 返回「证据不足」，SQL 复核同值。
+- 非法 kind 返回 400，学生调 analytics 返回 403。`logs/ai_chat` 记录了 `analytics_run`，字段仅有 user_id、contest_id、kind、elapsed_ms、rows 等；检查未发现 question/content/target/token 字段。
+- 真实检索问答与摘要未完成：当前真实 Chroma `get_collection().count()` 与已有 collection delete 均触发 Windows 原生 access violation（`-1073741819`）；因此没有把真实模型回答、引用或消息历史伪写为已验证。
+
+### 门禁与结论
+
+- 收集：`python -m pytest backend/tests -q --collect-only` → `356 tests collected`，EXIT=0。
+- 全量 pytest 命令使用全新 basetemp `.pytest_tmp/run-v335-051858`：运行约 20% 时在既有 `test_review_indexing.py::test_review_index_builds_mysql_parents_and_chroma_children_with_embeddings` 的 Chroma `Collection.delete` 原生调用发生 Windows fatal access violation，进程退出 `-1073741819`，未得到全量汇总。停止 8077 后单独重跑该既有测试仍复现同一崩溃；未改测试、未清库。
+- `cd frontend && npm run build`：EXIT=0，`✓ built in 1.13s`（既有大 chunk 提示）；`npx vitest run --reporter=dot`：`138 passed (24 files)`，EXIT=0。
+- 全量 E2E `npx playwright test --reporter=list`：`48 tests`，`24 passed / 24 failed`，EXIT=1；未达到 40/8 基线。失败输出包含 502 与超时；本轮未改前端。E2E 结束后 8077 不再监听，随后重新启动监听 PID 18580，匿名 `/api/chat/sessions` 返回 401；E2E 失败与 Chroma 崩溃的具体时间因果未完全定位，本轮结束保持服务运行。
+- `scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。文档严格编码检查在写入本节前为 86 文件通过；写入后须再次运行确认。
+- **状态：代码与 24 条新增测试完成；P19.5 真实检索/模型摘要、全量 pytest 与 E2E 门禁未通过。v3.3.5 不标已通过，v3.3.6 前端阶段仍待本版门禁解除。**
+
+## v3.3.6 · P19 Chroma 原生崩溃修复与门禁回补
+
+### 现场与归属判定
+
+- P-1：`v3.3.5` 段存在；`answering.py`、`analytics.py` 存在；`chat_routes.py` 有 7 个 `@router`；收集为 `356 tests collected`，与前序记录一致。
+- 原始 Chroma SQLite 只读直连 `chroma_data/chroma.sqlite3`：`embeddings=16347`；segments 为 `METADATA=1`、`VECTOR=1`。服务 PID 18580 停止后才复制备份；备份只读核验同为 16347，后将原目录完整保留为 `chroma_data.broken-20261020-055434`。工具策略拒绝删除已验证的临时备份 `chroma_data.bak-20261020-055322`，因此该备份仍在工作区；没有用其它方式绕过删除限制。
+- 对照 probe：8077 停止时 `get_collection().count()` EXIT=`-1073741819`；8077 运行、监听 PID 19864 时同样 EXIT=`-1073741819`。依据决策树归入 P3：原库/版本路径问题，非单纯跨进程并发。新建空目录的 PersistentClient probe 为 `count=0`、EXIT=0。
+- P3 重建：旧数据完整保留在 broken 目录；从原有 5,514 个论文父块重建 20,807 个论文子块，再写入 102 条评审记录的 510 个子块；重建后 collection count=`21317`，`/readyz` 返回 ready、count=`21317`。`review=102`、`review_dimension=510` 未改；`paper_parent` 重建前 5,989 行，其中只有 475 条旧评审父块；按 `index_review_record --all` 补齐当前 510 个维度时新增 35 条缺失的评审父块。重建脚本为 `scripts/rebuild_chroma_from_parents.py`，元数据由对应 Review/ReviewSession 与量规表恢复。
+- 重建检索：论文检索对 `cumcm-2024-A` 的 review_id 命中 3 个父块；评审记录 `search_records` 对同一问题分别按两个 contest 查询，各返回 3 条且 review_id 集合无交叉。pytest 完成、E2E 开始前，新库原始 SQLite embeddings=`21317`；`/readyz` count 同为 21317。
+
+### 隔离、删除路径与验证
+
+- `parent_child.py` 新增 `set_client_for_tests` / `reset_client_for_tests` 测试接缝；`backend/tests/conftest.py` 新增全局 autouse `isolate_chroma`，每条测试使用临时 PersistentClient，结束时关闭客户端并删除临时目录；原有 fixture 未改行为。
+- `index_review_record` / `delete_review_record` 先按 `review_id + doc_type` 取已有 ID，再用 `delete(ids=...)`；取 ID 异常或为空时，按数据库中的维度码构造已知 `rr-{review_id}-{dimension_code}` ID。对生产库一条记录连续重建两次：count `21317 → 21317 → 21317`，两次均写 5 个子块。
+- 后端保持运行时，全量测试使用独立 basetemp `.pytest_tmp/run-20261020-0600a`：`356 passed, 11 warnings in 172.40s`，EXIT=0；第二遍 `.pytest_tmp/run-20261020-0605b`：`356 passed, 11 warnings in 176.08s`，EXIT=0。两遍后只读原始 SQLite `embeddings=21317`，与 pytest 前的重建 collection count 21317 一致，测试未向生产向量库写入。
+- 测试后 `/readyz` 仍 ready、监听 PID 26828。全量 E2E `cd frontend && npx playwright test --reporter=list`：`40 passed / 8 failed (1.6m)`，EXIT=1；八条失败名称与 v3.2.3 记录逐条一致（consistency、parse 两条、scoring、sketch-fix 两条、suggestions、visual）。本轮新增的教师总览/抽屉两条均通过。E2E 后真实应用新增评审，collection embeddings 变为 22117，SQL 为 `review=109`、`review_dimension=545`、`paper_parent=6242`；这是 E2E 写入，不是 pytest 污染。
+- E2E 失败集合逐条：`consistency.spec.ts`「解析 → 确认 → 一致性审查：冲突列表、412/386、点击定位、刷新仍在」；`parse.spec.ts`「完整链路：选赛题 → 点第一篇演示 → 章节树 → 确认 → 已确认结果卡」「粘贴正文这条：内联一小段 Markdown → 创建 → 确认」；`scoring.spec.ts`「解析 → 确认 → 评分页：维度卡、原句定位、刷新仍在」；`sketch-fix.spec.ts`「完整链路 → /scoring：圈中心与“基本”档位文本中心偏差 ≤ 4px」「/consistency：冲突数值的圈中心偏差 ≤ 4px」；`suggestions.spec.ts`「解析 → 确认 → 修改建议：三段分组、上游指针、刷新仍在」；`visual.spec.ts`「完整链路 → /scoring：维度卡可见、点击定位仍高亮」。
+- 真实问询 API：教师创建会话并 POST messages 返回 200，答案首段说明查询未定位到指定 review_id，引用为同赛题其他记录；修改建议问法也如实回答片段未命中；证据缺口问法返回 8 条 modeling 引用。越权学生 messages / analytics 均 403。聚合 bands=`reviews=99, students=2, orphan_reviews=70, insufficient_total=88`；conflicts kinds=`数字冲突116/表述73/证据不足77/题目约束34`、finding_total=150；gaps count=77。摘要返回 200、4 条 refs、notes `rejected=0`，并已落入指定会话；历史读取 3 条消息仍在。摘要模型列出的四个维度分项合计 83，统计总数为 88，差额 5 未在摘要中解释；链路能返回，但该次摘要的数字覆盖完整性未验证通过。
+- `logs/ai_chat/ai_chat-20261020.log` 含 `chat_answered`、`analytics_run`、`summary_generated`；字段检查未见 question/content 原文。`scripts/check_logs.py`：`[ok] 15 dirs, 8 writers, 0 issue`，EXIT=0。
+- 根因边界：旧原库停服与运行时都崩溃，P3 重建后 fresh store 的 count、读写和检索正常；因此证据支持旧持久库结构/版本状态异常，不能写成“已证明并发导致”。旧 broken 目录保留三个未被 sqlite 当前 segments 引用的历史 UUID 子目录，未清理，后续单独处置。为让 102 条现有 review_dimension 全部可检索，`index_review_record --all` 同步补了 35 条缺失的派生 `paper_parent` 记录，这一变化已如实记录。
+
+### 状态
+
+Chroma 崩溃现场已按 P3 保全并重建；两遍 356 项后端全量门禁通过；E2E 回到 40/8 且八条失败集合与 v3.2.3 相同。真实回答、聚合、摘要端点均有实测结果，但单条详情问题未引用请求指定的 review_id，故该项内容能力仍需单独定位检索精度；本版修复与恢复门禁完成，**P19 不据此宣称全部能力验收通过**。

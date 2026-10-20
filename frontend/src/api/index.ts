@@ -25,7 +25,15 @@ import type {
   RubricPublishResult,
   SampleListResponse,
   AgentStepsResponse,
+  AuthUser,
+  ReviewListResponse,
 } from './types'
+
+let authToken: string | null = null
+
+export function setAuthToken(token: string | null): void {
+  authToken = token
+}
 
 export class ApiError extends Error {
   readonly status: number
@@ -78,8 +86,11 @@ function describeFailure(
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers)
+  headers.set('Content-Type', 'application/json')
+  if (authToken) headers.set('Authorization', `Bearer ${authToken}`)
   const response = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...init,
   })
 
@@ -98,6 +109,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(response.status, failure.message, failure)
   }
   return body as T
+}
+
+export function authRegister(payload: { username: string; email: string; password: string; display_name: string }): Promise<AuthUser> {
+  return request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function authLogin(payload: { username: string; password: string }): Promise<{ token: string; user_id: string; role: string; permissions: string[] }> {
+  return request('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function authMe(): Promise<AuthUser> {
+  return request<AuthUser>('/api/auth/me')
+}
+
+export async function authLogout(): Promise<void> {
+  await request<void>('/api/auth/logout', { method: 'POST' })
 }
 
 function asQuery(query: URLSearchParams): string {
@@ -144,6 +171,22 @@ export function resumeReview(reviewId: string, sections: PaperSection[]): Promis
 /** 读取一条评审：已落档返回报告，只有会话快照时返回章节树。 */
 export function getReview(reviewId: string): Promise<ReviewArchive> {
   return request<ReviewArchive>(`/api/reviews/${encodeURIComponent(reviewId)}`)
+}
+
+export function listReviews(params: {
+  contestId?: string
+  userId?: string
+  owner?: 'owned' | 'orphan'
+  page?: number
+  pageSize?: number
+} = {}): Promise<ReviewListResponse> {
+  const query = new URLSearchParams()
+  if (params.contestId !== undefined) query.set('contest_id', params.contestId)
+  if (params.userId !== undefined) query.set('user_id', params.userId)
+  if (params.owner !== undefined) query.set('owner', params.owner)
+  if (params.page !== undefined) query.set('page', String(params.page))
+  if (params.pageSize !== undefined) query.set('page_size', String(params.pageSize))
+  return request<ReviewListResponse>(`/api/reviews${asQuery(query)}`)
 }
 
 export function fetchAgentSteps(reviewId: string): Promise<AgentStepsResponse> {

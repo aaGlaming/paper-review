@@ -4,7 +4,7 @@
 本版不实现重排（属 P4），但函数签名里留了 `rerank` 位置，并且会拒绝把候选之外的东西加回来。
 
 分工：
-- 子块（文本 + 元数据 + 向量）进 Chroma，`doc_type` 只有五个值；
+- 子块（文本 + 元数据 + 向量）进 Chroma，`doc_type` 由白名单约束；
 - 父块全文只留在 MySQL（`paper_parent`，见 models.py）；
 - 送入后续步骤的是父块全文，不是子块碎片。
 
@@ -26,8 +26,8 @@ from sqlalchemy.orm import Session
 
 from .models import PaperParent
 
-# Chroma 的 doc_type 白名单：只有这五个。实测写成 paper_parent 也能写进去，所以白名单必须自己拦。
-DOC_TYPES = ("paper_child", "band_text", "pitfall", "exemplar", "contest_statement")
+# Chroma 的 doc_type 白名单。实测写成 paper_parent 也能写进去，所以白名单必须自己拦。
+DOC_TYPES = ("paper_child", "band_text", "pitfall", "exemplar", "contest_statement", "review_record")
 CHILD_DOC_TYPE = "paper_child"
 
 COLLECTION_NAME = "paper_review"
@@ -53,7 +53,7 @@ _TABLE_RULE = re.compile(r"^[\s|:-]+$")
 
 
 class DocTypeError(ValueError):
-    """doc_type 超出五个白名单。让 Chroma 自己拦是不可靠的，实测非白名单也能写进去。"""
+    """doc_type 超出白名单。让 Chroma 自己拦是不可靠的，实测非白名单也能写进去。"""
 
 
 class ExplicitEmbeddingsOnly(EmbeddingFunction):
@@ -269,6 +269,18 @@ def _resolve_embeddings(
 _CLIENT: Any = None
 
 
+def set_client_for_tests(client: Any) -> None:
+    """Replace the persistent client for isolated tests."""
+    global _CLIENT
+    _CLIENT = client
+
+
+def reset_client_for_tests() -> None:
+    """Drop the cached client so the next lookup uses the configured default."""
+    global _CLIENT
+    _CLIENT = None
+
+
 def default_client() -> Any:
     """默认向量库：本地持久化目录，按需创建，导入本模块时不建连接。"""
     global _CLIENT
@@ -416,14 +428,14 @@ def _where(
 ) -> dict[str, Any]:
     """过滤条件全部交给向量库：先过滤，再谈排序与截断。section_type 走单值 $in。
 
-    `review_id` 必须传：同一赛题下会有多篇论文共用一个 collection，
-    只按 contest_id/rubric_id 过滤会让 A 论文召回 B 论文的父块，
-    引用因此指向别的论文，破坏「引用可回溯到本次论文」这条底线。
+    论文检索必须传 review_id，避免同赛题的其他论文进入候选；评审记录检索按 contest_id
+    隔离，不传 review_id，这是唯一合法例外。rubric_id 为空时不加过滤，以允许跨量规版本检索。
     """
-    clauses: list[dict[str, Any]] = [
-        {"contest_id": str(contest_id)},
-        {"rubric_id": str(rubric_id)},
-    ]
+    clauses: list[dict[str, Any]] = []
+    if str(contest_id).strip():
+        clauses.append({"contest_id": str(contest_id)})
+    if str(rubric_id).strip():
+        clauses.append({"rubric_id": str(rubric_id)})
     if review_id:
         clauses.append({"review_id": str(review_id)})
     if section_types:

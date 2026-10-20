@@ -24,12 +24,15 @@ from sqlalchemy.orm import Session
 from ..agent import trace
 from ..agent.context import build_context
 from ..agent.runner import make_agent_runner
+from ..auth.deps import require_user
+from ..auth.permissions import PERM_READ_ALL
 from ..importing import catalog, db
 from ..report import catalog as report_catalog
 from ..report import evaluation as report_evaluation
 from ..report import rubric as report_rubric
 from ..report import store as report_store
 from ..report.change_list import build_change_list
+from ..observability.logging import log_event
 from ..review import samples as review_samples
 from ..review.consistency import check_numbers_citations_ranges
 
@@ -398,6 +401,7 @@ def create_review_endpoint(
     payload: CreateReviewRequest,
     session: Session = Depends(get_session),
     graph: Any = Depends(get_graph),
+    user: dict[str, Any] = Depends(require_user),
 ) -> dict[str, Any]:
     """创建评审：解析章节树后停在确认节点。未确认不评分，响应里没有档位字段。"""
     from ..graph.review_graph import create_review
@@ -414,6 +418,7 @@ def create_review_endpoint(
         confirmed=False,
         status=STATUS_PENDING,
         contest_id=str(payload.contest_id or ""),
+        user_id=user["user_id"],
         session=session,
     )
     return {"review_id": review_id, "status": STATUS_PENDING, "sections": sections}
@@ -425,6 +430,7 @@ def resume_review_endpoint(
     payload: ResumeReviewRequest,
     session: Session = Depends(get_session),
     graph: Any = Depends(get_graph),
+    user: dict[str, Any] = Depends(require_user),
 ) -> dict[str, Any]:
     """确认章节树后继续：推进到终态，按库里的量规出各维档位，落库并返回报告。"""
     from ..graph.review_graph import resume_review
@@ -516,6 +522,7 @@ def resume_review_endpoint(
         confirmed=True,
         status=str(final.get("status") or STATUS_DONE),
         contest_id=contest_id,
+        user_id=user["user_id"],
         session=session,
     )
     saved = report_store.save_review(
@@ -526,6 +533,7 @@ def resume_review_endpoint(
         model_name=os.environ.get("LLM_MODEL", "").strip() if use_model else DETERMINISTIC_MODEL_NAME,
         dimensions=results,
         change_list=change_list,
+        user_id=user["user_id"],
         session=session,
     )
     response_dimensions = saved["dimensions"]
@@ -562,20 +570,76 @@ def resume_review_endpoint(
 
 
 @router.get("/reviews/{review_id}/agent-steps")
-def get_agent_steps(review_id: str, session: Session = Depends(get_session)) -> dict[str, Any]:
+def get_agent_steps(
+    review_id: str,
+    session: Session = Depends(get_session),
+    user: dict[str, Any] = Depends(require_user),
+) -> dict[str, Any]:
+    # 存在性保持旧行为（不存在 → 200 空列表）；只对存在但无权的记录 404，
+    # 否则既有 test_agent_steps_endpoint_returns_empty_for_no_records 会红。
+    _check_review_access(review_id, user, session=session, missing_ok=True)
     steps = trace.load_steps(review_id, session=session)
     return {"review_id": review_id, "steps": sorted(steps, key=lambda item: item.get("idx", 0))}
 
 
-@router.get("/reviews/{review_id}")
-def get_review(review_id: str, session: Session = Depends(get_session)) -> dict[str, Any]:
-    """两段式读取：已落档的返回存档；只有会话快照的返回章节树；都没有返回 404。"""
+def _check_review_access(
+    review_id: str,
+    user: dict[str, Any],
+    *,
+    session: Session,
+    missing_ok: bool = False,
+) -> dict[str, Any] | None:
+    """评审读取归属：无主仅教师可读；有主则本人或教师可读，否则 404。
+
+    404 文案与「记录不存在」共用同一个 detail 字符串，不另写（防枚举）。
+    missing_ok=True 时记录不存在返回 None（给 agent-steps 保旧行为用）。
+    """
     record = report_store.load_review(review_id, session=session)
+    owner: str | None = None
     if record is not None:
+        owner = record.get("user_id")
+    else:
+        pending = report_store.load_session(review_id, session=session)
+        if pending is None:
+            if missing_ok:
+                return None
+            raise HTTPException(status_code=404, detail="找不到评审记录")
+        owner = pending.get("user_id")
+    me = user["user_id"]
+    if owner and owner == me:
+        return record
+    if PERM_READ_ALL in (user.get("permissions") or []):
+        return record
+    raise HTTPException(status_code=404, detail="找不到评审记录")
+
+
+@router.get("/reviews/{review_id}")
+def get_review(
+    review_id: str,
+    session: Session = Depends(get_session),
+    user: dict[str, Any] = Depends(require_user),
+) -> dict[str, Any]:
+    """两段式读取：已落档的返回存档；只有会话快照的返回章节树；都没有返回 404。"""
+    record = _check_review_access(review_id, user, session=session)
+    owner_id = record.get("user_id") if record is not None else None
+    if record is not None:
+        if PERM_READ_ALL in (user.get("permissions") or []) and owner_id != user["user_id"]:
+            log_event(
+                "audit", "record_viewed", viewer_id=user["user_id"],
+                review_id=review_id, owner_id=owner_id,
+            )
+        pending = report_store.load_session(review_id, session=session)
+        record["sections"] = list(pending.get("sections") or []) if pending else []
         return record
     pending = report_store.load_session(review_id, session=session)
     if pending is None:
-        raise HTTPException(status_code=404, detail=f"找不到评审记录 {review_id}")
+        raise HTTPException(status_code=404, detail="找不到评审记录")
+    owner_id = pending.get("user_id")
+    if PERM_READ_ALL in (user.get("permissions") or []) and owner_id != user["user_id"]:
+        log_event(
+            "audit", "record_viewed", viewer_id=user["user_id"],
+            review_id=review_id, owner_id=owner_id,
+        )
     return {
         "review_id": pending["review_id"],
         "status": pending["status"],

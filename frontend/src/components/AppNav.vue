@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 
+import { useAuth } from '../composables/useAuth'
 import ThemeToggle from './ThemeToggle.vue'
 
 // 五个页面入口。顺序即评审流程的顺序：先解析、再评分、再审查、再改、最后对照评测。
@@ -10,7 +12,32 @@ const items = [
   { label: '一致性审查', to: '/consistency' },
   { label: '修改建议', to: '/suggestions' },
   { label: '评测对照', to: '/eval' },
+  { label: '记录总览', to: '/records', permission: 'review:read:all' },
 ] as const
+
+// P19 / P20 仍是 disabled 占位；只有权限项通过 hasPermission 才加入可点导航。
+const pendingItems = [
+  { label: 'AI 问询', version: 'P19' },
+  { label: '数据大屏', version: 'P20' },
+] as const
+
+const { user, isTeacher, hasPermission, logout } = useAuth()
+const router = useRouter()
+const visibleItems = computed(() =>
+  items.filter((item) => !('permission' in item) || hasPermission(item.permission)),
+)
+
+function roleLabel(role: string | undefined): string {
+  if (role === 'teacher') {
+    return '教师'
+  }
+  return '学生'
+}
+
+async function signOut(): Promise<void> {
+  await logout()
+  await router.replace('/login')
+}
 </script>
 
 <template>
@@ -21,7 +48,7 @@ const items = [
     </div>
     <nav class="nav__links">
       <RouterLink
-        v-for="item in items"
+        v-for="item in visibleItems"
         :key="item.to"
         :to="item.to"
         class="nav__link"
@@ -29,8 +56,24 @@ const items = [
       >
         {{ item.label }}
       </RouterLink>
+      <span
+        v-for="item in (isTeacher() ? pendingItems : [])"
+        :key="item.label"
+        class="nav__link nav__link--pending"
+        data-nav-item
+        data-nav-pending
+        :title="`${item.version} 上线`"
+        aria-disabled="true"
+      >
+        {{ item.label }}
+      </span>
     </nav>
     <div class="nav__spacer" aria-hidden="true"></div>
+    <div v-if="user" class="nav__user" data-nav-user>
+      <span class="nav__username">{{ user.username }}</span>
+      <span class="nav__role" data-nav-role>{{ roleLabel(user.role) }}</span>
+      <button class="nav__logout" data-nav-logout type="button" @click="signOut">退出</button>
+    </div>
     <ThemeToggle />
   </header>
 </template>
@@ -39,6 +82,7 @@ const items = [
 .nav {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: var(--pr-space-6);
   padding: var(--pr-space-3) var(--pr-space-4);
   border-bottom: 1px solid var(--pr-rule);
@@ -102,5 +146,36 @@ const items = [
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
+}
+
+/* P18–P20 占位：不可点，视觉置灰 */
+.nav__link--pending {
+  color: var(--pr-ink-faint);
+  cursor: not-allowed;
+}
+
+.nav__user {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--pr-space-3);
+  flex: none;
+  min-width: 0;
+}
+
+.nav__role {
+  color: var(--pr-ink-muted);
+}
+
+.nav__logout {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--pr-ink-muted);
+  cursor: pointer;
+}
+
+.nav__logout:hover {
+  color: var(--pr-ink);
 }
 </style>

@@ -18,6 +18,8 @@ import re
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
+from ..observability import log_event
+
 from .aggregate import BANDS, STATUS_INSUFFICIENT
 
 SCORING_TEMPERATURE = 0.2
@@ -90,6 +92,10 @@ def apply_mention_guard(
     evidence_text: str,
     constraints: Iterable[Mapping[str, Any]] | None = None,
     dimension_section_types: Sequence[str] | None = None,
+    review_id: str | None = None,
+    dimension_code: str | None = None,
+    chat_calls: int = 0,
+    quote_ok: bool = True,
 ) -> dict[str, Any]:
     """确定性降档：mention 约束没被提到时，该维不得为「充分」。
 
@@ -104,6 +110,12 @@ def apply_mention_guard(
         "skipped": [],
     }
     if band != BANDS[0]:
+        log_event(
+            "scoring", "dimension_scored", review_id=review_id,
+            dimension_code=dimension_code, band=outcome["band"],
+            quote_ok=quote_ok, chat_calls=chat_calls,
+            guard_downgraded=False, guard_reasons=[],
+        )
         return outcome
 
     text = str(evidence_text or "")
@@ -130,6 +142,13 @@ def apply_mention_guard(
     if outcome["reasons"]:
         outcome["band"] = DOWNGRADED_BAND
         outcome["downgraded"] = True
+    log_event(
+        "scoring", "dimension_scored", review_id=review_id,
+        dimension_code=dimension_code, band=outcome["band"],
+        quote_ok=quote_ok, chat_calls=chat_calls,
+        guard_downgraded=bool(outcome["downgraded"]),
+        guard_reasons=list(outcome["reasons"]),
+    )
     return outcome
 
 

@@ -18,10 +18,13 @@ export default defineConfig({
   workers: 1,
   timeout: 60_000,
   reporter: [['list']],
+  // 登录态：globalSetup 把 e2e_student 的 token 写进 storageState，各用例自带登录。
+  globalSetup: './tests/e2e/global-setup.ts',
   use: {
     // E2E 必须走 Vite 的 5173，才能吃到 /api 代理；直连 8077 等于把代理这条链路跳过去。
     baseURL: 'http://127.0.0.1:5173',
     trace: 'off',
+    storageState: './tests/e2e/.auth/user.json',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [

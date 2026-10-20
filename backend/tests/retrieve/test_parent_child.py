@@ -321,7 +321,7 @@ def test_table_is_its_own_chunk(store, ef):
 
 
 def test_doc_type_outside_whitelist_is_rejected(store, ef):
-    assert len(DOC_TYPES) == 5
+    assert len(DOC_TYPES) == 6
     assert "paper_parent" not in DOC_TYPES
 
     with pytest.raises(ValueError):

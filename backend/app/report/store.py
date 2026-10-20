@@ -11,14 +11,18 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
+import time
 from typing import Any, Iterator
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import Review, ReviewDimension, ReviewSession, utc_now
+from ..observability.metrics import inc_reviews
+from ..observability.logging import log_event
 
 _DIMENSION_FIELDS = ("dimension_code", "band", "chunk_ids", "quote", "status")
 
@@ -63,6 +67,7 @@ def _normalize_dimensions(dimensions: Any) -> list[dict[str, Any]]:
 def _to_dict(row: Review, dimensions: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     result = {
         "review_id": row.review_id,
+        "user_id": row.user_id,
         "contest_id": row.contest_id,
         "rubric_id": row.rubric_id,
         "rubric_version": row.rubric_version,
@@ -89,15 +94,19 @@ def save_review(
     model_name: str = "",
     dimensions: Any = None,
     change_list: Any = None,
+    user_id: str = "",
     session: Session | None = None,
 ) -> dict[str, Any]:
     """保存一条评审记录与它的各维结果。已存在的记录不回写，原样返回当时的存档。"""
+    started = time.perf_counter()
     with _session(session) as work:
         row = work.get(Review, review_id)
         if row is not None:
             return _load_with(work, row)
         row = Review(
             review_id=review_id,
+            # 无主只有 NULL 一种表示：空串统一转 NULL，避免以后查无主记录漏掉一半。
+            user_id=str(user_id) or None,
             contest_id=str(contest_id),
             rubric_id=str(rubric_id),
             rubric_version=int(rubric_version),
@@ -120,6 +129,16 @@ def save_review(
                 )
             )
         work.flush()
+        inc_reviews("完成")
+        changes = [dict(item) for item in (change_list or ()) if isinstance(item, Mapping)]
+        kinds = Counter(str(item.get("kind", "")) for item in changes)
+        log_event(
+            "report", "review_saved", review_id=review_id,
+            dimensions=len(items), change_list_total=len(changes),
+            change_list_kinds=dict(kinds), has_change_list_note=False,
+            change_list_text_length_total=sum(len(str(item.get("text", ""))) for item in changes),
+            elapsed_ms=int((time.perf_counter() - started) * 1000),
+        )
         return _to_dict(row, items)
 
 
@@ -155,6 +174,7 @@ def load_review(review_id: str, *, session: Session | None = None) -> dict[str, 
 def _session_to_dict(row: ReviewSession) -> dict[str, Any]:
     return {
         "review_id": row.review_id,
+        "user_id": row.user_id,
         "paper_text": row.paper_text,
         "sections": [dict(section) for section in (row.sections or [])],
         "confirmed": bool(row.confirmed),
@@ -172,6 +192,7 @@ def save_session(
     confirmed: bool = False,
     status: str = "",
     contest_id: str = "",
+    user_id: str = "",
     session: Session | None = None,
 ) -> dict[str, Any]:
     """写一份评审会话快照。同一 `review_id` 再次调用是覆盖，不是新增。"""
@@ -185,8 +206,14 @@ def save_session(
         row.confirmed = bool(confirmed)
         row.status = str(status)
         row.contest_id = str(contest_id)
+        # 无主只有 NULL 一种表示，理由同 save_review。
+        row.user_id = str(user_id) or None
         row.updated_at = utc_now()
         work.flush()
+        log_event(
+            "report", "session_saved", review_id=review_id,
+            confirmed=bool(confirmed), sections=len(row.sections or []), status=row.status,
+        )
         return _session_to_dict(row)
 
 

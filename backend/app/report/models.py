@@ -16,7 +16,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, inspect, text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -32,8 +32,11 @@ class ReportBase(DeclarativeBase):
 
 class Review(ReportBase):
     __tablename__ = "review"
+    __table_args__ = (Index("ix_review_user_created", "user_id", "created_at"),)
 
     review_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # 归属：首期遗留记录为 NULL（仅教师可读）；v3.1.1 起新记录从 token 取 user_id 落库。
+    user_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     contest_id: Mapped[str] = mapped_column(String(64), nullable=False, default="")
     rubric_id: Mapped[str] = mapped_column(String(64), nullable=False, default="")
     rubric_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -65,6 +68,8 @@ class ReviewSession(ReportBase):
     __tablename__ = "review_session"
 
     review_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # 归属：与 review.user_id 同一口径，NULL 表示首期遗留的无主快照。
+    user_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     # 真实参赛论文通常 2~5 万字（UTF-8 约 60~150 KB），超过 MySQL TEXT 的 64 KB 上限。
     # 带长度的 Text 会按方言映射：MySQL 下 2**24-1 生成 MEDIUMTEXT（16 MB），
     # 其他方言仍按普通文本处理。千字样例永远碰不到这个边界，接入真实数据才会暴露。
@@ -77,7 +82,7 @@ class ReviewSession(ReportBase):
 
 
 def create_report_schema(engine: Engine | None = None) -> None:
-    """幂等建评审表，并为已有 review 表增加可空的 change_list 列。"""
+    """幂等建评审表，并为已有 review 表增加可空的 change_list / user_id 列。"""
     if engine is None:
         from ..importing import db
 
@@ -87,3 +92,16 @@ def create_report_schema(engine: Engine | None = None) -> None:
     if "change_list" not in columns:
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE review ADD COLUMN change_list JSON NULL"))
+    if "user_id" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE review ADD COLUMN user_id VARCHAR(64) NULL"))
+    indexes = {index["name"] for index in inspect(engine).get_indexes("review")}
+    if "ix_review_user_created" not in indexes:
+        with engine.begin() as connection:
+            connection.execute(
+                text("CREATE INDEX ix_review_user_created ON review (user_id, created_at)")
+            )
+    session_columns = {column["name"] for column in inspect(engine).get_columns("review_session")}
+    if "user_id" not in session_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE review_session ADD COLUMN user_id VARCHAR(64) NULL"))

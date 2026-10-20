@@ -14,6 +14,8 @@ chroma/
 # Playwright 报告与失败产物（本机生成，不入库）
 playwright-report/
 test-results/
+# E2E 登录态（含真实 token，绝不能提交）
+frontend/tests/e2e/.auth/
 # pytest 临时根（PYTEST_DEBUG_TEMPROOT 指向的项目内目录，本机生成，不入库）
 .pytest_tmp/
 # 数据库与文档的本地备份（清理数据前的人工留证，本机专用，不进仓库）
@@ -27,3 +29,9 @@ test-results/
 data/papers/
 # 面试自用材料（数字基于 Phase-1 时期、已随 Agent 化过时，不进公开仓库）
 docs/interview/
+logs/
+
+# 向量库重建/备份目录（v3.3.6 事故处置产物，含二进制索引，不入库）
+chroma_data.bak-*/
+chroma_data.broken-*/
+.pytest_tmp/

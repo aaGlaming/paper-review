@@ -12,10 +12,14 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Sequence
 from typing import Any
 
 import httpx
+
+from ..observability import log_event
+from ..observability.metrics import observe_llm
 
 __all__ = ["chat", "embed", "rerank", "LLMConfigError", "LLMResponseError", "chat_with_tools"]
 
@@ -46,25 +50,50 @@ def _post_json(
     headers: dict[str, str],
     payload: dict[str, Any],
     transport: httpx.BaseTransport | None,
+    *,
+    op: str = "chat",
+    model: str = "",
 ) -> dict[str, Any]:
     """发一次 POST。网络层异常最多重试 1 次，其余失败立刻抛 LLMResponseError。"""
     last_error: Exception | None = None
-    for _ in range(_MAX_ATTEMPTS):
+    for retry in range(_MAX_ATTEMPTS):
+        started = time.perf_counter()
         try:
             with httpx.Client(transport=transport, timeout=_TIMEOUT_SECONDS) as client:
                 response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
         except httpx.TransportError as exc:
             last_error = exc
+            observe_llm(model, False, time.perf_counter() - started)
+            log_event("llm", "llm_call", level="ERROR", op=op, model=model,
+                      elapsed_ms=int((time.perf_counter() - started) * 1000),
+                      retry=retry, http_status=None, ok=False)
             continue
         except httpx.HTTPStatusError as exc:
+            observe_llm(model, False, time.perf_counter() - started)
+            log_event("llm", "llm_call", level="ERROR", op=op, model=model,
+                      elapsed_ms=int((time.perf_counter() - started) * 1000),
+                      retry=retry, http_status=exc.response.status_code, ok=False)
             raise LLMResponseError(f"模型接口返回 HTTP {exc.response.status_code}") from exc
         try:
             data = response.json()
         except ValueError as exc:
+            observe_llm(model, False, time.perf_counter() - started)
+            log_event("llm", "llm_call", level="ERROR", op=op, model=model,
+                      elapsed_ms=int((time.perf_counter() - started) * 1000),
+                      retry=retry, http_status=response.status_code, ok=False)
             raise LLMResponseError("模型接口返回的不是合法 JSON") from exc
         if not isinstance(data, dict):
+            observe_llm(model, False, time.perf_counter() - started)
+            log_event("llm", "llm_call", level="ERROR", op=op, model=model,
+                      elapsed_ms=int((time.perf_counter() - started) * 1000),
+                      retry=retry, http_status=response.status_code, ok=False)
             raise LLMResponseError("模型接口返回的不是 JSON 对象")
+        elapsed = time.perf_counter() - started
+        observe_llm(model, True, elapsed)
+        log_event("llm", "llm_call", op=op, model=model,
+                  elapsed_ms=int(elapsed * 1000),
+                  retry=retry, http_status=response.status_code, ok=True)
         return data
     raise LLMResponseError(
         f"模型接口请求失败：网络层重试 {_MAX_ATTEMPTS - 1} 次后仍未成功"
@@ -119,7 +148,7 @@ def chat(
     model = _read_env("LLM_MODEL")
     payload = {"model": model, "messages": list(messages), "temperature": temperature}
     headers = {"Authorization": f"Bearer {api_key}"}
-    data = _post_json(f"{base_url}/chat/completions", headers, payload, transport)
+    data = _post_json(f"{base_url}/chat/completions", headers, payload, transport, op="chat", model=model)
     return _extract_content(data)
 
 
@@ -200,7 +229,7 @@ def chat_with_tools(
         "tool_choice": tool_choice,
     }
     headers = {"Authorization": f"Bearer {api_key}"}
-    data = _post_json(f"{base_url}/chat/completions", headers, payload, transport)
+    data = _post_json(f"{base_url}/chat/completions", headers, payload, transport, op="chat", model=model)
     return _extract_tool_chat(data)
 
 
@@ -218,7 +247,7 @@ def embed(
         raise LLMResponseError("embed() 的文本列表不能为空")
     payload = {"model": model, "input": items}
     headers = {"Authorization": f"Bearer {api_key}"}
-    data = _post_json(f"{base_url}/embeddings", headers, payload, transport)
+    data = _post_json(f"{base_url}/embeddings", headers, payload, transport, op="embed", model=model)
     return _extract_embeddings(data, len(items))
 
 
@@ -237,7 +266,7 @@ def rerank(
         raise LLMResponseError("rerank() 的 documents 列表不能为空")
     payload = {"model": model, "query": query, "documents": items}
     headers = {"Authorization": f"Bearer {api_key}"}
-    data = _post_json(f"{base_url}/rerank", headers, payload, transport)
+    data = _post_json(f"{base_url}/rerank", headers, payload, transport, op="rerank", model=model)
     rows = data.get("results")
     if not isinstance(rows, list) or len(rows) != len(items):
         raise LLMResponseError("响应 results 必须完整覆盖所有候选文档")

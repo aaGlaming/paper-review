@@ -22,6 +22,8 @@ from typing import Any, Callable
 
 from .parent_child import ParentBlock, ParentRepository, search_children_then_parents
 from .rerank import validate_rerank_order
+from ..observability import log_event
+from ..observability.metrics import observe_retrieve_parents
 
 BAND_TEXT_ROUTE = "band_text"
 PAPER_CHILD_ROUTE = "paper_child"
@@ -82,12 +84,12 @@ def default_search_round(
     query_embedding: Sequence[float] | None = None,
     embedding_function: Any = None,
     per_route_limit: int = PER_ROUTE_LIMIT,
+    route_hits: dict[str, int] | None = None,
 ) -> list[ParentBlock]:
     """一轮检索：三路各自过滤召回，然后合并去重（不重排、不截断）。"""
     found: list[ParentBlock] = []
     for route in ROUTES:
-        found.extend(
-            search_children_then_parents(
+        blocks = search_children_then_parents(
                 query,
                 contest_id=contest_id,
                 rubric_id=rubric_id,
@@ -100,7 +102,9 @@ def default_search_round(
                 embedding_function=embedding_function,
                 doc_types=(route,),
             )
-        )
+        if route_hits is not None:
+            route_hits[route] = len(blocks)
+        found.extend(blocks)
     return merge_candidates(found)
 
 
@@ -142,6 +146,7 @@ def retrieve_dimension(
     rounds = 0
     queries: list[str] = []
     merged: list[ParentBlock] = []
+    route_hits: dict[str, int] = {route: 0 for route in ROUTES}
     current = query
     while rounds < MAX_ROUNDS:
         rounds += 1
@@ -163,12 +168,20 @@ def retrieve_dimension(
         }
         if query_embedding is None and fallback_search_round is not None:
             round_request["review_id"] = review_id
+        if round_fn is default_search_round:
+            round_request["route_hits"] = route_hits
         merged = merge_candidates(round_fn(**round_request))
         if merged:
             break
         current = rewrite_fn(current, rounds + 1, dimension_code)
 
     if not merged:
+        observe_retrieve_parents(0)
+        log_event(
+            "retrieve", "dimension_retrieved", review_id=review_id,
+            dimension_code=dimension_code, route_hits=dict(route_hits), merged=0,
+            after_rerank=[], kept=0, round=rounds, second_round=rounds > 1,
+        )
         return DimensionRetrieval(
             dimension_code=dimension_code,
             status=STATUS_INSUFFICIENT,
@@ -181,10 +194,18 @@ def retrieve_dimension(
         order = validate_rerank_order(order, _call_rerank(rerank, query, order))
 
     by_id = {block.parent_id: block for block in merged}
+    kept_parents = tuple(by_id[parent_id] for parent_id in order[:limit])
+    observe_retrieve_parents(len(kept_parents))
+    log_event(
+        "retrieve", "dimension_retrieved", review_id=review_id,
+        dimension_code=dimension_code, route_hits=dict(route_hits),
+        merged=len(merged), after_rerank=list(order[:limit]), kept=len(kept_parents),
+        round=rounds, second_round=rounds > 1,
+    )
     return DimensionRetrieval(
         dimension_code=dimension_code,
         status=STATUS_HIT,
         rounds=rounds,
         queries=tuple(queries),
-        parents=tuple(by_id[parent_id] for parent_id in order[:limit]),
+        parents=kept_parents,
     )

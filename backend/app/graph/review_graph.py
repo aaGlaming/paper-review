@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import re
+import time
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -39,6 +40,7 @@ from ..scoring.selection import (
     parse_scoring_json,
     quote_is_substring,
 )
+from ..observability import bind_review_id, log_event, unbind_review_id
 
 if TYPE_CHECKING:
     from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -198,6 +200,7 @@ def _parse_node(state: ReviewState) -> dict[str, Any]:
 
 
 def _confirm_node(state: ReviewState) -> dict[str, Any]:
+    log_event("graph", "interrupted", node="confirm", review_id=state.get("review_id", ""), phase="before")
     answer = interrupt(
         {
             "review_id": state.get("review_id", ""),
@@ -205,6 +208,7 @@ def _confirm_node(state: ReviewState) -> dict[str, Any]:
             "sections": state.get("sections", []),
         }
     )
+    log_event("graph", "interrupted", node="confirm", review_id=state.get("review_id", ""), phase="after")
     sections = _sections_from_answer(answer, state.get("sections", []))
     return {"sections": sections, "confirmed": True, "status": STATUS_SCORING}
 
@@ -335,18 +339,29 @@ def _score_dimension(
     dimension: Mapping[str, Any],
     parents: Sequence[Mapping[str, Any]],
     constraints: Sequence[Mapping[str, Any]],
+    review_id: str | None = None,
 ) -> dict[str, Any]:
     """一个维度的选档：检索为空记证据不足；JSON 解析失败重试一次；原句不是子串记引用失败。"""
     code = _dimension_code_of(dimension)
+
+    def _done(result: dict[str, Any], *, quote_ok: bool = True) -> dict[str, Any]:
+        guard = result.get("guard") or {}
+        log_event("scoring", "dimension_scored", review_id=review_id,
+                  dimension_code=code, band=result.get("band"), quote_ok=quote_ok,
+                  chat_calls=int(result.get("chat_calls", 0) or 0),
+                  guard_downgraded=bool(guard.get("downgraded", False)),
+                  guard_reasons=list(guard.get("reasons", []) or []))
+        return result
+
     if not parents:
-        return {
+        return _done({
             "dimension_code": code,
             "band": STATUS_INSUFFICIENT,
             "status": STATUS_INSUFFICIENT,
             "chunk_ids": [],
             "quote": None,
             "reason": "检索为空：该维证据不足",
-        }
+        })
 
     messages = build_scoring_messages(
         dimension_code=code,
@@ -372,7 +387,7 @@ def _score_dimension(
             break
 
     if parsed is None:
-        return {
+        return _done({
             "dimension_code": code,
             "band": None,
             "status": STATUS_FAILURE,
@@ -380,10 +395,10 @@ def _score_dimension(
             "quote": None,
             "reason": failure_reason or "模型输出不是约定 JSON",
             "chat_calls": attempts,
-        }
+        })
 
     if parsed["band"] == STATUS_INSUFFICIENT:
-        return {
+        return _done({
             "dimension_code": code,
             "band": STATUS_INSUFFICIENT,
             "status": STATUS_INSUFFICIENT,
@@ -391,10 +406,10 @@ def _score_dimension(
             "quote": None,
             "reason": "模型在给定证据里没有找到可引用的原句",
             "chat_calls": attempts,
-        }
+        })
 
     if not quote_is_substring(parsed["quote"], parents):
-        return {
+        return _done({
             "dimension_code": code,
             "band": parsed["band"],
             "status": STATUS_CITATION_FAILURE,
@@ -402,15 +417,19 @@ def _score_dimension(
             "quote": parsed["quote"],
             "reason": "原句不是父块连续子串",
             "chat_calls": attempts,
-        }
+        }, quote_ok=False)
 
     guard = apply_mention_guard(
         parsed["band"],
         evidence_text=join_evidence(parents),
         constraints=constraints,
         dimension_section_types=dimension.get("section_types"),
+        review_id=review_id,
+        dimension_code=code,
+        chat_calls=attempts,
+        quote_ok=True,
     )
-    return {
+    return _done({
         "dimension_code": code,
         "band": guard["band"],
         "status": guard["band"],
@@ -418,7 +437,7 @@ def _score_dimension(
         "quote": parsed["quote"],
         "guard": guard,
         "chat_calls": attempts,
-    }
+    })
 
 
 def _make_score_node(
@@ -449,7 +468,10 @@ def _make_score_node(
         for dimension in rubric_dimensions:
             code = _dimension_code_of(dimension)
             parents = list(((retrievals.get(code) or {}).get("parents") or ()))[:MAX_PARENTS]
-            results[code] = _score_dimension(chat, dimension, parents, resolved_constraints)
+            results[code] = _score_dimension(
+                chat, dimension, parents, resolved_constraints,
+                review_id=state.get("review_id", ""),
+            )
         return {
             "dimension_results": results,
             "score": weighted_sum(rubric_dimensions, list(results.values())),
@@ -494,11 +516,23 @@ def build_review_graph(
     else:
         resolved_dimensions = tuple(RUBRIC_DIMENSION_CODES)
 
+    def _logged_node(name: str, node: Callable[[ReviewState], dict[str, Any]]):
+        def invoke(state: ReviewState) -> dict[str, Any]:
+            review_id = state.get("review_id", "")
+            started = time.perf_counter()
+            log_event("graph", "node_enter", node=name, review_id=review_id, elapsed_ms=0)
+            try:
+                return node(state)
+            finally:
+                log_event("graph", "node_exit", node=name, review_id=review_id,
+                          elapsed_ms=int((time.perf_counter() - started) * 1000))
+        return invoke
+
     builder = StateGraph(ReviewState)
-    builder.add_node("parse", _parse_node)
-    builder.add_node("confirm", _confirm_node)
-    builder.add_node("retrieve", _retrieve_node_factory(retriever, resolved_dimensions, agent_runner))
-    builder.add_node("score", _make_score_node(chat, resolved_rubric, resolved_constraints, agent_runner))
+    builder.add_node("parse", _logged_node("parse", _parse_node))
+    builder.add_node("confirm", _logged_node("confirm", _confirm_node))
+    builder.add_node("retrieve", _logged_node("retrieve", _retrieve_node_factory(retriever, resolved_dimensions, agent_runner)))
+    builder.add_node("score", _logged_node("score", _make_score_node(chat, resolved_rubric, resolved_constraints, agent_runner)))
     builder.add_edge(START, "parse")
     builder.add_edge("parse", "confirm")
     builder.add_edge("confirm", "retrieve")
@@ -526,21 +560,27 @@ def create_review(paper_text: str, review_id: str | None = None, *, graph: Any =
     resolved_graph = graph if graph is not None else _default_graph()
     _require_checkpointer(resolved_graph)
     resolved_id = review_id if review_id else uuid.uuid4().hex
-    config = {"configurable": {"thread_id": resolved_id}}
-    resolved_graph.invoke(
-        {
-            "review_id": resolved_id,
-            "paper_text": paper_text,
-            "sections": [],
-            "confirmed": False,
-            "status": STATUS_DRAFTING,
-            "score_node_calls": 0,
-            "parse_node_calls": 0,
-            "retrieve_node_calls": 0,
-        },
-        config=config,
-    )
-    return resolved_id
+    # 绑定评审上下文：之后本次评审内所有模块的日志都会自动带上 review_id，
+    # 包括拿不到评审参数的 llm 客户端。解绑放 finally，异常时也不会串到下个请求。
+    token = bind_review_id(resolved_id)
+    try:
+        config = {"configurable": {"thread_id": resolved_id}}
+        resolved_graph.invoke(
+            {
+                "review_id": resolved_id,
+                "paper_text": paper_text,
+                "sections": [],
+                "confirmed": False,
+                "status": STATUS_DRAFTING,
+                "score_node_calls": 0,
+                "parse_node_calls": 0,
+                "retrieve_node_calls": 0,
+            },
+            config=config,
+        )
+        return resolved_id
+    finally:
+        unbind_review_id(token)
 
 
 def resume_review(review_id: str, sections: Any, *, graph: Any = None) -> dict[str, Any]:
@@ -550,11 +590,17 @@ def resume_review(review_id: str, sections: Any, *, graph: Any = None) -> dict[s
     """
     resolved_graph = graph if graph is not None else _default_graph()
     _require_checkpointer(resolved_graph)
-    config = {"configurable": {"thread_id": review_id}}
-    snapshot = resolved_graph.get_state(config)
-    if not snapshot.values:
-        raise ValueError(f"找不到评审单 {review_id} 的检查点，无法继续")
-    if not snapshot.next:
-        return dict(snapshot.values)
-    final = resolved_graph.invoke(Command(resume={"sections": list(sections)}), config=config)
-    return dict(final)
+    token = bind_review_id(review_id)
+    try:
+        config = {"configurable": {"thread_id": review_id}}
+        snapshot = resolved_graph.get_state(config)
+        log_event("graph", "resumed", review_id=review_id,
+                  snapshot_restored=bool(snapshot.values))
+        if not snapshot.values:
+            raise ValueError(f"找不到评审单 {review_id} 的检查点，无法继续")
+        if not snapshot.next:
+            return dict(snapshot.values)
+        final = resolved_graph.invoke(Command(resume={"sections": list(sections)}), config=config)
+        return dict(final)
+    finally:
+        unbind_review_id(token)

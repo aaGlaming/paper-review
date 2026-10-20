@@ -209,6 +209,8 @@ def submit_dimension(
             evidence_text=join_evidence(parents),
             constraints=ctx.constraints,
             dimension_section_types=dimension.get("section_types") or (),
+            review_id=ctx.review_id,
+            dimension_code=dimension_code,
         )
         final_band = guard["band"]
         result = {
