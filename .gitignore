@@ -40,3 +40,15 @@ chroma_data.failed-*/
 .pytest_tmp/
 # 一次性排查脚本（临时取证用，不入库）
 .tmp_*
+# archify 生成副产物（*.delivery.json / *.browser-check.json / *.finalize*.json），
+# 是渲染器的过程记录而非产物；只提交图本身（NN-*.json + NN-*.html）
+docs/diagrams/*.delivery.json
+docs/diagrams/*.browser-check.json
+docs/diagrams/*.finalize.json
+docs/diagrams/*.finalize-summary.json
+docs/diagrams/**/*.delivery.json
+docs/diagrams/**/*.browser-check.json
+docs/diagrams/**/*.finalize.json
+docs/diagrams/**/*.finalize-summary.json
+# 权限恢复工具的日志（本机故障处置产物，不入库）
+.acl-recovery/

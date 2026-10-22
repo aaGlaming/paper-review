@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
@@ -45,6 +45,7 @@ describe('登录页', () => {
     await wrapper.vm.$nextTick()
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(wrapper.find('[role="alert"]').text()).toBe('用户名或密码错误')
+    expect(wrapper.find('.post-login-intro').exists()).toBe(false)
   })
 
   it('redirect=/parse 跳转生效，站外 redirect 被忽略', () => {
@@ -52,5 +53,39 @@ describe('登录页', () => {
     expect(resolveRedirect('https://evil.example')).toBe('/parse')
     expect(resolveRedirect('//evil.example/x')).toBe('/parse')
     expect(resolveRedirect(undefined)).toBe('/parse')
+  })
+
+  it('登录成功先播放开场，点击后才进入安全重定向目标', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/login', component: LoginView },
+        { path: '/records', component: { template: '<div>records</div>' } },
+        { path: '/parse', component: { template: '<div>parse</div>' } },
+        { path: '/register', component: { template: '<div>register</div>' } },
+      ],
+    })
+    await router.push({ path: '/login', query: { redirect: '/records' } })
+    await router.isReady()
+    vi.stubGlobal(
+      'fetch',
+      async () => new Response(
+        JSON.stringify({ token: 'intro-token', user_id: 'u-intro', role: 'student', permissions: [] }),
+        { status: 200 },
+      ),
+    )
+    const wrapper = mount(LoginView, { global: { plugins: [router] } })
+    await wrapper.find('input[name="username"]').setValue('stu')
+    await wrapper.find('input[name="password"]').setValue('password123')
+
+    await wrapper.find('form').trigger('submit.prevent')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/login')
+    expect(wrapper.find('.post-login-intro').exists()).toBe(true)
+    await wrapper.get('.post-login-intro').trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/records')
   })
 })

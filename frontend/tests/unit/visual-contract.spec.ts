@@ -22,7 +22,7 @@ function sourceFiles(): string[] {
 }
 
 describe('视觉契约', () => {
-  it('91 个 data-testid 包含主题切换与产物面板钩子', () => {
+  it('98 个 data-testid 包含主题、产物面板与请求活动钩子', () => {
     const ids = new Set<string>()
     for (const file of sourceFiles().filter((f) => f.endsWith('.vue'))) {
       const text = readFileSync(file, 'utf8')
@@ -30,12 +30,13 @@ describe('视觉契约', () => {
         ids.add(match[1])
       }
     }
-    expect(ids.size).toBe(97)
+    expect(ids.size).toBe(101)
     expect(ids.has('theme-toggle')).toBe(true)
     expect(ids.has('artifact-panel')).toBe(true)
     expect(ids.has('artifact-empty')).toBe(true)
     expect(ids.has('`artifact-group-${group.type}`')).toBe(true)
     expect(ids.has('artifact-mark')).toBe(true)
+    expect(ids.has('request-activity')).toBe(true)
   })
 
   it('src 下不用 emoji 当图标（手绘图形一律用 sketch SVG，不用 emoji）', () => {

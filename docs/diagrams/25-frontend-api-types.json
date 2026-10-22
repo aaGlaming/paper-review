@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "diagram_type": "class",
+  "meta": {
+    "title": "前端 API 类型关系",
+    "locale": "zh-CN",
+    "subtitle": "types.ts 镜像已观测的后端响应；api/index.ts 返回类型供页面组件消费。",
+    "output": "docs/diagrams/25-frontend-api-types.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "types": [
+    {
+      "id": "metric",
+      "label": "EvalMetric",
+      "kind": "interface",
+      "sublabel": "matched / total / rate / low_sample",
+      "row": 0,
+      "col": 0,
+      "sources": [
+        {
+          "path": "frontend/src/api/types.ts",
+          "line": 150,
+          "end_line": 180,
+          "label": "评测指标类型"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "matched",
+          "type": "number",
+          "visibility": "public"
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "visibility": "public"
+        },
+        {
+          "name": "rate",
+          "type": "number | null",
+          "visibility": "public"
+        },
+        {
+          "name": "low_sample",
+          "type": "boolean",
+          "visibility": "public"
+        },
+        {
+          "name": "caliber",
+          "type": "string",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "eval",
+      "label": "EvalSummary",
+      "kind": "interface",
+      "sublabel": "source + 3 metrics",
+      "row": 0,
+      "col": 1,
+      "sources": [
+        {
+          "path": "frontend/src/api/types.ts",
+          "line": 180,
+          "end_line": 200,
+          "label": "评测响应"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "source",
+          "type": "string",
+          "visibility": "public"
+        },
+        {
+          "name": "band_agreement",
+          "type": "EvalMetric",
+          "visibility": "public"
+        },
+        {
+          "name": "quote_exact_match",
+          "type": "EvalMetric",
+          "visibility": "public"
+        },
+        {
+          "name": "insufficient_evidence_hit",
+          "type": "EvalMetric",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "sample",
+      "label": "SampleItem",
+      "kind": "interface",
+      "sublabel": "sample_id / is_demo / has_gold",
+      "row": 1,
+      "col": 0,
+      "sources": [
+        {
+          "path": "frontend/src/api/types.ts",
+          "line": 125,
+          "end_line": 150,
+          "label": "样例类型"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "visibility": "public"
+        },
+        {
+          "name": "is_demo",
+          "type": "boolean",
+          "visibility": "public"
+        },
+        {
+          "name": "has_gold",
+          "type": "boolean",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "dashboard",
+      "label": "DashboardSummary",
+      "kind": "interface",
+      "sublabel": "cards / distributions / gold",
+      "row": 1,
+      "col": 1,
+      "sources": [
+        {
+          "path": "frontend/src/api/types.ts",
+          "line": 55,
+          "end_line": 115,
+          "label": "大屏响应"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "cards",
+          "type": "Cards",
+          "visibility": "public"
+        },
+        {
+          "name": "contests",
+          "type": "Contest[]",
+          "visibility": "public"
+        },
+        {
+          "name": "bands",
+          "type": "Band[]",
+          "visibility": "public"
+        },
+        {
+          "name": "gold",
+          "type": "Agreement | null",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "api",
+      "label": "API module",
+      "kind": "class",
+      "sublabel": "唯一 HTTP 封装",
+      "row": 2,
+      "col": 0,
+      "sources": [
+        {
+          "path": "frontend/src/api/index.ts",
+          "line": 1,
+          "end_line": 260,
+          "label": "请求封装"
+        }
+      ],
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getEvalSummary",
+          "parameters": "()",
+          "returns": "Promise<EvalSummary>",
+          "visibility": "public"
+        },
+        {
+          "name": "getContests",
+          "parameters": "()",
+          "returns": "Promise<ContestListResponse>",
+          "visibility": "public"
+        },
+        {
+          "name": "getDashboardSummary",
+          "parameters": "()",
+          "returns": "Promise<DashboardSummary>",
+          "visibility": "public"
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "label": "Vue views",
+      "kind": "class",
+      "sublabel": "页面消费响应类型",
+      "row": 2,
+      "col": 1,
+      "sources": [
+        {
+          "path": "frontend/src/views/评测对照.vue",
+          "line": 1,
+          "end_line": 280,
+          "label": "评测页"
+        }
+      ],
+      "attributes": [],
+      "methods": [
+        {
+          "name": "renderMetric",
+          "parameters": "EvalMetric",
+          "returns": "UI",
+          "visibility": "public"
+        },
+        {
+          "name": "renderDashboard",
+          "parameters": "DashboardSummary",
+          "returns": "charts",
+          "visibility": "public"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "eval-metric",
+      "from": "eval",
+      "to": "metric",
+      "kind": "composition",
+      "label": "contains metrics"
+    },
+    {
+      "id": "api-eval",
+      "from": "api",
+      "to": "eval",
+      "kind": "dependency",
+      "label": "returns"
+    },
+    {
+      "id": "api-dashboard",
+      "from": "api",
+      "to": "dashboard",
+      "kind": "dependency",
+      "label": "returns"
+    },
+    {
+      "id": "view-api",
+      "from": "views",
+      "to": "api",
+      "kind": "dependency",
+      "label": "requests"
+    },
+    {
+      "id": "view-metric",
+      "from": "views",
+      "to": "metric",
+      "kind": "dependency",
+      "label": "renders"
+    }
+  ]
+}

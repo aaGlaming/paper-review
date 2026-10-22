@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" fill="none" aria-hidden="true" width="420" height="320">
   <!-- 评分面背景：五维档位框 + 大放大镜 + 首框对勾 -->
   <rect x="36" y="60" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.6"/>
   <path d="M48 74 L56 82 L72 64" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

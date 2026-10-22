@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "diagram_type": "tree",
+  "meta": {
+    "title": "权限树",
+    "locale": "zh-CN",
+    "subtitle": "学生默认 3 项权限；教师权限集含学生基础能力并增加管理、问询和大屏权限。",
+    "output": "docs/diagrams/23-permission-tree.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": {
+    "direction": "down"
+  },
+  "nodes": [
+    {
+      "id": "root",
+      "label": "API access control",
+      "sublabel": "require_permission + role",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 1,
+          "end_line": 28,
+          "label": "权限定义"
+        }
+      ]
+    },
+    {
+      "id": "student",
+      "label": "student",
+      "parent": "root",
+      "sublabel": "默认角色",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 20,
+          "end_line": 28,
+          "label": "学生权限"
+        }
+      ]
+    },
+    {
+      "id": "create",
+      "label": "review:create",
+      "parent": "student",
+      "sublabel": "创建评审",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "own",
+      "label": "review:read:own",
+      "parent": "student",
+      "sublabel": "读自己的评审",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "eval-s",
+      "label": "eval:view",
+      "parent": "student",
+      "sublabel": "评测读取",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "teacher",
+      "label": "teacher",
+      "parent": "root",
+      "sublabel": "扩展权限集",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 20,
+          "end_line": 28,
+          "label": "教师权限"
+        }
+      ]
+    },
+    {
+      "id": "all",
+      "label": "review:read:all",
+      "parent": "teacher",
+      "sublabel": "读全部评审",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "chat",
+      "label": "chat:use",
+      "parent": "teacher",
+      "sublabel": "AI 问询",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "label": "dashboard:view",
+      "parent": "teacher",
+      "sublabel": "数据大屏",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "contest",
+      "label": "contest:manage",
+      "parent": "teacher",
+      "sublabel": "量规管理",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    },
+    {
+      "id": "eval-t",
+      "label": "eval:view",
+      "parent": "teacher",
+      "sublabel": "评测读取",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 10,
+          "end_line": 28,
+          "label": "权限码"
+        }
+      ]
+    }
+  ]
+}

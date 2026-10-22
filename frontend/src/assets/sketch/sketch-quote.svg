@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-  <!-- 引文标记：一段衬线引文 + 左侧一道手绘竖线，圈出原句所在 -->
-  <path d="M6 3.5 C5.4 8 5.4 16 6 20.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M9.5 6.5 L19 6.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M9.5 11 L17 10.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M9.5 15.5 L18.5 15.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-  <path d="M9.5 19.5 L14.5 19.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/>
-</svg>

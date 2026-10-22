@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" width="24" height="24">
   <!-- 铅笔：笔杆微斜，削面与笔芯各一笔，握位处一道短线 -->
   <path d="M4.5 19.2 C5 16.5 6.5 13 9.5 10 C12.5 7 16 5.5 18.8 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
   <path d="M18.6 5.2 L19.4 3.4 C19.6 2.9 20.3 2.9 20.5 3.4 L21 5.4 C21.1 5.8 20.9 6.2 20.5 6.3 L18.6 6.9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>

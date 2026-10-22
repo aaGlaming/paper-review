@@ -52,9 +52,11 @@ describe('AI 问询页', () => {
     await wrapper.get('textarea').setValue('请解释记录')
     await wrapper.get('.composer button').trigger('click')
     expect(wrapper.text()).toContain('请解释记录')
+    expect(wrapper.get('[data-testid="request-activity"]').text()).toContain('正在整理回答')
     resolve({ message_id:'m2', content:'助手回答', refs:[], model_name:'m', notifications:{ rejected:0, unused:0 } })
     await flushPromises()
     expect(wrapper.text()).toContain('助手回答')
+    expect(wrapper.find('[data-testid="request-activity"]').exists()).toBe(false)
   })
   it('将两个引用渲染为可点 chip 并带 review 查询参数跳转', async () => {
     const { wrapper, router } = await mountChat([message('assistant','详情 [review_id=r1 dim=assumption] 和 [review_id=r2 dim=evidence]')])

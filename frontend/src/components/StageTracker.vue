@@ -110,6 +110,7 @@ const steps = computed(() =>
   padding: 0 var(--pr-space-2);
   border-radius: var(--pr-radius);
   font-size: var(--pr-text-sm);
+  transition: color var(--pr-motion-interaction) ease, background-color var(--pr-motion-interaction) ease;
 }
 
 .tracker__badge[data-state='idle'] {
@@ -177,4 +178,6 @@ const steps = computed(() =>
   color: var(--pr-ink-muted);
   font-size: var(--pr-text-sm);
 }
+
+@media (prefers-reduced-motion:reduce) { .tracker__badge { transition:none; } }
 </style>

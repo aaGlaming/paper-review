@@ -64,4 +64,29 @@ describe('导航角色菜单', () => {
     expect(wrapper.get('a[href="/chat"]').attributes('data-nav-item')).toBeDefined()
     expect(wrapper.get('a[href="/dashboard"]').attributes('data-nav-item')).toBeDefined()
   })
+
+  it('登录态无法验证时显示重试和退出入口，恢复后显示教师页面', async () => {
+    localStorage.setItem(AUTH_TOKEN_KEY, 'recover-token')
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        user_id: 'u-recovered',
+        username: 'teacher',
+        role: 'teacher',
+        permissions: ['review:read:all', 'chat:use', 'dashboard:view'],
+      }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const { useAuth } = await import('../../src/composables/useAuth')
+    await expect(useAuth().restore()).rejects.toThrow('Failed to fetch')
+
+    const router = createAppRouter(createMemoryHistory())
+    const wrapper = mount(AppNav, { global: { plugins: [router] } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.get('[data-testid="session-recovery"]').text()).toContain('无法验证登录状态')
+    expect(wrapper.find('a[href="/dashboard"]').exists()).toBe(false)
+    await wrapper.get('[data-testid="session-retry"]').trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('a[href="/dashboard"]').exists()).toBe(true))
+    expect(wrapper.find('[data-testid="session-recovery"]').exists()).toBe(false)
+  })
 })

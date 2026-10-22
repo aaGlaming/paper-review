@@ -93,6 +93,10 @@ const chart = computed(() => {
   margin: var(--pr-card-title-gap) 0;
 }
 
+.metric__chart-line { stroke-dasharray: 240; stroke-dashoffset: 240; animation: metric-line-draw var(--pr-motion-number) var(--pr-motion-ease) forwards; }
+@keyframes metric-line-draw { to { stroke-dashoffset:0; } }
+@media (prefers-reduced-motion:reduce) { .metric__chart-line { animation:none; stroke-dashoffset:0; } }
+
 .metric__name {
   margin: 0 0 var(--pr-card-title-gap);
   font-size: var(--pr-text-base);

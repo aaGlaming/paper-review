@@ -7,6 +7,20 @@ import { AUTH_TOKEN_KEY, resetAuthStateForTest, useAuth } from '../../src/compos
 import { createAppRouter } from '../../src/router'
 
 describe('应用外壳', () => {
+  it('公开的登录入口不显示工作台导航', async () => {
+    resetAuthStateForTest()
+    localStorage.clear()
+    const router = createAppRouter(createMemoryHistory())
+    await router.push('/login')
+    await router.isReady()
+
+    const wrapper = mount(App, { global: { plugins: [router] } })
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-nav-item]').exists()).toBe(false)
+    expect(wrapper.find('main').exists()).toBe(true)
+  })
+
   it('挂载后渲染出导航，且导航里有五个页面入口', async () => {
     resetAuthStateForTest()
     localStorage.clear()

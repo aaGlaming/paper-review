@@ -6,10 +6,11 @@ import { getContestRubric, getReview } from '../api'
 import type { ArchivedReview, DimensionResult, PaperSection, PublishedRubricText, ReviewReport } from '../api/types'
 import DimensionCard from '../components/DimensionCard.vue'
 import PageArt from '../components/PageArt.vue'
-import artUrl from '../assets/sketch/sketch-bg-scoring.svg'
-import spotUrl from '../assets/sketch/sketch-spot-scoring.svg'
+import artUrl from '../../../docs/design/sketch-svg/sketch-bg-scoring.svg'
+import spotUrl from '../../../docs/design/sketch-svg/sketch-spot-scoring.svg'
 import ScoringEmptyIllustration from '../components/illustrations/ScoringEmptyIllustration.vue'
 import StageTracker from '../components/StageTracker.vue'
+import RequestActivity from '../components/RequestActivity.vue'
 import AgentTracePanel from '../components/AgentTracePanel.vue'
 import { isArchivedReview } from '../composables/reviewShape'
 import { readReviewFlow } from '../composables/useReviewFlow'
@@ -169,15 +170,18 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 
       <section v-if="dimensions.length > 0" class="scoring__cards" data-testid="dimensions">
         <p class="ed-kicker scoring__cards-kicker">五维结果 · 按后端顺序</p>
-        <DimensionCard
-          v-for="(dimension, index) in dimensions"
-          :key="dimension.dimension_code"
-          :dimension="dimension"
-          :data-located="located?.dimensionCode === dimension.dimension_code ? 'true' : null"
-          :class="index === 0 ? 'scoring__card--lead' : null"
-          @locate="locateQuote"
-        />
+        <TransitionGroup name="proof-list" tag="div" class="scoring__card-list">
+          <DimensionCard
+            v-for="(dimension, index) in dimensions"
+            :key="dimension.dimension_code"
+            :dimension="dimension"
+            :data-located="located?.dimensionCode === dimension.dimension_code ? 'true' : null"
+            :class="index === 0 ? 'scoring__card--lead' : null"
+            @locate="locateQuote"
+          />
+        </TransitionGroup>
       </section>
+      <RequestActivity v-else :active="loading" label="正在读取评审存档" />
 
       <section v-if="rubric" class="scoring__rubric-details">
         <h2 class="scoring__subtitle">量规条文 · {{ rubric.rubric_id }} v{{ rubric.version }}</h2>
@@ -258,7 +262,7 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
         <p class="scoring__empty-note">
           需要先在论文解析页选定赛题并确认章节树，这里才会逐维给出结果。
         </p>
-        <p v-if="loading" class="scoring__loading">正在读取评审存档…</p>
+        <RequestActivity :active="loading" label="正在读取评审存档" />
         <p v-if="loadError" class="scoring__load-error" data-testid="load-error">{{ loadError }}</p>
         <p class="scoring__empty-link"><RouterLink class="ed-action-link" to="/parse">去论文解析页</RouterLink></p>
       </section>
@@ -304,11 +308,13 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
 }
 
 .scoring__cards {
-  display: grid;
-  grid-template-columns: 7fr 5fr;
-  gap: var(--pr-card-gap);
-  align-items: start;
+  display: block;
 }
+
+.scoring__card-list { display:grid; grid-template-columns:7fr 5fr; gap:var(--pr-card-gap); align-items:start; }
+.proof-list-enter-active,.proof-list-leave-active { transition:opacity var(--pr-motion-list) var(--pr-motion-ease), transform var(--pr-motion-list) var(--pr-motion-ease); }
+.proof-list-enter-from,.proof-list-leave-to { opacity:0; transform:translateY(5px); }
+.proof-list-move { transition:transform var(--pr-motion-list) var(--pr-motion-ease); }
 
 /* 首张维度卡跨整行做视觉焦点：它是读者进入五维的第一眼。 */
 .scoring__cards-kicker,
@@ -324,7 +330,10 @@ async function locateQuote(dimension: DimensionResult): Promise<void> {
   .scoring__cards {
     grid-template-columns: 1fr;
   }
+  .scoring__card-list { grid-template-columns:1fr; }
 }
+
+@media (prefers-reduced-motion: reduce) { .proof-list-enter-active,.proof-list-leave-active,.proof-list-move { transition:none; } }
 
 .scoring__weighted,
 .scoring__noweight,

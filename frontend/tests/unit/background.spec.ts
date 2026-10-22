@@ -9,11 +9,12 @@ import { describe, expect, it } from 'vitest'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const SRC = path.resolve(HERE, '..', '..', 'src')
+const SKETCH_ASSETS = path.resolve(HERE, '..', '..', '..', 'docs', 'design', 'sketch-svg')
 const SKETCH_CSS = readFileSync(path.join(SRC, 'styles', 'sketch.css'), 'utf8')
 const TOKENS = readFileSync(path.join(SRC, 'styles', 'tokens.css'), 'utf8')
 
 function assetNames(): string[] {
-  return readdirSync(path.join(SRC, 'assets', 'sketch'))
+  return [...readdirSync(SKETCH_ASSETS), 'photo-background.jpg']
 }
 
 const PAGE_BG = [
@@ -85,7 +86,7 @@ describe('全局背景系统', () => {
       'sketch-corner-mark.svg',
       ...PAGE_BG,
     ]) {
-      const text = readFileSync(path.join(SRC, 'assets', 'sketch', file), 'utf8')
+      const text = readFileSync(path.join(SKETCH_ASSETS, file), 'utf8')
       expect(text, `${file} 未用 currentColor`).toContain('stroke="currentColor"')
       expect(text, `${file} 缺 fill=none`).toContain('fill="none"')
       expect(text.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [], `${file} 出现裸色值`).toEqual([])

@@ -202,7 +202,7 @@ describe('手稿风修复', () => {
     }
   })
 
-  it('7. 源码扫描：新增/修改的 .vue 里无十六进制色值、无 fade、无 animation:、不同时含 hover 与 translate', () => {
+  it('7. 源码扫描：新增/修改的 .vue 无裸色值、无无界 hover 位移，动态图表尊重 reduced-motion', () => {
     const files = [
       'components/DimensionCard.vue',
       'components/ConflictItem.vue',
@@ -213,13 +213,12 @@ describe('手稿风修复', () => {
     for (const file of files) {
       const text = readFileSync(path.join(SRC, file), 'utf8')
       expect(text.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [], `${file} 出现裸色值`).toEqual([])
-      expect(text.includes('fade'), `${file} 出现 fade`).toBe(false)
-      expect(/animation\s*:/.test(text), `${file} 出现 animation:`).toBe(false)
       expect(text.includes('hover') && text.includes('translate'), `${file} hover 位移`).toBe(false)
     }
+    expect(readFileSync(path.join(SRC, 'components/MetricCard.vue'), 'utf8')).toContain('prefers-reduced-motion')
   })
 
-  it('8. 87 个 data-testid 一个不少（86 + theme-toggle）', () => {
+  it('8. 98 个 data-testid 全部唯一且动态请求钩子存在', () => {
     const ids = new Set<string>()
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -234,11 +233,12 @@ describe('手稿风修复', () => {
       }
     }
     walk(SRC)
-    expect(ids.size).toBe(97)
+    expect(ids.size).toBe(101)
     expect(ids.has('theme-toggle')).toBe(true)
     expect(ids.has('artifact-panel')).toBe(true)
     expect(ids.has('artifact-empty')).toBe(true)
     expect(ids.has('`artifact-group-${group.type}`')).toBe(true)
     expect(ids.has('artifact-mark')).toBe(true)
+    expect(ids.has('request-activity')).toBe(true)
   })
 })

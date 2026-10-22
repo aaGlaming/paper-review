@@ -83,6 +83,22 @@ describe('记录总览页', () => {
     expect(vi.mocked(api.listReviews).mock.calls[1]?.[0]).toMatchObject({ contestId: 'contest-b' })
   })
 
+  it('筛选重取期间保留已有行并显示真实请求状态', async () => {
+    const wrapper = await mountPage()
+    let resolve!: (value: ReviewListResponse) => void
+    vi.mocked(api.listReviews).mockImplementationOnce(() => new Promise((done) => { resolve = done }))
+    wrapper.findComponent({ name: 'ElSelect' }).vm.$emit('change', 'contest-b')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findAll('tbody tr.el-table__row')).toHaveLength(2)
+    expect(wrapper.get('[data-testid="request-activity"]').text()).toContain('正在更新评审记录')
+
+    resolve(result('all', [ROWS[1]!]))
+    await flushPromises()
+    expect(wrapper.findAll('tbody tr.el-table__row')).toHaveLength(1)
+    expect(wrapper.find('[data-testid="request-activity"]').exists()).toBe(false)
+  })
+
   it('开关启用 owner=owned，关闭后不传 owner', async () => {
     const wrapper = await mountPage()
     const toggle = wrapper.findComponent({ name: 'ElSwitch' })

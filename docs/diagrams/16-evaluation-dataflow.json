@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Gold 评测数据流",
+    "locale": "zh-CN",
+    "subtitle": "12 篇有 gold 的本地评测稿；source 区分 deterministic / model；low_sample 只改呈现、不改 rate。",
+    "output": "docs/diagrams/16-evaluation-dataflow.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "stages": [
+    {
+      "label": "样本与 gold"
+    },
+    {
+      "label": "评测运行"
+    },
+    {
+      "label": "指标归一"
+    },
+    {
+      "label": "消费者"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "papers",
+      "type": "database",
+      "label": "12 eval/*.md",
+      "sublabel": "正文 + 同名 JSON",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/review/samples.py",
+          "line": 60,
+          "end_line": 100,
+          "label": "样例加载"
+        }
+      ]
+    },
+    {
+      "id": "gold",
+      "type": "database",
+      "label": "gold[]",
+      "sublabel": "每篇 5 个 dimension band",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 10,
+          "label": "样本声明"
+        }
+      ]
+    },
+    {
+      "id": "runner",
+      "type": "backend",
+      "label": "run_eval(chat?)",
+      "sublabel": "chat 缺省 → deterministic",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/evaluation.py",
+          "line": 292,
+          "end_line": 316,
+          "label": "评测入口"
+        }
+      ]
+    },
+    {
+      "id": "system",
+      "type": "backend",
+      "label": "system results",
+      "sublabel": "档位 / quote / evidence",
+      "stage": 1,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/report/evaluation.py",
+          "line": 150,
+          "end_line": 290,
+          "label": "评测结果"
+        }
+      ]
+    },
+    {
+      "id": "metric",
+      "type": "backend",
+      "label": "summarize_eval",
+      "sublabel": "3 metrics + source",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/evaluation.py",
+          "line": 35,
+          "end_line": 130,
+          "label": "汇总"
+        }
+      ]
+    },
+    {
+      "id": "low",
+      "type": "security",
+      "label": "low_sample",
+      "sublabel": "0 < total < 5；rate 不变",
+      "stage": 2,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/report/evaluation.py",
+          "line": 35,
+          "end_line": 65,
+          "label": "呈现阈值"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "GET /eval/summary",
+      "sublabel": "source + metrics",
+      "stage": 3,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 104,
+          "end_line": 125,
+          "label": "API"
+        }
+      ]
+    },
+    {
+      "id": "view",
+      "type": "frontend",
+      "label": "评测对照页",
+      "sublabel": "rate / fraction / source",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "frontend/src/views/评测对照.vue",
+          "line": 1,
+          "end_line": 280,
+          "label": "评测视图"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "papers-gold",
+      "from": "papers",
+      "to": "gold",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "papers-run",
+      "from": "papers",
+      "to": "runner",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "runner-system",
+      "from": "runner",
+      "to": "system",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "system-metric",
+      "from": "system",
+      "to": "metric",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "metric-low",
+      "from": "metric",
+      "to": "low",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "metric-api",
+      "from": "metric",
+      "to": "api",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "api-ui",
+      "from": "api",
+      "to": "view",
+      "classification": "data",
+      "variant": "default",
+      "label": "→"
+    },
+    {
+      "id": "gold-paper",
+      "from": "gold",
+      "to": "papers",
+      "label": "metadata",
+      "classification": "input",
+      "variant": "default",
+      "labelDy": 83
+    }
+  ]
+}

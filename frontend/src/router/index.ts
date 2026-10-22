@@ -10,15 +10,17 @@ import type { RouteRecordRaw, Router, RouterHistory } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 import { useAuth } from '../composables/useAuth'
-import ConsistencyView from '../views/一致性审查.vue'
-import EvalCompareView from '../views/评测对照.vue'
-import LoginView from '../views/登录.vue'
-import ParseView from '../views/论文解析.vue'
-import RegisterView from '../views/注册.vue'
-import ScoringView from '../views/分项评分.vue'
-import SuggestionView from '../views/修改建议.vue'
-import RecordsView from '../views/记录总览.vue'
-import ChatView from '../views/AI问询.vue'
+
+// 路由视图按需加载：首屏只取当前页面；跨页切换仍由 App 的 Transition 统一处理。
+const ParseView = () => import('../views/论文解析.vue')
+const ScoringView = () => import('../views/分项评分.vue')
+const ConsistencyView = () => import('../views/一致性审查.vue')
+const SuggestionView = () => import('../views/修改建议.vue')
+const EvalCompareView = () => import('../views/评测对照.vue')
+const LoginView = () => import('../views/登录.vue')
+const RegisterView = () => import('../views/注册.vue')
+const RecordsView = () => import('../views/记录总览.vue')
+const ChatView = () => import('../views/AI问询.vue')
 
 export const APP_TITLE_SUFFIX = '竞赛论文预审工作台'
 
@@ -75,7 +77,14 @@ export function createAppRouter(history: RouterHistory = createWebHistory()): Ro
   router.beforeEach(async (to) => {
     const auth = useAuth()
     if (to.meta.public) {
-      if ((to.path === '/login' || to.path === '/register') && auth.token.value) {
+      if ((to.path === '/login' || to.path === '/register') && auth.token.value && !auth.user.value && !auth.ready.value) {
+        try {
+          await auth.restore()
+        } catch {
+          // 服务不可达时保持登录页可访问；成功恢复后再按已验证身份跳转。
+        }
+      }
+      if ((to.path === '/login' || to.path === '/register') && auth.user.value) {
         return '/parse'
       }
       return true
@@ -98,7 +107,8 @@ export function createAppRouter(history: RouterHistory = createWebHistory()): Ro
       }
     }
     const required = to.meta.permission
-    if (typeof required === 'string' && !auth.hasPermission(required)) {
+    // 后端不可达时身份未知；不把未知误判成学生。后端 API 仍负责真正鉴权。
+    if (typeof required === 'string' && auth.user.value && !auth.hasPermission(required)) {
       ElMessage.warning('需要教师权限')
       return '/parse'
     }

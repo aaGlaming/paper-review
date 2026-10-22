@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import circleUrl from '../assets/sketch/sketch-circle.svg'
-import magnifierUrl from '../assets/sketch/sketch-magnifier.svg'
+import circleUrl from '../../../docs/design/sketch-svg/sketch-circle.svg'
+import magnifierUrl from '../../../docs/design/sketch-svg/sketch-magnifier.svg'
 import type { DimensionResult } from '../api/types'
 
 /**

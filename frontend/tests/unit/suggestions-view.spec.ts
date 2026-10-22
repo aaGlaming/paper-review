@@ -148,6 +148,23 @@ describe('修改建议页', () => {
     expect(upstreams).toEqual(REPORT.change_list.map((item) => item.upstream_id))
   })
 
+  it('分组可由用户收起和展开，状态跟随按钮而不改变条目顺序', async () => {
+    writeFlow({ report: REPORT, sections: SECTIONS })
+    const wrapper = await mountView()
+    const firstSection = wrapper.findAll('[data-testid="suggestion-section"]')[0]!
+    const toggle = firstSection.get('button[aria-expanded]')
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(firstSection.findAll('[data-testid="suggestion-item"]')).toHaveLength(1)
+
+    await toggle.trigger('click')
+    expect(firstSection.get('button[aria-expanded]').attributes('aria-expanded')).toBe('false')
+    expect(firstSection.findAll('[data-testid="suggestion-item"]')).toHaveLength(0)
+
+    await firstSection.get('button[aria-expanded]').trigger('click')
+    expect(firstSection.findAll('[data-testid="suggestion-item"]')).toHaveLength(1)
+    expect(wrapper.findAll('[data-testid="upstream-id"]').map((item) => item.text())).toEqual(REPORT.change_list.map((item) => item.upstream_id))
+  })
+
   it('4. 某段为空：仍显示该段标题 + 「本段无建议」，段落框架不消失', async () => {
     writeFlow({ report: makeReport({ change_list: [NUMBER_CONFLICT] }), sections: SECTIONS })
     const wrapper = await mountView()

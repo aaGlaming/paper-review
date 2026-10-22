@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none" aria-hidden="true" width="200" height="160">
   <!-- 审查小图：对账单 -->
   <path d="M50 20 C90 18 130 19 162 21 C163 70 163 110 161 140 C130 142 90 141 48 140 C47 110 47 70 50 20 Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
   <path d="M62 48 L100 48" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

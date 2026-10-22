@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "评审主数据关系",
+    "locale": "zh-CN",
+    "subtitle": "七张核心表；实线表示数据库外键，虚线表示应用层共享标识。",
+    "output": "docs/diagrams/business-review-core.erd.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "views": [
+      { "id": "review-data", "label": "评审记录", "focus": ["review", "review_session", "review_dimension", "review_artifact", "agent_step"], "note": "会话、档位、产物和轨迹围绕 review_id 组织；并非每条关联都由外键约束。" },
+      { "id": "rubric-data", "label": "量规定义", "focus": ["rubric", "dimension"], "note": "rubric 的量规维度由 dimension.rubric_id 外键关联。" }
+    ]
+  },
+  "layout": { "mode": "grid", "origin": [40, 60], "gapX": 72, "gapY": 28, "entityW": 430, "headerH": 34, "rowH": 20 },
+  "entities": [
+    {
+      "id": "review", "label": "review", "tag": "评审记录", "row": 0, "col": 0,
+      "sources": [{ "path": "backend/app/report/models.py", "line": 33, "end_line": 45, "label": "Review" }],
+      "attributes": [
+        { "name": "review_id", "type": "VARCHAR(64) · 评审标识", "key": "pk" },
+        { "name": "user_id", "type": "VARCHAR(64) · 可空归属用户" },
+        { "name": "contest_id", "type": "VARCHAR(64) · 空值表示仅解析" },
+        { "name": "rubric_id", "type": "VARCHAR(64) · 量规标识" },
+        { "name": "rubric_version", "type": "INTEGER · 量规版本" },
+        { "name": "model_name", "type": "VARCHAR(128) · 模型标识" },
+        { "name": "created_at", "type": "DATETIME · 创建时间" },
+        { "name": "change_list", "type": "JSON · 可空变更摘要" }
+      ]
+    },
+    {
+      "id": "review_session", "label": "review_session", "tag": "评审记录", "row": 1, "col": 0,
+      "sources": [{ "path": "backend/app/report/models.py", "line": 61, "end_line": 81, "label": "ReviewSession" }],
+      "attributes": [
+        { "name": "review_id", "type": "VARCHAR(64) · 会话标识", "key": "pk" },
+        { "name": "user_id", "type": "VARCHAR(64) · 可空归属用户" },
+        { "name": "paper_text", "type": "MEDIUMTEXT (MySQL) · 规范化论文正文" },
+        { "name": "sections", "type": "JSON · 章节快照" },
+        { "name": "confirmed", "type": "BOOLEAN · 章节确认状态" },
+        { "name": "status", "type": "VARCHAR(16) · 会话状态" },
+        { "name": "contest_id", "type": "VARCHAR(64) · 空值表示仅解析" },
+        { "name": "updated_at", "type": "DATETIME · 更新时间" }
+      ]
+    },
+    {
+      "id": "review_dimension", "label": "review_dimension", "tag": "评审记录", "row": 2, "col": 0,
+      "sources": [{ "path": "backend/app/report/models.py", "line": 48, "end_line": 58, "label": "ReviewDimension" }],
+      "attributes": [
+        { "name": "review_id", "type": "VARCHAR(64) · 评审归属", "key": ["pk", "fk"], "references": "review.review_id" },
+        { "name": "dimension_code", "type": "VARCHAR(32) · 维度代码", "key": "pk" },
+        { "name": "band", "type": "VARCHAR(16) · 可空档位" },
+        { "name": "chunk_ids", "type": "JSON · 证据切片标识" },
+        { "name": "quote", "type": "TEXT · 可空原文引用" },
+        { "name": "status", "type": "VARCHAR(16) · 可空维度状态" }
+      ]
+    },
+    {
+      "id": "review_artifact", "label": "review_artifact", "tag": "评审记录", "row": 3, "col": 0,
+      "sources": [{ "path": "backend/app/report/artifact_models.py", "line": 18, "end_line": 38, "label": "ReviewArtifact" }],
+      "attributes": [
+        { "name": "artifact_id", "type": "INTEGER · 自增产物标识", "key": "pk" },
+        { "name": "review_id", "type": "VARCHAR(64) · 评审归属", "key": "fk", "references": "review.review_id" },
+        { "name": "ordinal", "type": "INTEGER · 评审内稳定顺序", "key": "uk" },
+        { "name": "artifact_type", "type": "VARCHAR(16) · claim/table/citation" },
+        { "name": "section_type", "type": "VARCHAR(32) · 可空章节类型" },
+        { "name": "char_start", "type": "INTEGER · 原文起点" },
+        { "name": "char_end", "type": "INTEGER · 原文终点" },
+        { "name": "claim_text", "type": "TEXT · 可空主张正文" },
+        { "name": "table_markdown", "type": "TEXT · 可空表格原文" },
+        { "name": "citation_text", "type": "TEXT · 可空引用原文" }
+      ]
+    },
+    {
+      "id": "agent_step", "label": "agent_step", "tag": "评审记录", "row": 4, "col": 0,
+      "sources": [{ "path": "backend/app/agent/trace.py", "line": 18, "end_line": 32, "label": "AgentStep" }],
+      "attributes": [
+        { "name": "step_id", "type": "VARCHAR(64) · 轨迹标识", "key": "pk" },
+        { "name": "review_id", "type": "VARCHAR(64) · 评审关联值" },
+        { "name": "idx", "type": "INTEGER · 评审内序号", "key": "uk" },
+        { "name": "node", "type": "VARCHAR(32) · 轨迹节点" },
+        { "name": "action", "type": "VARCHAR(64) · 操作名" },
+        { "name": "args_digest", "type": "VARCHAR(64) · 参数摘要哈希" },
+        { "name": "result_note", "type": "VARCHAR(256) · 结果摘要" },
+        { "name": "ok", "type": "BOOLEAN · 成功标记" },
+        { "name": "error_code", "type": "VARCHAR(32) · 可空错误码" },
+        { "name": "elapsed_ms", "type": "INTEGER · 操作耗时" },
+        { "name": "created_at", "type": "DATETIME · 记录时间" }
+      ]
+    },
+    {
+      "id": "rubric", "label": "rubric", "tag": "量规定义", "row": 0, "col": 1,
+      "sources": [{ "path": "backend/app/importing/models.py", "line": 58, "end_line": 69, "label": "Rubric" }],
+      "attributes": [
+        { "name": "rubric_id", "type": "VARCHAR(64) · 量规标识", "key": "pk" },
+        { "name": "contest_id", "type": "VARCHAR(64) · 赛题归属" },
+        { "name": "version", "type": "INTEGER · 量规版本" },
+        { "name": "status", "type": "VARCHAR(16) · draft/published" },
+        { "name": "source_template_id", "type": "VARCHAR(64) · 可空模板标识" }
+      ]
+    },
+    {
+      "id": "dimension", "label": "dimension", "tag": "量规定义", "row": 1, "col": 1,
+      "sources": [{ "path": "backend/app/importing/models.py", "line": 72, "end_line": 85, "label": "Dimension" }],
+      "attributes": [
+        { "name": "dimension_id", "type": "VARCHAR(64) · 维度标识", "key": "pk" },
+        { "name": "rubric_id", "type": "VARCHAR(64) · 所属量规", "key": "fk", "references": "rubric.rubric_id" },
+        { "name": "code", "type": "VARCHAR(32) · 维度代码", "key": "uk" },
+        { "name": "name", "type": "VARCHAR(128) · 维度名称" },
+        { "name": "weight", "type": "INTEGER · 权重" },
+        { "name": "evidence_prompts", "type": "JSON · 证据提示" },
+        { "name": "section_types", "type": "JSON · 适用章节类型" },
+        { "name": "bands", "type": "JSON · 档位定义" }
+      ]
+    }
+  ],
+  "relationships": [
+    { "id": "review_dimensions", "from": "review_dimension", "to": "review", "label": "数据库 FK · ON DELETE CASCADE", "fromCardinality": "many", "toCardinality": "one", "identifying": true },
+    { "id": "review_artifacts", "from": "review_artifact", "to": "review", "label": "数据库 FK · ON DELETE CASCADE", "fromCardinality": "many", "toCardinality": "one", "identifying": false },
+    { "id": "rubric_dimensions", "from": "dimension", "to": "rubric", "label": "数据库 FK · ON DELETE CASCADE", "fromCardinality": "many", "toCardinality": "one", "identifying": false },
+    { "id": "review_session_id", "from": "review_session", "to": "review", "label": "共享 review_id；无 FK", "fromCardinality": "one", "toCardinality": "one", "identifying": false, "variant": "dashed" },
+    { "id": "agent_step_review_id", "from": "agent_step", "to": "review", "label": "共享 review_id；无 FK", "fromCardinality": "many", "toCardinality": "one", "identifying": false, "variant": "dashed" },
+    { "id": "review_rubric_id", "from": "review", "to": "rubric", "label": "rubric_id 应用层关联；无 FK", "fromCardinality": "many", "toCardinality": "one", "identifying": false, "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "键与级联", "items": ["review_dimension、review_artifact 的 review_id 是数据库外键并级联删除。", "dimension.rubric_id 外键指向 rubric；同量规 code 有唯一约束。", "review_artifact 以 (review_id, ordinal) 唯一约束保证评审内顺序。"] },
+    { "dot": "amber", "title": "关联边界", "items": ["review_session.review_id 与 agent_step.review_id 未声明数据库外键，虚线只表示应用层关联。", "review.rubric_id 与 rubric 也只是共享标识；Review ORM 未声明外键。", "本图聚焦七张评审与量规核心表，不含赛题目录及其他支撑表。"] }
+  ]
+}

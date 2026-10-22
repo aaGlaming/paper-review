@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140" fill="none" aria-hidden="true" preserveAspectRatio="none">
-  <!-- 手绘卡片边框：四边各自微弯，转角不闭合得太整齐，像拿笔顺着卡片描了一圈 -->
-  <path d="M6 8 C80 5.5 160 6.5 234 7.5 C236 40 236 100 235 132 C162 134 80 133.5 7 132.5 C5.5 100 5 40 6 8 Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M9.5 12 C80 9.8 158 10.5 230.5 11.5 C232 42 232 98 231.5 128 C160 130 82 129.5 10.5 128.5 C9 98 8.5 44 9.5 12" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.45"/>
-</svg>

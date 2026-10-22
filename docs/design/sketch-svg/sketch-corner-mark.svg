@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" aria-hidden="true" width="200" height="200">
   <!-- 构图角标：直角规线 + 虚线延长 + 小圈，像图纸角落的定位标记。
        用法：背景层四角各贴一个（旋转区分方向），opacity 由 CSS 控制，颜色 currentColor。 -->
   <path d="M14 60 C14 38 15 24 16 14 C26 14.5 40 14 58 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>

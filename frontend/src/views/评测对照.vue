@@ -5,9 +5,11 @@ import { RouterLink, useRoute } from 'vue-router'
 import { getEvalPaper, getEvalSummary, listSamples } from '../api'
 import type { EvalPaperResult, EvalSummary, SampleItem } from '../api/types'
 import MetricCard from '../components/MetricCard.vue'
+import MotionNumber from '../components/MotionNumber.vue'
+import RequestActivity from '../components/RequestActivity.vue'
 import PageArt from '../components/PageArt.vue'
-import artUrl from '../assets/sketch/sketch-bg-eval.svg'
-import spotUrl from '../assets/sketch/sketch-spot-eval.svg'
+import artUrl from '../../../docs/design/sketch-svg/sketch-bg-eval.svg'
+import spotUrl from '../../../docs/design/sketch-svg/sketch-spot-eval.svg'
 import EvalSingleIllustration from '../components/illustrations/EvalSingleIllustration.vue'
 
 /**
@@ -138,15 +140,15 @@ async function load(): Promise<void> {
         <dl class="eval__meta">
           <div class="eval__meta-item">
             <dt>语料片数</dt>
-            <dd>{{ summary.corpus_papers }}</dd>
+            <dd><MotionNumber :value="summary.corpus_papers" /></dd>
           </div>
           <div class="eval__meta-item">
             <dt>可算样本</dt>
-            <dd>{{ summary.gradable_papers }}</dd>
+            <dd><MotionNumber :value="summary.gradable_papers" /></dd>
           </div>
           <div class="eval__meta-item">
             <dt>可算维度</dt>
-            <dd>{{ summary.gradable_dimensions }}</dd>
+            <dd><MotionNumber :value="summary.gradable_dimensions" /></dd>
           </div>
           <div class="eval__meta-item">
             <dt>来源</dt>
@@ -165,14 +167,16 @@ async function load(): Promise<void> {
 
       <section class="eval__metrics" data-testid="metrics">
         <p class="ed-kicker eval__metrics-kicker">三项指标 · 走势由本卡数据实时生成</p>
-        <MetricCard
-          v-for="(card, index) in metricCards"
-          :key="card.code"
-          :code="card.code"
-          :name="card.name"
-          :metric="card.metric"
-          :class="index === 1 ? 'eval__metric--shift' : null"
-        />
+        <TransitionGroup name="metric-card" tag="div" class="eval__metric-list">
+          <MetricCard
+            v-for="(card, index) in metricCards"
+            :key="card.code"
+            :code="card.code"
+            :name="card.name"
+            :metric="card.metric"
+            :class="index === 1 ? 'eval__metric--shift' : null"
+          />
+        </TransitionGroup>
       </section>
 
       <hr class="ed-rule" />
@@ -201,7 +205,7 @@ async function load(): Promise<void> {
     </template>
 
     <template v-else>
-      <p v-if="loading" class="eval__loading">正在读取评测汇总…</p>
+      <RequestActivity v-if="loading" :active="loading" label="正在读取评测汇总" />
     </template>
   </article>
 </template>
@@ -250,6 +254,10 @@ async function load(): Promise<void> {
   align-items: start;
   margin-top: var(--pr-space-6);
 }
+.eval__metric-list { display:grid; grid-column:1 / -1; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--pr-card-gap); align-items:start; }
+.metric-card-enter-active,.metric-card-leave-active { transition:opacity var(--pr-motion-list) var(--pr-motion-ease), transform var(--pr-motion-list) var(--pr-motion-ease); }
+.metric-card-enter-from,.metric-card-leave-to { opacity:0; transform:translateY(5px); }
+.metric-card-move { transition:transform var(--pr-motion-list) var(--pr-motion-ease); }
 
 .eval__metrics-kicker {
   grid-column: 1 / -1;
@@ -259,6 +267,7 @@ async function load(): Promise<void> {
 .eval__metric--shift {
   margin-top: var(--pr-space-6);
 }
+@media (prefers-reduced-motion:reduce) { .metric-card-enter-active,.metric-card-leave-active,.metric-card-move { transition:none; } }
 
 .eval__source {
   max-width: 720px;
@@ -292,6 +301,7 @@ async function load(): Promise<void> {
   .eval__metrics {
     grid-template-columns: 1fr;
   }
+  .eval__metric-list { grid-template-columns:1fr; }
 
   .eval__metric--shift {
     margin-top: 0;

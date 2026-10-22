@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" fill="none" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" fill="none" aria-hidden="true" width="420" height="320">
   <!-- 解析页背景：稿纸 + 左侧章节树连线 + 右下审阅圈注 -->
   <path d="M120 24 C190 20 260 21 322 25 C323 110 323 200 321 272 C260 276 190 275 118 272 C117 200 117 110 120 24 Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
   <path d="M124 28 C190 24.5 258 25.5 318 29" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/>

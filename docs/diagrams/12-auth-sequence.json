@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "登录与鉴权时序",
+    "locale": "zh-CN",
+    "subtitle": "登录签发 Bearer token；业务路由用 require_permission 校验权限。",
+    "output": "docs/diagrams/12-auth-sequence.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "浏览器",
+      "sublabel": "登录 / Authorization",
+      "sources": [
+        {
+          "path": "frontend/src/api/index.ts",
+          "line": 1,
+          "end_line": 150,
+          "label": "前端 API"
+        }
+      ]
+    },
+    {
+      "id": "authroute",
+      "type": "backend",
+      "label": "auth_routes",
+      "sublabel": "/auth/login",
+      "sources": [
+        {
+          "path": "backend/app/api/auth_routes.py",
+          "line": 48,
+          "end_line": 123,
+          "label": "认证接口"
+        }
+      ]
+    },
+    {
+      "id": "authsvc",
+      "type": "backend",
+      "label": "auth service",
+      "sublabel": "验证凭据 / JWT",
+      "sources": [
+        {
+          "path": "backend/app/api/auth_routes.py",
+          "line": 1,
+          "end_line": 1,
+          "label": "认证服务"
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "user / permission",
+      "sublabel": "角色与权限",
+      "sources": [
+        {
+          "path": "backend/app/auth/models.py",
+          "line": 30,
+          "end_line": 71,
+          "label": "账号模型"
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "require_permission",
+      "sublabel": "路由依赖守卫",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 1,
+          "end_line": 1,
+          "label": "权限依赖"
+        }
+      ]
+    },
+    {
+      "id": "endpoint",
+      "type": "backend",
+      "label": "Protected endpoint",
+      "sublabel": "review / dashboard",
+      "sources": [
+        {
+          "path": "backend/app/api/dashboard_routes.py",
+          "line": 1,
+          "end_line": 33,
+          "label": "权限端点"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "id": "login",
+      "from": "browser",
+      "to": "authroute",
+      "y": 160,
+      "label": "POST /api/auth/login",
+      "variant": "default"
+    },
+    {
+      "id": "verify",
+      "from": "authroute",
+      "to": "authsvc",
+      "y": 190,
+      "label": "credentials",
+      "variant": "default"
+    },
+    {
+      "id": "user-read",
+      "from": "authsvc",
+      "to": "db",
+      "y": 220,
+      "label": "查 user / status",
+      "variant": "default"
+    },
+    {
+      "id": "token",
+      "from": "authsvc",
+      "to": "browser",
+      "y": 250,
+      "label": "Bearer token",
+      "variant": "default"
+    },
+    {
+      "id": "request",
+      "from": "browser",
+      "to": "guard",
+      "y": 300,
+      "label": "Authorization: Bearer …",
+      "variant": "default"
+    },
+    {
+      "id": "permissions",
+      "from": "guard",
+      "to": "db",
+      "y": 330,
+      "label": "role / permission",
+      "variant": "default"
+    },
+    {
+      "id": "allow",
+      "from": "guard",
+      "to": "endpoint",
+      "y": 365,
+      "label": "通过 → handler",
+      "variant": "emphasis"
+    },
+    {
+      "id": "deny",
+      "from": "guard",
+      "to": "browser",
+      "y": 400,
+      "label": "缺权 → 403",
+      "variant": "return"
+    }
+  ]
+}

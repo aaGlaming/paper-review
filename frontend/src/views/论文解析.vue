@@ -4,8 +4,8 @@ import { RouterLink } from 'vue-router'
 
 import { ApiError, createReview, getContestRubric, listContests, listSamples, resumeReview } from '../api'
 import type { ContestSummary, PaperSection, PublishedRubricText, ReviewReport, SampleItem } from '../api/types'
-import artUrl from '../assets/sketch/sketch-bg-parse.svg'
-import spotUrl from '../assets/sketch/sketch-spot-parse.svg'
+import artUrl from '../../../docs/design/sketch-svg/sketch-bg-parse.svg'
+import spotUrl from '../../../docs/design/sketch-svg/sketch-spot-parse.svg'
 import PageArt from '../components/PageArt.vue'
 import SectionReader from '../components/SectionReader.vue'
 import SectionTree from '../components/SectionTree.vue'
@@ -407,21 +407,23 @@ onMounted(() => {
       :slow-hint-ms="SLOW_HINT_MS"
     />
 
-    <section v-if="sections.length > 0" class="workspace" data-testid="workspace">
-      <div class="workspace__tree">
-        <p class="ed-kicker">第二步 · 章节树（点一条看正文）</p>
-        <SectionTree
-          :sections="sections"
-          :selected-index="selectedIndex"
-          @select="selectSection"
-          @change-type="changeSectionType"
-        />
-      </div>
-      <div class="workspace__reader">
-        <p class="ed-kicker">正文原文</p>
-        <SectionReader :section="selectedSection" />
-      </div>
-    </section>
+    <Transition name="content">
+      <section v-if="sections.length > 0" key="workspace" class="workspace" data-testid="workspace">
+        <div class="workspace__tree">
+          <p class="ed-kicker">第二步 · 章节树（点一条看正文）</p>
+          <SectionTree
+            :sections="sections"
+            :selected-index="selectedIndex"
+            @select="selectSection"
+            @change-type="changeSectionType"
+          />
+        </div>
+        <div class="workspace__reader">
+          <p class="ed-kicker">正文原文</p>
+          <SectionReader :section="selectedSection" />
+        </div>
+      </section>
+    </Transition>
 
     <div v-if="sections.length > 0" class="actions">
       <button
@@ -436,7 +438,8 @@ onMounted(() => {
       <span class="actions__note">确认之后才会按量规逐维取证；这一页不显示档位。</span>
     </div>
 
-    <section v-if="report" class="confirmed" data-testid="confirmed-card">
+    <Transition name="content">
+    <section v-if="report" key="confirmed" class="confirmed" data-testid="confirmed-card">
       <h2 class="confirmed__title">已确认</h2>
       <dl class="confirmed__list">
         <dt class="confirmed__term">评审范围</dt>
@@ -457,6 +460,7 @@ onMounted(() => {
         <span class="confirmed__next-note">报告已就绪，后面三页会接着用它。</span>
       </p>
     </section>
+    </Transition>
   </article>
 </template>
 
@@ -464,6 +468,9 @@ onMounted(() => {
 .parse {
   max-width: var(--pr-measure);
 }
+.content-enter-active,.content-leave-active { transition:opacity var(--pr-motion-content) var(--pr-motion-ease), transform var(--pr-motion-content) var(--pr-motion-ease); }
+.content-enter-from,.content-leave-to { opacity:0; transform:translateY(4px); }
+@media (prefers-reduced-motion:reduce) { .content-enter-active,.content-leave-active { transition:none; } }
 
 /* 首页 hero：标题占 7、插画占 5 的非对称组合，插画是"等稿子进来"的叙事，
    不是装饰角标；窄屏时插画退到标题下方，不挤表单。 */

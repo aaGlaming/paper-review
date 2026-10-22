@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 14" fill="none" aria-hidden="true" preserveAspectRatio="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 14" fill="none" aria-hidden="true" preserveAspectRatio="none" width="200" height="14">
   <!-- 手绘下划线：中段下沉、收笔上扬；第二笔更淡更短，制造重复描画的感觉 -->
   <path d="M4 8 C42 4.5 80 10 118 6.5 C144 4 170 9 195 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   <path d="M18 10.5 C52 7.5 88 11.5 124 9 C150 7 172 10 186 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>

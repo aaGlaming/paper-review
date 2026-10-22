@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "运行时架构",
+    "locale": "zh-CN",
+    "subtitle": "当前代码口径：浏览器经 Vite 开发代理访问 FastAPI；FastAPI 读 MySQL、Chroma，并按配置访问模型服务。",
+    "output": "docs/diagrams/01-runtime-architecture.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "浏览器",
+      "sublabel": "Vue 3 页面",
+      "pos": [
+        20,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/main.ts",
+          "line": 1,
+          "end_line": 21,
+          "label": "前端入口"
+        }
+      ]
+    },
+    {
+      "id": "vite",
+      "type": "frontend",
+      "label": "Vite dev server",
+      "sublabel": "5173；/api 代理到 8077",
+      "pos": [
+        225,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/vite.config.ts",
+          "line": 1,
+          "end_line": 22,
+          "label": "开发代理"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "127.0.0.1:8077",
+      "pos": [
+        450,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/api/app.py",
+          "line": 24,
+          "end_line": 166,
+          "label": "应用工厂与路由"
+        }
+      ]
+    },
+    {
+      "id": "mysql",
+      "type": "database",
+      "label": "MySQL",
+      "sublabel": "业务表与评审会话",
+      "pos": [
+        710,
+        150
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/importing/db.py",
+          "line": 1,
+          "end_line": 75,
+          "label": "SQLAlchemy 引擎"
+        }
+      ]
+    },
+    {
+      "id": "chroma",
+      "type": "database",
+      "label": "Chroma",
+      "sublabel": "paper_review collection",
+      "pos": [
+        710,
+        390
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 1,
+          "end_line": 70,
+          "label": "向量集合"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "cloud",
+      "label": "LLM / embedding",
+      "sublabel": "配置可用时调用",
+      "pos": [
+        970,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/llm/client.py",
+          "line": 1,
+          "end_line": 100,
+          "label": "模型客户端"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "browser-vite",
+      "from": "browser",
+      "to": "vite",
+      "label": "页面资源",
+      "variant": "default"
+    },
+    {
+      "id": "vite-api",
+      "from": "vite",
+      "to": "api",
+      "label": "HTTP /api",
+      "variant": "default"
+    },
+    {
+      "id": "api-mysql",
+      "from": "api",
+      "to": "mysql",
+      "label": "SQL",
+      "variant": "default"
+    },
+    {
+      "id": "api-chroma",
+      "from": "api",
+      "to": "chroma",
+      "label": "向量召回",
+      "variant": "default"
+    },
+    {
+      "id": "api-llm",
+      "from": "api",
+      "to": "llm",
+      "label": "chat / embed / rerank",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "边界",
+      "items": [
+        "不是容器部署图；P24 骨架没有构建验证。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "探活",
+      "items": [
+        "/readyz 检查 MySQL 与 Chroma；模型配置按需。"
+      ]
+    }
+  ]
+}

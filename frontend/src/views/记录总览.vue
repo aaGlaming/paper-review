@@ -6,6 +6,7 @@ import { ApiError, listContests, listReviews } from '../api'
 import type { ContestSummary, ReviewListResponse } from '../api/types'
 import RecordsFilterBar from '../components/records/RecordsFilterBar.vue'
 import RecordDrawer from '../components/records/RecordDrawer.vue'
+import RequestActivity from '../components/RequestActivity.vue'
 import RecordsTable from '../components/records/RecordsTable.vue'
 
 const contests = shallowRef<ContestSummary[]>([])
@@ -37,7 +38,6 @@ async function loadContests(): Promise<void> {
 async function loadReviews(): Promise<void> {
   loading.value = true
   loadError.value = ''
-  response.value = null
   try {
     const params: Parameters<typeof listReviews>[0] = { page: page.value, pageSize }
     if (contestId.value) params.contestId = contestId.value
@@ -113,24 +113,26 @@ onMounted(() => {
       @toggle-owner="toggleOwner"
       @refresh="refresh"
     />
+    <RequestActivity :active="loading && Boolean(response)" label="正在更新评审记录" />
 
-    <RecordsTable
-      v-if="response"
-      :reviews="response.reviews"
-      :scope="response.scope"
-      :total="response.total"
-      :page="page"
-      :page-size="pageSize"
-      @page-change="changePage"
-      @row-click="selectedId = $event"
-    >
-      <template #contest="{ row }">
-        {{ contestLabel(row.contest_id) }}
-      </template>
-    </RecordsTable>
-    <p v-else-if="loading && !loadError" class="records__loading" aria-live="polite">
-      正在读取评审记录…
-    </p>
+    <Transition name="content" mode="out-in">
+      <RecordsTable
+        v-if="response"
+        :key="`${page}-${contestId}-${ownedOnly}`"
+        :reviews="response.reviews"
+        :scope="response.scope"
+        :total="response.total"
+        :page="page"
+        :page-size="pageSize"
+        @page-change="changePage"
+        @row-click="selectedId = $event"
+      >
+        <template #contest="{ row }">
+          {{ contestLabel(row.contest_id) }}
+        </template>
+      </RecordsTable>
+    </Transition>
+    <RequestActivity v-if="!response && loading && !loadError" label="正在读取评审记录" :active="loading" />
     <RecordDrawer :review-id="selectedId" @close="closeDrawer" />
   </main>
 </template>
@@ -157,4 +159,7 @@ onMounted(() => {
 .records__error {
   color: var(--pr-range);
 }
+.content-enter-active,.content-leave-active { transition: opacity var(--pr-motion-content) var(--pr-motion-ease), transform var(--pr-motion-content) var(--pr-motion-ease); }
+.content-enter-from,.content-leave-to { opacity: 0; transform: translateY(3px); }
+@media (prefers-reduced-motion: reduce) { .content-enter-active,.content-leave-active { transition: none; } }
 </style>

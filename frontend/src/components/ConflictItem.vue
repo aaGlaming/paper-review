@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import arrowDownUrl from '../assets/sketch/sketch-arrow-down.svg'
-import circleUrl from '../assets/sketch/sketch-circle.svg'
+import arrowDownUrl from '../../../docs/design/sketch-svg/sketch-arrow-down.svg'
+import circleUrl from '../../../docs/design/sketch-svg/sketch-circle.svg'
 import type { ChangeEvidence, ChangeListItem } from '../api/types'
 import { isLocatable } from '../composables/useOffsetLocator'
 

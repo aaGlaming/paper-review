@@ -2,7 +2,7 @@
 import { computed, nextTick, ref } from 'vue'
 
 import type { PaperSection, ReviewArtifact } from '../api/types'
-import quoteUrl from '../assets/sketch/sketch-quote.svg'
+import quoteUrl from '../../../docs/design/sketch-svg/sketch-quote.svg'
 import { locateSectionArtifact } from '../composables/useOffsetLocator'
 import ArtifactPanel from './ArtifactPanel.vue'
 

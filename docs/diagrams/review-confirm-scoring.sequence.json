@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "确认章节到评审报告的调用时序",
+    "locale": "zh-CN",
+    "subtitle": "P25 三次完整模型路径为 26.8–34.2 s；阶段间没有独立计时数据。",
+    "output": "docs/diagrams/review-confirm-scoring.sequence.html",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "participants": [
+    { "id": "teacher", "type": "external", "label": "教师", "sublabel": "点击确认章节" },
+    { "id": "frontend", "type": "frontend", "label": "论文解析页", "sublabel": "等待 resume 响应", "sources": [{ "path": "frontend/src/views/论文解析.vue", "line": 250, "end_line": 275, "label": "确认并等待评分结果" }] },
+    { "id": "api", "type": "backend", "label": "FastAPI", "sublabel": "POST /reviews/{id}/resume", "sources": [{ "path": "backend/app/api/routes.py", "line": 594, "end_line": 749, "label": "resume_review_endpoint" }] },
+    { "id": "mysql", "type": "database", "label": "MySQL", "sublabel": "会话 / 量规 / 评审结果" },
+    { "id": "agent", "type": "backend", "label": "Agent Runtime", "sublabel": "检索、工具循环、档位提交", "sources": [{ "path": "backend/app/agent/graph.py", "line": 11, "end_line": 22, "label": "Agent graph" }] },
+    { "id": "retriever", "type": "backend", "label": "检索与 Chroma", "sublabel": "建立索引并检索证据父块" },
+    { "id": "llm", "type": "cloud", "label": "LLM 服务", "sublabel": "tool calling / chat", "sources": [{ "path": "backend/app/llm/client.py", "line": 209, "end_line": 233, "label": "chat_with_tools" }] }
+  ],
+  "segments": [
+    { "from": 160, "to": 300, "label": "同步请求进入" },
+    { "from": 320, "to": 700, "label": "加载、检索与 Agent 循环" },
+    { "from": 720, "to": 900, "label": "保存与响应" }
+  ],
+  "messages": [
+    { "id": "confirm", "from": "teacher", "to": "frontend", "y": 170, "label": "确认章节", "variant": "emphasis" },
+    { "id": "resume-request", "from": "frontend", "to": "api", "y": 205, "label": "POST /api/reviews/{id}/resume", "variant": "emphasis" },
+    { "id": "load-session", "from": "api", "to": "mysql", "y": 245, "label": "读取 review_session 与 contest_id" },
+    { "id": "load-rubric", "from": "api", "to": "mysql", "y": 280, "label": "校验 published rubric 与 dimensions" },
+    { "id": "build-index", "from": "api", "to": "retriever", "y": 325, "label": "准备论文索引与父块" },
+    { "id": "embed-retrieve", "from": "retriever", "to": "llm", "y": 365, "label": "embedding / rerank 请求（若配置）", "variant": "dashed" },
+    { "id": "index-ready", "from": "retriever", "to": "api", "y": 400, "label": "检索器与父块内容" , "variant": "return"},
+    { "id": "invoke-agent", "from": "api", "to": "agent", "y": 440, "label": "同步调用 resume_review", "variant": "emphasis" },
+    { "id": "agent-chat", "from": "agent", "to": "llm", "y": 485, "label": "模型决策 / tool calls × 7（P25 样本）", "variant": "emphasis" },
+    { "id": "call-tools", "from": "agent", "to": "retriever", "y": 530, "label": "search_evidence / read_parent / submit_dimension" },
+    { "id": "tool-result", "from": "retriever", "to": "agent", "y": 570, "label": "证据与工具结果", "variant": "return" },
+    { "id": "agent-result", "from": "agent", "to": "api", "y": 620, "label": "完成维度结果", "variant": "return" },
+    { "id": "save-results", "from": "api", "to": "mysql", "y": 665, "label": "保存 review / review_dimension / session" },
+    { "id": "saved", "from": "mysql", "to": "api", "y": 705, "label": "已保存", "variant": "return" },
+    { "id": "json-response", "from": "api", "to": "frontend", "y": 750, "label": "200：档位、版本、报告", "variant": "return" },
+    { "id": "render-report", "from": "frontend", "to": "teacher", "y": 790, "label": "显示结果卡", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "frontend", "from": 195, "to": 765, "type": "frontend" },
+    { "participant": "api", "from": 205, "to": 740, "type": "backend" },
+    { "participant": "agent", "from": 435, "to": 625, "type": "backend" },
+    { "participant": "retriever", "from": 320, "to": 575, "type": "backend" },
+    { "participant": "llm", "from": 360, "to": 500, "type": "cloud" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "慢在哪里可见", "items": ["resume 是同步 HTTP 请求；前端要等整个调用返回后才显示报告。", "P25 三次完整模型路径分别为 26,817 ms、31,734 ms、34,201 ms；每次日志记录 7 次 chat。", "P25 没有 parse、retrieve、score 分阶段 wall-time，因此图中不分配阶段耗时。"] },
+    { "dot": "amber", "title": "测量边界", "items": ["P25 的接口 dimensions.chat_calls 合计为 0；7 次 chat 来自 logs/llm 的 op=chat 记录。", "embedding 与 rerank 是额外 LLM 日志请求，不计入 chat 次数。", "本时序解释调用归属，不声称各阶段时长。"] }
+  ]
+}

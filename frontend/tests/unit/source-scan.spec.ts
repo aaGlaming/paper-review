@@ -85,18 +85,33 @@ describe('源码扫描', () => {
     expect(Math.max(ink.r, ink.g, ink.b)).toBeLessThan(140)
   })
 
-  it('没有逐卡片入场动效，动效令牌只留章节确认这一处', () => {
-    const vueFiles = walk(SRC).filter((file) => file.endsWith('.vue'))
+  it('动态反馈只绑定真实状态，动效集中且尊重 reduced-motion', () => {
+    // 登录开场、真实请求活动提示、数据图表和列表状态各有明确触发源；不允许泛化到每张卡片。
+    const vueFiles = walk(SRC).filter(
+      (file) => file.endsWith('.vue') && path.basename(file) !== 'PostLoginIntro.vue',
+    )
     expect(vueFiles.length).toBeGreaterThanOrEqual(6)
 
     for (const file of vueFiles) {
       const text = readFileSync(file, 'utf8')
-      expect(text.includes('fade'), `${file} 出现入场动效`).toBe(false)
-      expect(/animation\s*:/.test(text), `${file} 出现 animation`).toBe(false)
-      expect(text.includes('hover') && text.includes('translate'), `${file} 出现 hover 位移`).toBe(false)
+      expect(/[^{}]*:hover[^{}]*\{[^}]*transform\s*:/s.test(text), `${file} 出现 hover 位移`).toBe(false)
     }
 
     const tokens = readFileSync(TOKENS_FILE, 'utf8')
     expect(tokens).toContain('--pr-motion-confirm')
+    expect(tokens).toContain('--pr-motion-page')
+    expect(tokens).toContain('--pr-motion-list')
+
+    for (const relative of ['components/RequestActivity.vue', 'components/MetricCard.vue', 'views/数据大屏.vue']) {
+      const text = readFileSync(path.join(SRC, relative), 'utf8')
+      expect(/animation\s*:/.test(text), `${relative} 应有受控动态反馈`).toBe(true)
+      expect(text).toContain('prefers-reduced-motion')
+    }
+
+    const intro = readFileSync(path.join(SRC, 'components', 'PostLoginIntro.vue'), 'utf8')
+    const svg = readFileSync(path.resolve(FRONTEND_ROOT, '..', 'docs', 'design', 'sketch-svg', 'sketch-review-desk-intro.svg'), 'utf8')
+    expect(intro).toContain('prefers-reduced-motion: reduce')
+    expect(svg).toContain('prefers-reduced-motion: reduce')
+    expect(svg).toContain('animation: settle')
   })
 })

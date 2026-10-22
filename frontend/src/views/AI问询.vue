@@ -14,6 +14,7 @@ import ChatAnalyticsBar from '../components/chat/ChatAnalyticsBar.vue'
 import ChatComposer from '../components/chat/ChatComposer.vue'
 import ChatMessageItemView from '../components/chat/ChatMessageItem.vue'
 import ChatSessionList from '../components/chat/ChatSessionList.vue'
+import RequestActivity from '../components/RequestActivity.vue'
 
 const examples = [
   '某条记录的假设维为什么判证据不足？',
@@ -139,14 +140,15 @@ onMounted(async () => {
     <div class="chat-layout">
       <ChatSessionList :sessions="sessions" :active-id="activeId" :loading="sessionsLoading" @create="createSession" @select="selectSession" @remove="removeSession" />
       <section class="chat-main" aria-label="问询消息">
-        <div class="chat-main__messages" aria-live="polite">
-          <div v-if="activeId && !messages.length" class="chat-empty">
+        <TransitionGroup name="message" tag="div" class="chat-main__messages" aria-live="polite">
+          <div v-if="activeId && !messages.length" key="chat-empty" class="chat-empty">
             <p>选择一个问题开始：</p>
             <el-button v-for="example in examples" :key="example" text @click="question = example">{{ example }}</el-button>
           </div>
           <ChatMessageItemView v-for="message in messages" :key="message.message_id" :message="message" :rejected="rejectedByMessage[message.message_id]" @reference="openRecord" />
-          <p v-if="!activeId" class="muted">新建会话后开始问询</p>
-        </div>
+          <p v-if="!activeId" key="no-session" class="muted">新建会话后开始问询</p>
+          <RequestActivity key="assistant-pending" :active="busy" label="正在整理回答" />
+        </TransitionGroup>
         <ChatAnalyticsBar :result="analyticsResult" :loading="analyticsLoading" :error="analyticsError" @run="run" @clear="analyticsResult = null" />
         <ChatComposer v-model:question="question" :contests="contests" :contest-id="contestId" :busy="busy" @update:contest-id="contestId = $event" @send="send" />
         <p v-if="!hasContest" class="muted">请先选择赛题范围</p>
@@ -162,7 +164,11 @@ onMounted(async () => {
 .chat-layout { display:grid; grid-template-columns:280px minmax(0,1fr); gap:1.2rem; min-height:65vh }
 .chat-main { display:flex; flex-direction:column; min-width:0; border-left:1px solid var(--pr-rule); padding-left:1.2rem }
 .chat-main__messages { flex:1; min-height:240px; max-height:50vh; overflow:auto; padding:.5rem }
+.message-enter-active,.message-leave-active { transition: opacity var(--pr-motion-list) var(--pr-motion-ease), transform var(--pr-motion-list) var(--pr-motion-ease) }
+.message-enter-from,.message-leave-to { opacity:0; transform:translateY(5px) }
+.message-move { transition:transform var(--pr-motion-list) var(--pr-motion-ease) }
 .chat-empty { display:flex; flex-direction:column; align-items:flex-start; gap:.2rem; margin:2rem auto; max-width:36rem }
 .chat-page__error { color:var(--pr-range) }
 @media(max-width:900px) { .chat-layout { grid-template-columns:1fr; min-height:0 }.chat-main { border-left:0; border-top:1px solid var(--pr-rule); padding:1rem 0 0 }.chat-main__messages { max-height:40vh } }
+@media(prefers-reduced-motion:reduce) { .message-enter-active,.message-leave-active,.message-move { transition:none } }
 </style>

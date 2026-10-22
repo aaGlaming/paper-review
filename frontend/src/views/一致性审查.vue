@@ -5,8 +5,8 @@ import { RouterLink } from 'vue-router'
 import type { ChangeEvidence, ChangeListItem, PaperSection, ReviewReport } from '../api/types'
 import ConflictItem from '../components/ConflictItem.vue'
 import PageArt from '../components/PageArt.vue'
-import artUrl from '../assets/sketch/sketch-bg-consistency.svg'
-import spotUrl from '../assets/sketch/sketch-spot-consistency.svg'
+import artUrl from '../../../docs/design/sketch-svg/sketch-bg-consistency.svg'
+import spotUrl from '../../../docs/design/sketch-svg/sketch-spot-consistency.svg'
 import ConsistencyEmptyIllustration from '../components/illustrations/ConsistencyEmptyIllustration.vue'
 import StageTracker from '../components/StageTracker.vue'
 import { concatSections, locateEvidence, type EvidenceLocation } from '../composables/useOffsetLocator'
@@ -101,14 +101,16 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
       </header>
 
       <section v-if="conflicts.length > 0" class="consistency__list" data-testid="conflict-list">
-        <ConflictItem
-          v-for="(item, index) in conflicts"
-          :key="item.upstream_id || index"
-          :item="item"
-          :located-key="located?.key ?? null"
-          :class="index % 2 === 1 ? 'consistency__item--shift' : null"
-          @locate="handleLocate"
-        />
+        <TransitionGroup name="proof-list" tag="div" class="consistency__items">
+          <ConflictItem
+            v-for="(item, index) in conflicts"
+            :key="item.upstream_id || index"
+            :item="item"
+            :located-key="located?.key ?? null"
+            :class="index % 2 === 1 ? 'consistency__item--shift' : null"
+            @locate="handleLocate"
+          />
+        </TransitionGroup>
       </section>
       <p v-else class="consistency__none">本次审查没有冲突条目。</p>
 
@@ -171,6 +173,11 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   gap: var(--pr-card-gap);
   max-width: 880px;
 }
+.consistency__items { display:grid; grid-template-columns:inherit; gap:inherit; }
+.proof-list-enter-active,.proof-list-leave-active { transition:opacity var(--pr-motion-list) var(--pr-motion-ease), transform var(--pr-motion-list) var(--pr-motion-ease); }
+.proof-list-enter-from,.proof-list-leave-to { opacity:0; transform:translateY(5px); }
+.proof-list-move { transition:transform var(--pr-motion-list) var(--pr-motion-ease); }
+@media (prefers-reduced-motion:reduce) { .proof-list-enter-active,.proof-list-leave-active,.proof-list-move { transition:none; } }
 
 /* 偶数条轻微右错：长串冲突条的阅读节奏不断，又不破坏对齐。 */
 .consistency__item--shift {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PaperSection } from '../api/types'
 import { SECTION_TYPE_OPTIONS } from '../composables/reviewVocabulary'
-import docTreeUrl from '../assets/sketch/sketch-doc-tree.svg'
+import docTreeUrl from '../../../docs/design/sketch-svg/sketch-doc-tree.svg'
 
 /**
  * 章节树（左栏）。层级用**缩进**表达：`level` 映射成 `--pr-depth`，缩进量在 CSS 里算。

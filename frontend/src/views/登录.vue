@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import { ApiError } from '../api'
 import { useAuth } from '../composables/useAuth'
 import { resolveRedirect } from '../router'
+import PostLoginIntro from '../components/PostLoginIntro.vue'
 
 /**
  * 登录页。居中卡片 + 背景图（见 P4 压图脚本）。
@@ -25,6 +26,16 @@ const username = ref('')
 const password = ref('')
 const busy = ref(false)
 const error = ref('')
+const showIntro = ref(false)
+const pendingTarget = ref('/parse')
+
+async function enterSystem(): Promise<void> {
+  if (!showIntro.value) return
+  showIntro.value = false
+  await router.replace(pendingTarget.value)
+  await nextTick()
+  document.querySelector<HTMLElement>('.shell__body')?.focus({ preventScroll: true })
+}
 
 async function submit(): Promise<void> {
   if (busy.value) {
@@ -34,7 +45,8 @@ async function submit(): Promise<void> {
   error.value = ''
   try {
     await login(username.value.trim(), password.value)
-    await router.replace(resolveRedirect(route.query.redirect))
+    pendingTarget.value = resolveRedirect(route.query.redirect)
+    showIntro.value = true
   } catch (reason) {
     error.value = reason instanceof ApiError ? reason.message : '登录失败，请稍后重试'
   } finally {
@@ -70,6 +82,7 @@ async function submit(): Promise<void> {
         <RouterLink to="/register">去注册</RouterLink>
       </p>
     </form>
+    <PostLoginIntro v-if="showIntro" @continue="enterSystem" />
   </div>
 </template>
 
@@ -78,7 +91,8 @@ async function submit(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 70vh;
+  width: 100%;
+  min-height: 100vh;
   background-size: cover;
   background-position: center;
 }
@@ -91,7 +105,8 @@ async function submit(): Promise<void> {
   padding: var(--pr-space-6);
   background: var(--pr-surface);
   border: 1px solid var(--pr-rule);
-  border-radius: var(--pr-radius-card, 8px);
+  border-radius: var(--pr-radius);
+  box-shadow: var(--pr-shadow-sheet);
 }
 
 .login__title {

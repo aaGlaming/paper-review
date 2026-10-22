@@ -72,4 +72,28 @@ describe('useAuth', () => {
     expect(localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull()
     expect(useAuth().user.value).toBeNull()
   })
+
+  it('restore 遇网络错误保留待验证状态，服务恢复后可重新加载权限', async () => {
+    localStorage.setItem(AUTH_TOKEN_KEY, 'temporary-token')
+    setAuthToken('temporary-token')
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(jsonResponse({
+        user_id: 'teacher-1',
+        username: 'teacher',
+        role: 'teacher',
+        permissions: ['review:read:all', 'chat:use', 'dashboard:view'],
+      }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(useAuth().restore()).rejects.toThrow('Failed to fetch')
+    expect(useAuth().ready.value).toBe(false)
+    expect(useAuth().user.value).toBeNull()
+    expect(localStorage.getItem(AUTH_TOKEN_KEY)).toBe('temporary-token')
+
+    await useAuth().restore()
+    expect(useAuth().ready.value).toBe(true)
+    expect(useAuth().user.value?.role).toBe('teacher')
+    expect(useAuth().user.value?.permissions).toContain('dashboard:view')
+  })
 })

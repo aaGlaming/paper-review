@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
 import { ApiError, authRegister } from '../api'
 import { useAuth } from '../composables/useAuth'
+import PostLoginIntro from '../components/PostLoginIntro.vue'
 
 /**
  * 注册页。成功 201 后自动登录一次再跳 `/parse`（少一次输密码）。
@@ -23,6 +24,15 @@ const confirm = ref('')
 const displayName = ref('')
 const busy = ref(false)
 const error = ref('')
+const showIntro = ref(false)
+
+async function enterSystem(): Promise<void> {
+  if (!showIntro.value) return
+  showIntro.value = false
+  await router.replace('/parse')
+  await nextTick()
+  document.querySelector<HTMLElement>('.shell__body')?.focus({ preventScroll: true })
+}
 
 const mismatch = computed(() => confirm.value !== '' && password.value !== confirm.value)
 const badLength = computed(
@@ -57,7 +67,7 @@ async function submit(): Promise<void> {
       display_name: displayName.value.trim(),
     })
     await login(username.value.trim(), password.value)
-    await router.replace('/parse')
+    showIntro.value = true
   } catch (reason) {
     if (reason instanceof ApiError && reason.status === 409) {
       error.value = '该注册信息不可用'
@@ -71,49 +81,52 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <form class="register" @submit.prevent="submit">
-    <h1 class="register__title">注册</h1>
-    <label class="register__field">
-      用户名
-      <input v-model="username" name="username" autocomplete="username" required />
-    </label>
-    <label class="register__field">
-      邮箱
-      <input v-model="email" name="email" type="email" autocomplete="email" required />
-    </label>
-    <label class="register__field">
-      密码
-      <input
-        v-model="password"
-        name="password"
-        type="password"
-        autocomplete="new-password"
-        required
-      />
-    </label>
-    <label class="register__field">
-      确认密码
-      <input
-        v-model="confirm"
-        name="confirm"
-        type="password"
-        autocomplete="new-password"
-        required
-      />
-    </label>
-    <label class="register__field">
-      显示名（可选）
-      <input v-model="displayName" name="display_name" autocomplete="nickname" />
-    </label>
-    <p v-if="error" class="register__error" role="alert">{{ error }}</p>
-    <button class="register__submit" type="submit" :disabled="!canSubmit">
-      {{ busy ? '注册中…' : '注册并登录' }}
-    </button>
-    <p class="register__hint">
-      已有账号？
-      <RouterLink to="/login">去登录</RouterLink>
-    </p>
-  </form>
+  <div class="register-scene">
+    <form class="register" @submit.prevent="submit">
+      <h1 class="register__title">注册</h1>
+      <label class="register__field">
+        用户名
+        <input v-model="username" name="username" autocomplete="username" required />
+      </label>
+      <label class="register__field">
+        邮箱
+        <input v-model="email" name="email" type="email" autocomplete="email" required />
+      </label>
+      <label class="register__field">
+        密码
+        <input
+          v-model="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
+      </label>
+      <label class="register__field">
+        确认密码
+        <input
+          v-model="confirm"
+          name="confirm"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
+      </label>
+      <label class="register__field">
+        显示名（可选）
+        <input v-model="displayName" name="display_name" autocomplete="nickname" />
+      </label>
+      <p v-if="error" class="register__error" role="alert">{{ error }}</p>
+      <button class="register__submit" type="submit" :disabled="!canSubmit">
+        {{ busy ? '注册中…' : '注册并登录' }}
+      </button>
+      <p class="register__hint">
+        已有账号？
+        <RouterLink to="/login">去登录</RouterLink>
+      </p>
+    </form>
+    <PostLoginIntro v-if="showIntro" @continue="enterSystem" />
+  </div>
 </template>
 
 <style scoped>
@@ -124,6 +137,18 @@ async function submit(): Promise<void> {
   max-width: 24rem;
   margin: 0 auto;
   padding: var(--pr-space-6);
+  border: 1px solid var(--pr-rule);
+  border-radius: var(--pr-radius);
+  background: var(--pr-surface);
+  box-shadow: var(--pr-shadow-sheet);
+}
+
+.register-scene {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: var(--pr-space-4);
 }
 
 .register__title {

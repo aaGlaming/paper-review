@@ -2,17 +2,25 @@
 // 白天显示太阳、黑夜显示月亮；偏好落 localStorage，刷新后仍在。
 
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import ThemeToggle from '../../src/components/ThemeToggle.vue'
 import { resetThemeStateForTest, THEME_STORAGE_KEY } from '../../src/composables/useTheme'
 import { createAppRouter } from '../../src/router'
 import App from '../../src/App.vue'
+import { resetAuthStateForTest, useAuth } from '../../src/composables/useAuth'
 
 beforeEach(() => {
   localStorage.clear()
+  resetAuthStateForTest()
   document.documentElement.removeAttribute('data-theme')
   resetThemeStateForTest()
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  resetAuthStateForTest()
+  localStorage.clear()
 })
 
 describe('昼夜主题切换', () => {
@@ -60,6 +68,18 @@ describe('昼夜主题切换', () => {
   })
 
   it('5. 导航栏右端挂着切换按钮，五个入口一个不少', async () => {
+    vi.stubGlobal(
+      'fetch',
+      async (input: RequestInfo | URL) => {
+        if (String(input).includes('/api/auth/login')) {
+          return new Response(JSON.stringify({
+            token: 'theme-shell-token', user_id: 'u-theme', username: 'theme_student', role: 'student', permissions: [],
+          }), { status: 200 })
+        }
+        return new Response(JSON.stringify({ contests: [], samples: [] }), { status: 200 })
+      },
+    )
+    await useAuth().login('theme_student', 'password')
     const router = createAppRouter()
     await router.push('/parse')
     await router.isReady()

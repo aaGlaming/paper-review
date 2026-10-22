@@ -2,12 +2,12 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import arrowRightUrl from '../assets/sketch/sketch-arrow-right.svg'
+import arrowRightUrl from '../../../docs/design/sketch-svg/sketch-arrow-right.svg'
 import type { ChangeEvidence, PaperSection, ReviewReport } from '../api/types'
 import StageTracker from '../components/StageTracker.vue'
 import PageArt from '../components/PageArt.vue'
-import artUrl from '../assets/sketch/sketch-bg-suggestions.svg'
-import spotUrl from '../assets/sketch/sketch-spot-suggestions.svg'
+import artUrl from '../../../docs/design/sketch-svg/sketch-bg-suggestions.svg'
+import spotUrl from '../../../docs/design/sketch-svg/sketch-spot-suggestions.svg'
 import SuggestionItem from '../components/SuggestionItem.vue'
 import SuggestionsEmptyIllustration from '../components/illustrations/SuggestionsEmptyIllustration.vue'
 import { concatSections, locateEvidence, type EvidenceLocation } from '../composables/useOffsetLocator'
@@ -28,6 +28,7 @@ const SECTION_ORDER = ['题目约束与数字冲突', '证据不足', '表述'] 
 
 const report = ref<ReviewReport | null>(null)
 const sections = ref<PaperSection[]>([])
+const collapsedSections = ref<string[]>([])
 
 const body = computed(() => concatSections(sections.value))
 
@@ -67,6 +68,16 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   located.value = { key: payload.key, ...result }
   await nextTick()
   locatedEl.value?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+}
+
+function isExpanded(section: string): boolean {
+  return !collapsedSections.value.includes(section)
+}
+
+function toggleSection(section: string): void {
+  collapsedSections.value = isExpanded(section)
+    ? [...collapsedSections.value, section]
+    : collapsedSections.value.filter((item) => item !== section)
 }
 </script>
 
@@ -113,24 +124,37 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
         :data-section="group.section"
       >
         <h2 class="suggestions__section-title">
-          <span class="suggestions__section-num" aria-hidden="true">
-            {{ String(index + 1).padStart(2, '0') }}
-          </span>
-          <span class="suggestions__section-name">{{ group.section }}</span>
-          <span class="suggestions__section-count" aria-hidden="true">
-            {{ group.items.length > 0 ? `${group.items.length} 条` : '空' }}
-          </span>
+          <button
+            class="suggestions__section-toggle"
+            type="button"
+            :aria-expanded="isExpanded(group.section)"
+            :aria-label="`${isExpanded(group.section) ? '收起' : '展开'}${group.section}`"
+            @click="toggleSection(group.section)"
+          >
+            <span class="suggestions__section-num" aria-hidden="true">
+              {{ String(index + 1).padStart(2, '0') }}
+            </span>
+            <span class="suggestions__section-name">{{ group.section }}</span>
+            <span class="suggestions__section-count" aria-hidden="true">
+              {{ group.items.length > 0 ? `${group.items.length} 条` : '空' }}
+            </span>
+            <span class="suggestions__section-chevron" :class="{ 'is-collapsed': !isExpanded(group.section) }" aria-hidden="true">⌄</span>
+          </button>
         </h2>
-        <div v-if="group.items.length > 0" class="suggestions__list">
-          <SuggestionItem
-            v-for="item in group.items"
-            :key="item.upstream_id"
-            :item="item"
-            :located-key="located?.key ?? null"
-            @locate="handleLocate"
-          />
-        </div>
-        <p v-else class="suggestions__empty-section" data-testid="section-empty">本段无建议</p>
+        <Transition name="suggestion-section">
+          <div v-if="isExpanded(group.section)" key="section-content" class="suggestions__section-body">
+            <TransitionGroup v-if="group.items.length > 0" name="suggestion-item" tag="div" class="suggestions__list">
+              <SuggestionItem
+                v-for="item in group.items"
+                :key="item.upstream_id"
+                :item="item"
+                :located-key="located?.key ?? null"
+                @locate="handleLocate"
+              />
+            </TransitionGroup>
+            <p v-else class="suggestions__empty-section" data-testid="section-empty">本段无建议</p>
+          </div>
+        </Transition>
         <img
           v-if="index < grouped.length - 1"
           class="suggestions__section-arrow"
@@ -202,15 +226,31 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
 }
 
 .suggestions__section-title {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pr-space-3);
   margin: 0 0 var(--pr-space-3);
-  padding-bottom: var(--pr-space-2);
-  border-bottom: 2px solid var(--pr-ink);
   font-size: var(--pr-text-title);
   font-weight: 700;
 }
+
+.suggestions__section-toggle {
+  display:flex;
+  align-items:baseline;
+  gap:var(--pr-space-3);
+  width:100%;
+  padding:0 0 var(--pr-space-2);
+  border:0;
+  border-bottom:2px solid var(--pr-ink);
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+}
+.suggestions__section-toggle:focus-visible { outline:2px solid var(--pr-primary); outline-offset:3px; }
+.suggestions__section-chevron { margin-left:auto; transition:transform var(--pr-motion-interaction) var(--pr-motion-ease); }
+.suggestions__section-chevron.is-collapsed { transform:rotate(-90deg); }
+.suggestion-section-enter-active,.suggestion-section-leave-active { transition:opacity var(--pr-motion-content) var(--pr-motion-ease), transform var(--pr-motion-content) var(--pr-motion-ease); }
+.suggestion-section-enter-from,.suggestion-section-leave-to { opacity:0; transform:translateY(3px); }
+.suggestions__section-body { overflow:hidden; }
 
 .suggestions__section-num {
   font-family: var(--pr-font-data);
@@ -232,6 +272,10 @@ async function handleLocate(payload: { key: string; evidence: ChangeEvidence }):
   flex-direction: column;
   gap: var(--pr-card-gap);
 }
+.suggestion-item-enter-active,.suggestion-item-leave-active { transition:opacity var(--pr-motion-list) var(--pr-motion-ease), transform var(--pr-motion-list) var(--pr-motion-ease); }
+.suggestion-item-enter-from,.suggestion-item-leave-to { opacity:0; transform:translateY(4px); }
+.suggestion-item-move { transition:transform var(--pr-motion-list) var(--pr-motion-ease); }
+@media (prefers-reduced-motion:reduce) { .suggestion-item-enter-active,.suggestion-item-leave-active,.suggestion-item-move,.suggestion-section-enter-active,.suggestion-section-leave-active,.suggestions__section-chevron { transition:none; } }
 
 .suggestions__empty-section {
   margin: 0;

@@ -1,0 +1,136 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "评审单生命周期",
+    "locale": "zh-CN",
+    "subtitle": "状态词表含五项；实际主路径有四个阶段；“失败”保留为词表成员，不误画为普遍成功流程的写入终态。",
+    "output": "docs/diagrams/17-review-lifecycle.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "mainPath": [
+    "draft",
+    "pending",
+    "scoring",
+    "done"
+  ],
+  "states": [
+    {
+      "id": "draft",
+      "type": "start",
+      "label": "草稿解析",
+      "sublabel": "解析中",
+      "step": "01",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 63,
+          "end_line": 80,
+          "label": "状态词表"
+        }
+      ]
+    },
+    {
+      "id": "pending",
+      "type": "waiting",
+      "label": "待确认",
+      "sublabel": "用户确认 sections",
+      "step": "02",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 434,
+          "end_line": 482,
+          "label": "创建 session"
+        }
+      ]
+    },
+    {
+      "id": "scoring",
+      "type": "active",
+      "label": "评分中",
+      "sublabel": "resume 后评分图",
+      "step": "03",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 607,
+          "end_line": 750,
+          "label": "resume"
+        }
+      ]
+    },
+    {
+      "id": "done",
+      "type": "success",
+      "label": "完成",
+      "sublabel": "档位已保存",
+      "step": "04",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 63,
+          "end_line": 80,
+          "label": "状态词表"
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "失败",
+      "sublabel": "词表成员；错误结果另由维度 status 表达",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 63,
+          "end_line": 80,
+          "label": "状态词表"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "draft-pending",
+      "from": "draft",
+      "to": "pending",
+      "label": "解析后等待确认",
+      "variant": "default"
+    },
+    {
+      "id": "pending-scoring",
+      "from": "pending",
+      "to": "scoring",
+      "label": "确认且量规可评",
+      "variant": "default"
+    },
+    {
+      "id": "scoring-done",
+      "from": "scoring",
+      "to": "done",
+      "label": "评分图完成",
+      "variant": "default"
+    },
+    {
+      "id": "pending-failed",
+      "from": "pending",
+      "to": "failed",
+      "label": "失败路径",
+      "variant": "security"
+    },
+    {
+      "id": "scoring-failed",
+      "from": "scoring",
+      "to": "failed",
+      "label": "异常路径",
+      "variant": "security"
+    }
+  ]
+}

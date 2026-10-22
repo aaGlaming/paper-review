@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 
 import AppNav from './components/AppNav.vue'
 import './styles/sketch.css'
+
+const route = useRoute()
+const isPublicRoute = computed(() => route.meta.public === true)
 </script>
 
 <template>
   <div class="shell">
     <div class="photo-bg" aria-hidden="true"></div>
-    <AppNav />
-    <main class="shell__body">
-      <RouterView />
+    <AppNav v-if="!isPublicRoute" />
+    <main class="shell__body" :class="{ 'shell__body--auth': isPublicRoute }" tabindex="-1">
+      <RouterView v-slot="{ Component, route: viewRoute }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" :key="viewRoute.path" />
+        </Transition>
+      </RouterView>
     </main>
   </div>
 </template>
@@ -44,5 +52,39 @@ import './styles/sketch.css'
   max-width: var(--pr-measure);
   margin: 0 auto;
   padding: var(--pr-space-6) var(--pr-space-4);
+  border: 1px solid var(--pr-rule);
+  border-top: 0;
+  background: var(--pr-surface);
+  box-shadow: var(--pr-shadow-sheet);
+}
+
+.shell__body--auth {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity var(--pr-motion-page) var(--pr-motion-ease), transform var(--pr-motion-page) var(--pr-motion-ease);
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+  }
 }
 </style>

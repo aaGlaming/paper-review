@@ -60,4 +60,21 @@ describe('数据大屏', () => {
     wrapper.unmount()
     expect(chart.dispose).toHaveBeenCalledTimes(vi.mocked(echarts.init).mock.calls.length)
   })
+
+  it('图表动画服从系统减少动态效果偏好', async () => {
+    const chart = { setOption: vi.fn(), resize: vi.fn(), dispose: vi.fn() }
+    vi.mocked(echarts.init).mockReturnValue(chart as never)
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('prefers-reduced-motion'), media: query, onchange: null, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn() }))
+    vi.mocked(api.getDashboardSummary).mockResolvedValue({
+      cached: false,
+      cards: { total_submissions: 1, weekly_new: 1, parse_only: 0, pending_conflicts: 1, gold_agreement: null },
+      contests: [{ contest_id: 'c1', review_count: 1 }], bands: [], insufficient_top: [], conflicts: [], hotspots: [],
+      citation: { failure_count: 0, total_dimensions: 0, citation_rate: 0 }, gold: null,
+    })
+    const wrapper = mount(DashboardView)
+    await flushPromises()
+    expect(chart.setOption).toHaveBeenCalledWith(expect.objectContaining({ animation: false, animationDuration: 0, animationDurationUpdate: 0 }))
+    wrapper.unmount()
+    vi.unstubAllGlobals()
+  })
 })

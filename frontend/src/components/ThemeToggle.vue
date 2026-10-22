@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import moonUrl from '../assets/sketch/sketch-moon.svg'
-import sunUrl from '../assets/sketch/sketch-sun.svg'
+import moonUrl from '../../../docs/design/sketch-svg/sketch-moon.svg'
+import sunUrl from '../../../docs/design/sketch-svg/sketch-sun.svg'
 import { useTheme } from '../composables/useTheme'
 
 /**

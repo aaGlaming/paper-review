@@ -111,4 +111,40 @@ describe('路由表', () => {
     resetAuthStateForTest()
     localStorage.clear()
   })
+
+  it('token 尚未验证且后端不可达时允许打开登录页', async () => {
+    resetAuthStateForTest()
+    localStorage.setItem(AUTH_TOKEN_KEY, 'unverified-token')
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new TypeError('Failed to fetch')
+    }))
+    await expect(useAuth().restore()).rejects.toThrow('Failed to fetch')
+
+    const router = createAppRouter(createMemoryHistory())
+    await router.push('/login')
+    await router.isReady()
+
+    expect(router.currentRoute.value.path).toBe('/login')
+    resetAuthStateForTest()
+    localStorage.clear()
+    vi.unstubAllGlobals()
+  })
+
+  it('token 尚未验证时保留权限页面路由，等待恢复权限后由接口鉴权', async () => {
+    resetAuthStateForTest()
+    localStorage.setItem(AUTH_TOKEN_KEY, 'unverified-token')
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new TypeError('Failed to fetch')
+    }))
+    await expect(useAuth().restore()).rejects.toThrow('Failed to fetch')
+
+    const router = createAppRouter(createMemoryHistory())
+    await router.push('/dashboard')
+    await router.isReady()
+
+    expect(router.currentRoute.value.path).toBe('/dashboard')
+    resetAuthStateForTest()
+    localStorage.clear()
+    vi.unstubAllGlobals()
+  }, 10_000)
 })

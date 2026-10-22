@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "后端模块依赖分层",
+    "locale": "zh-CN",
+    "subtitle": "路由编排业务模块；领域逻辑向下依赖存储、检索与模型适配器。",
+    "output": "docs/diagrams/02-backend-dependency-layers.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "components": [
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "api / routes",
+      "sublabel": "FastAPI endpoints",
+      "pos": [
+        20,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 1,
+          "end_line": 1087,
+          "label": "路由入口"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "graph / review",
+      "sublabel": "章节解析与评分图",
+      "pos": [
+        245,
+        120
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 120,
+          "end_line": 330,
+          "label": "解析与评分"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "agent",
+      "sublabel": "白名单工具与预算中间件",
+      "pos": [
+        245,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 1,
+          "end_line": 331,
+          "label": "Agent 工具"
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "report",
+      "sublabel": "review / dashboard / evaluation",
+      "pos": [
+        245,
+        420
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/report/dashboard.py",
+          "line": 1,
+          "end_line": 216,
+          "label": "聚合"
+        }
+      ]
+    },
+    {
+      "id": "retrieve",
+      "type": "backend",
+      "label": "retrieve",
+      "sublabel": "父子块 / 三路召回 / rerank",
+      "pos": [
+        505,
+        180
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 1,
+          "end_line": 211,
+          "label": "检索"
+        }
+      ]
+    },
+    {
+      "id": "importing",
+      "type": "backend",
+      "label": "importing",
+      "sublabel": "赛题 / 量规目录",
+      "pos": [
+        505,
+        380
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 1,
+          "end_line": 110,
+          "label": "目录模型"
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "MySQL + Chroma",
+      "sublabel": "SQLAlchemy 与向量 collection",
+      "pos": [
+        785,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/importing/db.py",
+          "line": 1,
+          "end_line": 75,
+          "label": "DB"
+        },
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 1,
+          "end_line": 80,
+          "label": "向量存储"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "cloud",
+      "label": "llm client",
+      "sublabel": "chat / embed / rerank",
+      "pos": [
+        1040,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/llm/client.py",
+          "line": 1,
+          "end_line": 100,
+          "label": "模型适配"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "api-graph",
+      "from": "api",
+      "to": "graph",
+      "label": "建评审 / resume",
+      "variant": "default"
+    },
+    {
+      "id": "api-agent",
+      "from": "api",
+      "to": "agent",
+      "label": "Agent resume",
+      "variant": "default"
+    },
+    {
+      "id": "api-report",
+      "from": "api",
+      "to": "report",
+      "label": "summary / eval",
+      "variant": "default"
+    },
+    {
+      "id": "graph-retrieve",
+      "from": "graph",
+      "to": "retrieve",
+      "label": "逐维证据",
+      "variant": "default"
+    },
+    {
+      "id": "agent-retrieve",
+      "from": "agent",
+      "to": "retrieve",
+      "label": "search_evidence",
+      "variant": "default"
+    },
+    {
+      "id": "retrieve-storage",
+      "from": "retrieve",
+      "to": "storage",
+      "label": "Chroma + parent repo",
+      "variant": "default"
+    },
+    {
+      "id": "importing-storage",
+      "from": "importing",
+      "to": "storage",
+      "label": "SQL",
+      "variant": "default"
+    },
+    {
+      "id": "agent-llm",
+      "from": "agent",
+      "to": "llm",
+      "label": "工具调用时",
+      "variant": "default"
+    },
+    {
+      "id": "graph-llm",
+      "from": "graph",
+      "to": "llm",
+      "label": "评分调用",
+      "variant": "default"
+    }
+  ],
+  "cards": []
+}

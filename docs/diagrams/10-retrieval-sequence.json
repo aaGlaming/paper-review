@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "逐维检索时序",
+    "locale": "zh-CN",
+    "subtitle": "单轮：三路过滤召回 → 父块去重 → 一次 rerank → 总计最多 4 段；空结果最多两轮。",
+    "output": "docs/diagrams/10-retrieval-sequence.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "caller",
+      "type": "backend",
+      "label": "Review graph",
+      "sublabel": "逐维请求",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 220,
+          "end_line": 330,
+          "label": "评分前检索"
+        }
+      ]
+    },
+    {
+      "id": "retrieve",
+      "type": "backend",
+      "label": "retrieve_dimension",
+      "sublabel": "最多 2 轮",
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 95,
+          "end_line": 211,
+          "label": "逐维检索"
+        }
+      ]
+    },
+    {
+      "id": "routes",
+      "type": "backend",
+      "label": "三路召回",
+      "sublabel": "band_text / paper_child / pitfall",
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 20,
+          "end_line": 26,
+          "label": "路由常量"
+        }
+      ]
+    },
+    {
+      "id": "chroma",
+      "type": "database",
+      "label": "Chroma",
+      "sublabel": "子块向量与 metadata",
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 24,
+          "end_line": 45,
+          "label": "集合与 metadata"
+        }
+      ]
+    },
+    {
+      "id": "mysql",
+      "type": "database",
+      "label": "paper_parent",
+      "sublabel": "全文 + char_span",
+      "sources": [
+        {
+          "path": "backend/app/retrieve/models.py",
+          "line": 15,
+          "end_line": 36,
+          "label": "父块模型"
+        }
+      ]
+    },
+    {
+      "id": "rerank",
+      "type": "cloud",
+      "label": "Rerank",
+      "sublabel": "候选内重排",
+      "sources": [
+        {
+          "path": "backend/app/retrieve/rerank.py",
+          "line": 1,
+          "end_line": 120,
+          "label": "顺序校验"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "id": "start",
+      "from": "caller",
+      "to": "retrieve",
+      "y": 160,
+      "label": "query + rubric + dimension",
+      "variant": "default"
+    },
+    {
+      "id": "routes",
+      "from": "retrieve",
+      "to": "routes",
+      "y": 190,
+      "label": "逐路过滤召回",
+      "variant": "default"
+    },
+    {
+      "id": "filter",
+      "from": "routes",
+      "to": "chroma",
+      "y": 220,
+      "label": "contest/rubric/section filter",
+      "variant": "default"
+    },
+    {
+      "id": "hits",
+      "from": "chroma",
+      "to": "routes",
+      "y": 250,
+      "label": "child ids",
+      "variant": "default"
+    },
+    {
+      "id": "parent-read",
+      "from": "routes",
+      "to": "mysql",
+      "y": 280,
+      "label": "按 parent_id 回读",
+      "variant": "default"
+    },
+    {
+      "id": "parents",
+      "from": "mysql",
+      "to": "retrieve",
+      "y": 310,
+      "label": "全文 + char_span",
+      "variant": "default"
+    },
+    {
+      "id": "rerank-call",
+      "from": "retrieve",
+      "to": "rerank",
+      "y": 340,
+      "label": "一次 rerank",
+      "variant": "default"
+    },
+    {
+      "id": "rerank-order",
+      "from": "rerank",
+      "to": "retrieve",
+      "y": 370,
+      "label": "候选内排序",
+      "variant": "default"
+    },
+    {
+      "id": "return",
+      "from": "retrieve",
+      "to": "caller",
+      "y": 400,
+      "label": "最多 4 个 parent blocks",
+      "variant": "return"
+    },
+    {
+      "id": "retry",
+      "from": "retrieve",
+      "to": "routes",
+      "y": 430,
+      "label": "仅空结果改写；最多 2 轮",
+      "variant": "dashed"
+    }
+  ]
+}

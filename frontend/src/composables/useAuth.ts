@@ -46,6 +46,7 @@ function writeToken(token: string | null): void {
 const token = ref<string | null>(readToken())
 const user = ref<AuthUser | null>(null)
 const ready = ref(false)
+const restoreError = ref('')
 
 if (token.value) {
   setAuthToken(token.value)
@@ -61,6 +62,7 @@ export function useAuth(): {
   token: typeof token
   user: typeof user
   ready: typeof ready
+  restoreError: typeof restoreError
   login: (username: string, password: string) => Promise<AuthUser>
   logout: () => Promise<void>
   restore: () => Promise<void>
@@ -78,6 +80,7 @@ export function useAuth(): {
     }
     user.value = me
     ready.value = true
+    restoreError.value = ''
     return me
   }
 
@@ -89,6 +92,7 @@ export function useAuth(): {
     }
     user.value = null
     ready.value = false
+    restoreError.value = ''
     applyToken(null)
   }
 
@@ -104,17 +108,26 @@ export function useAuth(): {
     if (!token.value) {
       user.value = null
       ready.value = true
+      restoreError.value = ''
       return
     }
+    restoreError.value = ''
     try {
       user.value = await authMe()
       ready.value = true
+      restoreError.value = ''
     } catch (error) {
       if (error instanceof Error && 'status' in error && (error as { status: number }).status === 401) {
         user.value = null
         applyToken(null)
+        ready.value = true
+        restoreError.value = ''
+      } else {
+        // 未知错误不是“无权限”：保留 token，但允许守卫和用户稍后重试认证恢复。
+        user.value = null
+        ready.value = false
+        restoreError.value = '无法验证登录状态，请检查服务连接后重试。'
       }
-      ready.value = true
       throw error
     }
   }
@@ -127,12 +140,13 @@ export function useAuth(): {
     return user.value?.role === 'teacher'
   }
 
-  return { token, user, ready, login, logout, restore, hasPermission, isTeacher }
+  return { token, user, ready, restoreError, login, logout, restore, hasPermission, isTeacher }
 }
 
 /** 仅供单测：清掉模块状态，下一个用例重新读盘。 */
 export function resetAuthStateForTest(): void {
   user.value = null
   ready.value = false
+  restoreError.value = ''
   applyToken(null)
 }

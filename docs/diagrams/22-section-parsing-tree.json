@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "diagram_type": "tree",
+  "meta": {
+    "title": "章节解析树",
+    "locale": "zh-CN",
+    "subtitle": "ATX 标题提供结构；标题深度形成父子关系，无标题正文落入未分类。",
+    "output": "docs/diagrams/22-section-parsing-tree.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": {
+    "direction": "down"
+  },
+  "nodes": [
+    {
+      "id": "doc",
+      "label": "Markdown document",
+      "sublabel": "paper_text",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 127,
+          "end_line": 175,
+          "label": "章节解析"
+        }
+      ]
+    },
+    {
+      "id": "prelude",
+      "label": "标题前正文",
+      "parent": "doc",
+      "sublabel": "未分类 / 前言",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 145,
+          "end_line": 175,
+          "label": "未分类回退"
+        }
+      ]
+    },
+    {
+      "id": "h1",
+      "label": "ATX # section",
+      "parent": "doc",
+      "sublabel": "level 1",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 130,
+          "end_line": 175,
+          "label": "ATX 标题"
+        }
+      ]
+    },
+    {
+      "id": "body1",
+      "label": "正文块",
+      "parent": "h1",
+      "sublabel": "content + source range",
+      "sources": [
+        {
+          "path": "backend/app/importing/spans.py",
+          "line": 1,
+          "end_line": 64,
+          "label": "区间计算"
+        }
+      ]
+    },
+    {
+      "id": "h2",
+      "label": "ATX ## section",
+      "parent": "h1",
+      "sublabel": "level 2 child",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 130,
+          "end_line": 175,
+          "label": "标题栈"
+        }
+      ]
+    },
+    {
+      "id": "body2",
+      "label": "正文块",
+      "parent": "h2",
+      "sublabel": "char_start / char_end",
+      "sources": [
+        {
+          "path": "backend/app/importing/spans.py",
+          "line": 1,
+          "end_line": 64,
+          "label": "区间计算"
+        }
+      ]
+    },
+    {
+      "id": "h3",
+      "label": "ATX ### section",
+      "parent": "h2",
+      "sublabel": "level 3 child",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 130,
+          "end_line": 175,
+          "label": "标题栈"
+        }
+      ]
+    },
+    {
+      "id": "refs",
+      "label": "参考文献 section",
+      "parent": "doc",
+      "sublabel": "section_type=参考文献",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 127,
+          "end_line": 145,
+          "label": "章节分类"
+        }
+      ]
+    }
+  ]
+}
