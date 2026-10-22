@@ -37,7 +37,7 @@ watch(() => props.reviewId, () => void load())
     <div v-if="open" class="trace__body">
       <p v-if="reasonText && lastStep" class="trace__termination">
         本次在第 {{ lastStep.idx }} 步停止：{{ lastStep.action }}（原因：{{ reasonText }}）</p>
-      <p v-if="loading" class="trace__muted">姝ｅ湪璇诲彇杞ㄨ抗…</p>
+      <p v-if="loading" class="trace__muted">正在读取轨迹…</p>
       <div v-else-if="error" class="trace__error">
         <span>{{ error }}</span>
         <button type="button" @click="load">重试</button>

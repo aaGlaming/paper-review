@@ -27,7 +27,11 @@ def list_samples(is_demo: bool | None = None) -> list[dict[str, Any]]:
     三篇演示稿，保证空目录下接口仍可用。
     """
     entries: list[dict[str, Any]] = []
-    sources = review_samples.load_real_papers() or review_samples.load_demo_texts()
+    # 原写法 review_samples.load_real_papers() or review_samples.load_demo_texts() 是回退语义；P21 接入真实论文后会遮蔽演示稿，2026-10-21 改为并列。
+    sources = {
+        **review_samples.load_real_papers(),
+        **review_samples.load_demo_texts(),
+    }
     for stem, text in sources.items():
         entries.append(
             {

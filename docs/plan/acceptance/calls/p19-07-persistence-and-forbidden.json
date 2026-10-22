@@ -1,0 +1,11 @@
+{
+  "session_id": "81cf371852ad4798bd1862debc30795f",
+  "history_http_status": 200,
+  "history_message_count": 7,
+  "chat_session_rows": 8,
+  "chat_message_rows": 21,
+  "student_http_status": 403,
+  "student_response": {
+    "detail": "没有权限执行该操作"
+  }
+}

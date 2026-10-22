@@ -12,9 +12,11 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
+from starlette.middleware.cors import CORSMiddleware
 
 from .auth_routes import router as auth_router
 from .chat_routes import router as chat_router
+from .dashboard_routes import router as dashboard_router
 from .reviews_list_routes import router as reviews_list_router
 from .routes import router
 from .user_routes import router as user_router
@@ -26,6 +28,18 @@ MODEL_REQUIRED_ENV = ("LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL", "EMBEDDING_MOD
 _STARTED_AT = time.monotonic()
 
 
+def cors_origins() -> list[str]:
+    """Return the configured CORS allowlist, rejecting wildcard origins."""
+    configured = os.environ.get(
+        "CORS_ALLOW_ORIGINS",
+        "http://127.0.0.1:5173,http://localhost:5173",
+    )
+    origins = [origin.strip() for origin in configured.split(",") if origin.strip()]
+    if "*" in origins:
+        raise RuntimeError("CORS_ALLOW_ORIGINS 不允许使用 *")
+    return origins
+
+
 def model_available() -> bool:
     """四个必需模型配置齐全时启用模型路径；嵌入端点与重排配置可独立缺省。"""
     return all(os.environ.get(name, "").strip() for name in MODEL_REQUIRED_ENV)
@@ -33,6 +47,13 @@ def model_available() -> bool:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="paper-review 预审接口", version="0.3.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins(),
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
     @app.middleware("http")
     async def request_logging_middleware(request: Request, call_next):
@@ -130,6 +151,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(user_router)
     app.include_router(chat_router)
+    app.include_router(dashboard_router)
     return app
 
 

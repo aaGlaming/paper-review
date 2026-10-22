@@ -1,0 +1,29 @@
+{
+  "category": "P19 定点记录问询复检",
+  "http_status": 200,
+  "request": {
+    "question": "记录 c50ee35713d6446d835b50d30caf9e5c 的 constraint_check 维为什么判为 证据不足？请只依据可检索内容说明。",
+    "contest_id": "cumcm-2024-A",
+    "session_id": "dbefaf552dad4b4394ea125089961020"
+  },
+  "response": {
+    "message_id": "46900e3a506c41b98ccc056f0c392d20",
+    "content": "**结论：**该维被判“证据不足”，是因为记录中该维度没有可引用的原句作为支撑，原句字段为“无”。\n\n**依据：**\n- 该记录 constraint_check 维档位为“证据不足”，原句为“无”，关联建议为“在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位” [review_id=c50ee35713d6446d835b50d30caf9e5c dim=constraint_check]。\n- 汇总中同样列有“[证据不足] 检验与题目约束 → 在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位” 。\n\n记录中没有说明更具体的技术原因，这些记录里没有相关信息。",
+    "refs": [
+      {
+        "review_id": "c50ee35713d6446d835b50d30caf9e5c",
+        "dimension_code": "constraint_check"
+      }
+    ],
+    "model_name": "deepseek-flash",
+    "notifications": {
+      "rejected": 1,
+      "unused": 4
+    },
+    "notes": {
+      "mode": "record",
+      "target_review": "c50ee35713d6446d835b50d30caf9e5c",
+      "direct": 6
+    }
+  }
+}

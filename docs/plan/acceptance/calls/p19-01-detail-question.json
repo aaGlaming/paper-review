@@ -1,0 +1,32 @@
+{
+  "category": "单条提交详情问询",
+  "http_status": 200,
+  "request": {
+    "question": "记录 c50ee35713d6446d835b50d30caf9e5c 的 constraint_check 维为什么判为 证据不足？请只依据可检索内容说明。",
+    "contest_id": "cumcm-2024-A",
+    "session_id": "81cf371852ad4798bd1862debc30795f"
+  },
+  "response": {
+    "message_id": "c3ce0b503da4472e96a8280467441a14",
+    "content": "结论：这些记录里没有关于 review_id=c50ee35713d6446d835b50d30caf9e5c 的 constraint_check 维信息，无法依据片段说明其判为“证据不足”的原因。\n\n依据：片段仅列出其他 8 条记录，均为 constraint_check 档位=证据不足、原句为“无”，建议补可引用原句与推导或降至相邻档位 [review_id=d4883773e84f4931a9eda9afcb2ea1c4 dim=constraint_check] [review_id=11983bdf2fe14874b569c3c60ba4ba1e dim=constraint_check] [review_id=92f96254784341f5bf15d98dc1c49de0 dim=constraint_check]。未包含所问 record_id 的记录。",
+    "refs": [
+      {
+        "review_id": "d4883773e84f4931a9eda9afcb2ea1c4",
+        "dimension_code": "constraint_check"
+      },
+      {
+        "review_id": "11983bdf2fe14874b569c3c60ba4ba1e",
+        "dimension_code": "constraint_check"
+      },
+      {
+        "review_id": "92f96254784341f5bf15d98dc1c49de0",
+        "dimension_code": "constraint_check"
+      }
+    ],
+    "model_name": "deepseek-flash",
+    "notifications": {
+      "rejected": 0,
+      "unused": 5
+    }
+  }
+}

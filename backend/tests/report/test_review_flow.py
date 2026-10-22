@@ -453,14 +453,13 @@ def test_session_and_graph_dependencies_can_be_overridden(app, client, session):
 # --- 15：未绑定赛题不猜、不兜底 ---------------------------------------------------
 
 
-def test_unbound_contest_yields_empty_dimensions_and_no_change_list(client, session):
+def test_unbound_contest_cannot_resume_without_published_rubric(client, session):
     created = _create(client, paper_text=PAPER, contest_id=None)
-    body = _resume(client, created["review_id"], created["sections"])
+    response = client.post(
+        f"/api/reviews/{created['review_id']}/resume",
+        json={"sections": created["sections"]},
+    )
 
-    assert body["status"] == "完成"
-    assert body["rubric_id"] is None
-    assert body["rubric_version"] is None
-    assert body["dimensions"] == []
-    assert body["change_list"] == []
-    assert "未绑定赛题" in body["note"]
+    assert response.status_code == 422
+    assert response.json() == {"detail": "该赛题没有已发布量规，无法评分"}
     assert _count(session, models.ReviewDimension) == 0

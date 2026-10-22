@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import { ApiError, createReview, listContests, listSamples, resumeReview } from '../api'
-import type { ContestSummary, PaperSection, ReviewReport, SampleItem } from '../api/types'
+import { ApiError, createReview, getContestRubric, listContests, listSamples, resumeReview } from '../api'
+import type { ContestSummary, PaperSection, PublishedRubricText, ReviewReport, SampleItem } from '../api/types'
 import artUrl from '../assets/sketch/sketch-bg-parse.svg'
 import spotUrl from '../assets/sketch/sketch-spot-parse.svg'
 import PageArt from '../components/PageArt.vue'
@@ -13,6 +13,9 @@ import StageTracker from '../components/StageTracker.vue'
 import ParseEmptyIllustration from '../components/illustrations/ParseEmptyIllustration.vue'
 import { REVIEW_STAGES, type StagePhase } from '../composables/reviewVocabulary'
 import { readReviewFlow, setConfirmedReport, setReviewCreated } from '../composables/useReviewFlow'
+
+// 历史模型路径最大耗时为 36.6 秒；5 秒过短，20 秒表示明显偏慢但仍在正常范围，属于可调整的工程阈值。
+const SLOW_HINT_MS = 20_000
 
 /**
  * 论文解析页（P8 阶段 2/6）。
@@ -27,6 +30,9 @@ import { readReviewFlow, setConfirmedReport, setReviewCreated } from '../composa
 const contests = ref<ContestSummary[]>([])
 const samples = ref<SampleItem[]>([])
 const loading = ref(true)
+const rubric = ref<PublishedRubricText | null>(null)
+const rubricState = ref<'idle' | 'loading' | 'available' | 'missing' | 'empty' | 'error'>('idle')
+const rubricError = ref('')
 
 const contestId = ref('')
 const selectedSampleId = ref('')
@@ -41,17 +47,60 @@ const phase = ref<StagePhase>('idle')
 const reachedIndex = ref(-1)
 const busy = ref(false)
 const error = ref('')
+const elapsedSeconds = ref(0)
+const elapsedActive = ref(false)
+let elapsedTimer: number | null = null
+let confirmationStartedAt = 0
 
 const hasContest = computed(() => contestId.value !== '')
 const hasSample = computed(() => selectedSampleId.value !== '')
 const hasText = computed(() => paperText.value.trim().length > 0)
+const selectedContest = computed(() =>
+  contests.value.find((contest) => contest.contest_id === contestId.value) ?? null,
+)
+const canScore = computed(() => hasContest.value && rubricState.value === 'available')
+const assessmentMeta = computed(() => {
+  if (!hasContest.value) {
+    return '未绑定赛题 · 仅解析'
+  }
+  if (rubricState.value === 'loading' || rubricState.value === 'idle') {
+    return '正在读取赛题与量规…'
+  }
+  if (rubricState.value === 'missing') {
+    return '该赛题没有已发布量规，暂时无法评分'
+  }
+  if (rubricState.value === 'empty') {
+    return '该赛题的已发布量规没有维度，暂时无法评分'
+  }
+  if (rubricState.value === 'error') {
+    return `量规读取失败：${rubricError.value}`
+  }
+  const title = selectedContest.value?.title ?? '已选赛题'
+  return `${title} · 量规 v${rubric.value?.version} · ${rubric.value?.dimensions.length ?? 0} 个维度`
+})
+const confirmedAssessmentMeta = computed(() => {
+  if (!report.value?.contest_id) {
+    return '未绑定赛题 · 仅解析'
+  }
+  const title = contests.value.find((contest) => contest.contest_id === report.value?.contest_id)?.title ?? '已绑定赛题'
+  return `${title} · 量规 v${report.value.rubric_version} · ${report.value.dimensions.length} 个维度`
+})
 
 // paper_text 与 sample_id 互斥：两条路都填时先让用户清掉一个，而不是悄悄丢掉一份输入
 const conflict = computed(() => hasSample.value && hasText.value)
 
 const submitHint = computed(() => {
+  if (hasContest.value && rubricState.value === 'loading') {
+    return '正在检查该赛题的已发布量规。'
+  }
+  if (hasContest.value && (rubricState.value === 'missing' || rubricState.value === 'empty')) {
+    return assessmentMeta.value
+  }
+  if (hasContest.value && rubricState.value === 'error') {
+    return assessmentMeta.value
+  }
   if (!hasContest.value) {
-    return '先选赛题：没有绑定赛题就没有量规，确认之后也拿不到任何维度。'
+    return '未绑定赛题时只创建解析会话，不进行评分。'
   }
   if (conflict.value) {
     return '演示样例与粘贴正文只能选一条：请清空其中一个再提交。'
@@ -66,10 +115,10 @@ const submitHint = computed(() => {
 })
 
 const canSubmitSample = computed(
-  () => hasContest.value && hasSample.value && !conflict.value && !busy.value,
+  () => hasSample.value && !conflict.value && !busy.value && (!hasContest.value || canScore.value),
 )
 const canSubmitText = computed(
-  () => hasContest.value && hasText.value && !conflict.value && !busy.value,
+  () => hasText.value && !conflict.value && !busy.value && (!hasContest.value || canScore.value),
 )
 
 const selectedSection = computed(() => sections.value[selectedIndex.value] ?? null)
@@ -120,6 +169,35 @@ async function loadInputs(): Promise<void> {
   }
 }
 
+watch(contestId, async (selectedId) => {
+  rubric.value = null
+  rubricError.value = ''
+  if (!selectedId) {
+    rubricState.value = 'idle'
+    return
+  }
+
+  rubricState.value = 'loading'
+  try {
+    const loaded = await getContestRubric(selectedId)
+    if (contestId.value !== selectedId) {
+      return
+    }
+    rubric.value = loaded
+    rubricState.value = loaded.dimensions.length > 0 ? 'available' : 'empty'
+  } catch (reason) {
+    if (contestId.value !== selectedId) {
+      return
+    }
+    if (reason instanceof ApiError && reason.status === 404) {
+      rubricState.value = 'missing'
+    } else {
+      rubricError.value = describeError(reason)
+      rubricState.value = 'error'
+    }
+  }
+})
+
 function pickSample(sampleId: string): void {
   selectedSampleId.value = sampleId
 }
@@ -151,6 +229,7 @@ async function createFromInputs(source: 'sample' | 'text'): Promise<void> {
   busy.value = true
   error.value = ''
   phase.value = 'running'
+  elapsedActive.value = false
   try {
     const created = await createReview(
       source === 'sample'
@@ -178,13 +257,27 @@ async function createFromInputs(source: 'sample' | 'text'): Promise<void> {
   }
 }
 
+onUnmounted(() => {
+  if (elapsedTimer !== null) {
+    window.clearInterval(elapsedTimer)
+    elapsedTimer = null
+  }
+})
+
 async function confirmSections(): Promise<void> {
-  if (busy.value || !reviewId.value || sections.value.length === 0) {
+  if (busy.value || !reviewId.value || sections.value.length === 0 || !canScore.value) {
     return
   }
   busy.value = true
   error.value = ''
   phase.value = 'running'
+  elapsedSeconds.value = 0
+  elapsedActive.value = true
+  confirmationStartedAt = Date.now()
+  // 计时器只显示经过时间，不更新步骤；StageTracker 的步骤仍只依据真实报告点亮。
+  elapsedTimer = window.setInterval(() => {
+    elapsedSeconds.value = Math.floor((Date.now() - confirmationStartedAt) / 1000)
+  }, 1_000)
   try {
     const confirmed = await resumeReview(
       reviewId.value,
@@ -200,6 +293,12 @@ async function confirmSections(): Promise<void> {
     error.value = describeError(reason)
     phase.value = 'failed'
   } finally {
+    if (elapsedTimer !== null) {
+      window.clearInterval(elapsedTimer)
+      elapsedTimer = null
+    }
+    elapsedSeconds.value = Math.floor((Date.now() - confirmationStartedAt) / 1000)
+    elapsedActive.value = false
     busy.value = false
   }
 }
@@ -219,8 +318,8 @@ onMounted(() => {
         <p class="ed-head__kicker">稿源 · 章节树 · 确认</p>
         <h1 class="ed-head__title">论文解析</h1>
       </header>
-      <p class="ed-lede parse__hero-lede">
-        选一道已发布赛题，再填一篇稿子：解析出章节树，确认之后才进入分项评分。
+        <p class="ed-lede parse__hero-lede">
+        可选绑定赛题，再填一篇稿子：解析出章节树；只有赛题量规可用时才能进入分项评分。
       </p>
       <ParseEmptyIllustration class="parse__hero-illo" />
     </div>
@@ -243,6 +342,7 @@ onMounted(() => {
         </select>
         <span class="inputs__meta" data-testid="contest-count">{{ contestSummary }}</span>
       </div>
+      <p class="inputs__assessment" data-testid="contest-assessment-meta">{{ assessmentMeta }}</p>
 
       <div class="inputs__pair">
         <div class="inputs__block inputs__block--primary ed-focus" data-testid="sample-block">
@@ -255,6 +355,7 @@ onMounted(() => {
               type="button"
               class="inputs__demo"
               data-testid="demo-item"
+              :data-sample-id="sample.sample_id"
               :data-selected="selectedSampleId === sample.sample_id ? 'true' : 'false'"
               @click="pickSample(sample.sample_id)"
             >
@@ -298,7 +399,13 @@ onMounted(() => {
       <p v-if="error" class="inputs__error" data-testid="input-error">{{ error }}</p>
     </section>
 
-    <StageTracker :phase="phase" :reached-index="reachedIndex" />
+    <StageTracker
+      :phase="phase"
+      :reached-index="reachedIndex"
+      :elapsed-seconds="elapsedSeconds"
+      :elapsed-active="elapsedActive"
+      :slow-hint-ms="SLOW_HINT_MS"
+    />
 
     <section v-if="sections.length > 0" class="workspace" data-testid="workspace">
       <div class="workspace__tree">
@@ -321,7 +428,7 @@ onMounted(() => {
         type="button"
         class="actions__confirm"
         data-testid="confirm-sections"
-        :disabled="busy"
+        :disabled="busy || !canScore"
         @click="confirmSections"
       >
         确认章节树，进入分项评分
@@ -332,6 +439,8 @@ onMounted(() => {
     <section v-if="report" class="confirmed" data-testid="confirmed-card">
       <h2 class="confirmed__title">已确认</h2>
       <dl class="confirmed__list">
+        <dt class="confirmed__term">评审范围</dt>
+        <dd class="confirmed__value" data-testid="confirmed-assessment-meta">{{ confirmedAssessmentMeta }}</dd>
         <dt class="confirmed__term">状态</dt>
         <dd class="confirmed__value" data-testid="confirmed-status">{{ report.status }}</dd>
         <dt class="confirmed__term">维度数</dt>

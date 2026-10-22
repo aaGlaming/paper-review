@@ -29,7 +29,7 @@ function formatRate(rate: number | null): string {
   return `${Number((rate * 100).toFixed(1))}%`
 }
 
-const rateText = computed(() => formatRate(props.metric.rate))
+const rateText = computed(() => props.metric.low_sample ? '样本过少' : formatRate(props.metric.rate))
 
 function round(n: number): number {
   return Math.round(n * 10) / 10
@@ -39,7 +39,7 @@ function round(n: number): number {
 const chart = computed(() => {
   const total = props.metric.total
   const rate = props.metric.rate
-  if (rate === null || total <= 0) {
+  if (props.metric.low_sample || rate === null || total <= 0) {
     return null
   }
   const x0 = 16
@@ -64,6 +64,9 @@ const chart = computed(() => {
     <h2 class="metric__name">{{ name }}</h2>
     <p class="metric__rate" data-testid="metric-rate">{{ rateText }}</p>
     <p class="metric__fraction" data-testid="metric-fraction">{{ metric.matched }} / {{ metric.total }}</p>
+    <p v-if="metric.low_sample" class="metric__low-sample-note" data-testid="metric-low-sample-note">
+      本指标分母仅 {{ metric.total }} 个维度，不足以支撑结论
+    </p>
     <svg v-if="chart" class="metric__chart" viewBox="0 0 200 84" aria-hidden="true">
       <path d="M6 5 C5 28 5.5 58 7 78" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
       <path d="M4 76 C54 77 120 76.5 196 75.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
@@ -109,6 +112,13 @@ const chart = computed(() => {
   color: var(--pr-ink-muted);
   font-family: var(--pr-font-data);
   font-size: var(--pr-text-sm);
+}
+
+.metric__low-sample-note {
+  margin: 0 0 var(--pr-card-title-gap);
+  color: var(--pr-ink-muted);
+  font-size: var(--pr-text-xs);
+  line-height: var(--pr-leading-base);
 }
 
 .metric__caliber {

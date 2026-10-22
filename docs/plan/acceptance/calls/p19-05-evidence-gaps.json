@@ -1,0 +1,145 @@
+{
+  "category": "证据充分性检查",
+  "http_status": 200,
+  "request": {
+    "contest_id": "cumcm-2024-A",
+    "kind": "gaps",
+    "dimension_code": "constraint_check"
+  },
+  "response": {
+    "kind": "gaps",
+    "result": {
+      "contest_id": "cumcm-2024-A",
+      "dimension_code": "constraint_check",
+      "gaps": [
+        {
+          "review_id": "069942c70e7c4c59bcee359341396ced",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "0d396933e4b046729221460cf2037ab6",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "11983bdf2fe14874b569c3c60ba4ba1e",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "1460031b47714c4f89e15266c97143e4",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "313135b91a544462a26e711a78c3e3d7",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "38a739bf71994afd9119004184ef16f8",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "3e91479f18c3461bafe40ace43a790ca",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "4cdd9aa7d27547b9a10299a9456b0096",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "631f8a3b240345c88f488784772f7a59",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "6f8dc2be5c464eb09803f12c3f0efc5e",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "7c5a89ce6b2e416aa26ef65c6c5c282a",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "7cc86c4bd65a47579be580efbaaeaaa7",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "8470561bdd8744e0a8cb8b52d3fccadc",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "92f96254784341f5bf15d98dc1c49de0",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "a15a23e65a8447ef92ab032e15815a82",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "b8987ea61eab4a23911e8c32dfbc10c8",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "c50ee35713d6446d835b50d30caf9e5c",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "d4883773e84f4931a9eda9afcb2ea1c4",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "dcc02cec6d22494aa5a0d488cf6203be",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "edb5faa6c0da444b8942fe7136090561",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        },
+        {
+          "review_id": "f335c040809d4f4497a336d1dc41f945",
+          "dimension_code": "constraint_check",
+          "band": "证据不足",
+          "has_quote": false
+        }
+      ],
+      "count": 21
+    }
+  }
+}

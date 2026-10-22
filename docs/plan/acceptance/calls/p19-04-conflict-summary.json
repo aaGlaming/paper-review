@@ -1,0 +1,70 @@
+{
+  "category": "冲突汇总",
+  "http_status": 200,
+  "request": {
+    "contest_id": "cumcm-2024-A",
+    "kind": "conflicts"
+  },
+  "response": {
+    "kind": "conflicts",
+    "result": {
+      "contest_id": "cumcm-2024-A",
+      "reviews_with_changes": 106,
+      "kinds": {
+        "数字冲突": 122,
+        "表述": 79,
+        "证据不足": 83,
+        "题目约束": 36
+      },
+      "hotspots": [
+        {
+          "target": "表述与结构",
+          "count": 101,
+          "review_ids": [
+            "002b1c21b6cc4386b7283ccaf632fbf9",
+            "01e9a8c96b814ea2966d8fe6cddd859e",
+            "0377fa0dc14343bf87dd59d5ba500dcb"
+          ]
+        },
+        {
+          "target": "节龙身把手在",
+          "count": 82,
+          "review_ids": [
+            "002b1c21b6cc4386b7283ccaf632fbf9",
+            "01e9a8c96b814ea2966d8fe6cddd859e",
+            "0377fa0dc14343bf87dd59d5ba500dcb"
+          ]
+        },
+        {
+          "target": "求解与结果",
+          "count": 22,
+          "review_ids": [
+            "069942c70e7c4c59bcee359341396ced",
+            "0c33085f5f03477baaf24110a682b53e",
+            "0d396933e4b046729221460cf2037ab6"
+          ]
+        },
+        {
+          "target": "检验与题目约束",
+          "count": 21,
+          "review_ids": [
+            "069942c70e7c4c59bcee359341396ced",
+            "0d396933e4b046729221460cf2037ab6",
+            "11983bdf2fe14874b569c3c60ba4ba1e"
+          ]
+        },
+        {
+          "target": "建模是否针对本题",
+          "count": 17,
+          "review_ids": [
+            "069942c70e7c4c59bcee359341396ced",
+            "0d396933e4b046729221460cf2037ab6",
+            "11983bdf2fe14874b569c3c60ba4ba1e"
+          ]
+        }
+      ],
+      "finding_total": 158,
+      "unparsable": 0
+    }
+  }
+}

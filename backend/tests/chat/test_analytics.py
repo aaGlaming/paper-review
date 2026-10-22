@@ -142,7 +142,25 @@ def test_compare_bands_filters_to_requested_contest(engine):
     assert result["reviews"] == 1
     assert result["bands"] == [{
         "dimension_code": "assumption", "counts": {"基本": 1},
+        "counts_normalized": {"基本": 1},
         "insufficient": 0, "reviews": 1,
+    }]
+
+
+def test_compare_bands_preserves_raw_labels_and_merges_normalized_counts(engine):
+    from backend.app.chat.analytics import compare_bands
+
+    with Session(engine) as session:
+        _save(session, "raw-short", dimensions=[_dim("不足")])
+        _save(session, "raw-explicit-1", dimensions=[_dim("证据不足")])
+        _save(session, "raw-explicit-2", dimensions=[_dim("证据不足")])
+        result = compare_bands(session, contest_id="contest-a")
+    assert result["bands"] == [{
+        "dimension_code": "assumption",
+        "counts": {"不足": 1, "证据不足": 2},
+        "counts_normalized": {"证据不足": 3},
+        "insufficient": 3,
+        "reviews": 3,
     }]
 
 
@@ -307,3 +325,94 @@ def test_summary_persists_only_to_owned_session_when_requested(client, engine, a
         assert len(own_messages) == 1
         assert own_messages[0].role == "assistant"
         assert session.scalar(select(func.count()).select_from(chat_models.ChatMessage)) == 1
+
+
+def test_normalized_band_counts_merge_insufficient_spellings(engine):
+    from backend.app.chat.analytics import compare_bands
+
+    with Session(engine) as session:
+        _save(session, "short", dimensions=[_dim("不足")])
+        _save(session, "explicit", dimensions=[_dim("证据不足")])
+        result = compare_bands(session, contest_id="contest-a")
+    counts = result["bands"][0]["counts_normalized"]
+    assert "不足" not in counts
+    assert counts["证据不足"] == 2
+
+
+def test_normalized_band_counts_sum_to_dimension_reviews(engine):
+    from backend.app.chat.analytics import compare_bands
+
+    with Session(engine) as session:
+        _save(session, "one", dimensions=[_dim("不足")])
+        _save(session, "two", dimensions=[_dim("充分")])
+        result = compare_bands(session, contest_id="contest-a")
+    item = result["bands"][0]
+    assert sum(item["counts_normalized"].values()) == item["reviews"]
+
+
+def test_insufficient_total_equals_dimension_totals_for_both_spellings(engine):
+    from backend.app.chat.analytics import compare_bands
+
+    with Session(engine) as session:
+        _save(session, "short", dimensions=[_dim("不足")])
+        _save(session, "explicit", dimensions=[_dim("证据不足")])
+        result = compare_bands(session, contest_id="contest-a")
+    assert result["insufficient_total"] == sum(item["insufficient"] for item in result["bands"]) == 2
+
+
+def test_summary_prompt_has_copy_numbers_heading_and_system_rule(client, engine, actors):
+    captured = {}
+
+    def chat_fn(messages):
+        captured["messages"] = messages
+        return "摘要"
+
+    _install_fakes(client, lambda *a, **k: [], chat_fn)
+    response = client.post("/api/chat/summary", headers=_headers(engine, actors["teacher"]),
+                           json={"contest_id": "contest-a"})
+    assert response.status_code == 200
+    assert "【结论数字·照抄】" in captured["messages"][1]["content"]
+    assert "禁止自行相加" in captured["messages"][0]["content"]
+
+
+def test_summary_prompt_insufficient_number_matches_analytics(client, engine, actors):
+    from backend.app.chat.analytics import compare_bands
+
+    with Session(engine) as session:
+        _save(session, "short", dimensions=[_dim("不足")])
+        _save(session, "explicit", dimensions=[_dim("证据不足")])
+        expected = compare_bands(session, contest_id="contest-a")["insufficient_total"]
+        session.commit()
+    captured = {}
+    _install_fakes(client, lambda *a, **k: [],
+                   lambda messages: captured.setdefault("prompt", messages[1]["content"]) or "摘要")
+    response = client.post("/api/chat/summary", headers=_headers(engine, actors["teacher"]),
+                           json={"contest_id": "contest-a"})
+    assert response.status_code == 200
+    assert f"证据不足合计 {expected} 条" in captured["prompt"]
+
+
+def test_summary_prompt_details_omit_raw_insufficient_spelling(client, engine, actors):
+    with Session(engine) as session:
+        _save(session, "short", dimensions=[_dim("不足")])
+        _save(session, "explicit", dimensions=[_dim("证据不足")])
+        session.commit()
+    captured = {}
+    _install_fakes(client, lambda *a, **k: [],
+                   lambda messages: captured.setdefault("prompt", messages[1]["content"]) or "摘要")
+    response = client.post("/api/chat/summary", headers=_headers(engine, actors["teacher"]),
+                           json={"contest_id": "contest-a"})
+    assert response.status_code == 200
+    details = captured["prompt"].split("【明细】", 1)[1].split("【可用引用】", 1)[0]
+    assert '"不足":' not in details
+    assert '"证据不足":' in details
+
+
+def test_summary_system_prompt_requires_copying_precomputed_totals(client, engine, actors):
+    captured = {}
+    _install_fakes(client, lambda *a, **k: [],
+                   lambda messages: captured.setdefault("system", messages[0]["content"]) or "摘要")
+    response = client.post("/api/chat/summary", headers=_headers(engine, actors["teacher"]),
+                           json={"contest_id": "contest-a"})
+    assert response.status_code == 200
+    assert "禁止自行相加" in captured["system"]

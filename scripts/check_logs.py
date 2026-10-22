@@ -1,11 +1,16 @@
-"""Validate the daily JSON logs without importing application code."""
+"""Validate JSON logs without importing application code.
+
+门禁证明的是埋点还活着，不是系统今天被使用。评审链路只在跑评审时写，
+按日判定会在无评审的日子周期性误报；一旦红灯可以因『没人用』出现，
+真故障那天也会被当成没业务忽略。
+"""
 from __future__ import annotations
 
 import argparse
 import json
 import re
 import sys
-from datetime import date
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 MODULES = ("api", "graph", "agent", "llm", "retrieve", "scoring", "review", "report", "importing", "auth", "ai_chat", "dashboard", "errors", "audit", "frontend")
@@ -28,6 +33,13 @@ def _files(root: Path, module: str, day: str) -> list[Path]:
     return sorted(root.joinpath(module).glob(f"{module}-{day}.log*"))
 
 
+def _positive_days(value: str) -> int:
+    days = int(value)
+    if days < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return days
+
+
 def _redact(value: str) -> str:
     if len(value) <= 8:
         return "***"
@@ -46,9 +58,18 @@ def _display(line: str) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", default=date.today().strftime("%Y%m%d"))
+    parser.add_argument("--since-days", type=_positive_days, default=7)
+    parser.add_argument("--strict-today", action="store_true")
     parser.add_argument("--root", default="logs")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
+    try:
+        baseline = datetime.strptime(args.date, "%Y%m%d").date()
+    except ValueError:
+        parser.error("--date must be YYYYMMDD")
+    window_days = 1 if args.strict_today else args.since_days
+    start_day = baseline - timedelta(days=window_days - 1)
+    window_label = f"{start_day:%Y%m%d}..{baseline:%Y%m%d}"
     root = Path(args.root)
     issues = 0
     dirs = 0
@@ -61,7 +82,11 @@ def main(argv: list[str] | None = None) -> int:
             print(f"missing directory: {module}")
             issues += 1
             continue
-        files = _files(root, module, args.date)
+        files = sorted({
+            path
+            for offset in range(window_days)
+            for path in _files(root, module, (start_day + timedelta(days=offset)).strftime("%Y%m%d"))
+        })
         line_count = 0
         for path in files:
             try:
@@ -90,7 +115,10 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"module mismatch: {path} line {lineno}: {payload.get('module')!r}")
                     issues += 1
         if module in REQUIRED_WRITERS:
-            if line_count:
+            if not files:
+                print(f"{module} 在最近 {window_days} 天无任何日志")
+                issues += 1
+            elif line_count:
                 writers += 1
             else:
                 print(f"required writer empty: {module}")
@@ -100,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     if issues:
         print(f"[fail] {issues} issues")
         return 1
-    print(f"[ok] {dirs} dirs, {writers} writers, 0 issue")
+    print(f"[ok] {dirs} dirs, {writers} writers, 0 issue (window={window_label})")
     return 0
 
 

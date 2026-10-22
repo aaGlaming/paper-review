@@ -2,17 +2,18 @@
 // 第一条会真写库（创建 + 确认），接口没有删除路径——这是已知且已记档的污染。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 test('解析 → 确认 → 一致性审查：冲突列表、412/386、点击定位、刷新仍在', async ({ page }) => {
   // 先在解析页走完整链路
   await page.goto('/parse')
   await page.getByTestId('contest-select').selectOption({ index: 1 })
-  await page.getByTestId('demo-item').first().click()
+  await page.locator('[data-testid="demo-item"][data-sample-id="bench-dragon"]').click()
   await page.getByTestId('submit-sample').click()
   // 后端冷启动下首个 createReview 会导入图/审查/报告模块，实测约 7s，放宽默认 5s 的超时。
   await expect(page.getByTestId('confirm-sections')).toBeVisible({ timeout: 20_000 })
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
 
   // 进一致性审查页
   await page.goto('/consistency')

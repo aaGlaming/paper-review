@@ -18,6 +18,7 @@ import RegisterView from '../views/注册.vue'
 import ScoringView from '../views/分项评分.vue'
 import SuggestionView from '../views/修改建议.vue'
 import RecordsView from '../views/记录总览.vue'
+import ChatView from '../views/AI问询.vue'
 
 export const APP_TITLE_SUFFIX = '竞赛论文预审工作台'
 
@@ -47,6 +48,11 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/records', name: 'records', component: RecordsView,
     meta: { title: '记录总览', permission: 'review:read:all' },
+  },
+  { path: '/chat', name: 'chat', component: ChatView, meta: { title: 'AI 问询', permission: 'chat:use' } },
+  {
+    path: '/dashboard', name: 'dashboard', component: () => import('../views/数据大屏.vue'),
+    meta: { title: '数据大屏', permission: 'dashboard:view' },
   },
   {
     path: '/eval/:paperId',

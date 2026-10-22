@@ -1,0 +1,19 @@
+{
+  "category": "检索为空时的明确答复",
+  "http_status": 200,
+  "request": {
+    "question": "请查找与这条虚构的材料编号 QXZ-000000 无关的任何维度结论。",
+    "contest_id": "p19-empty-scope",
+    "session_id": "81cf371852ad4798bd1862debc30795f"
+  },
+  "response": {
+    "message_id": "c9ed532f38574ae2ad9a66aa98b18c27",
+    "content": "这些记录里没有相关信息。可以换一个说法，或确认赛题范围是否正确。",
+    "refs": [],
+    "model_name": "deepseek-flash",
+    "notifications": {
+      "rejected": 0,
+      "unused": 0
+    }
+  }
+}

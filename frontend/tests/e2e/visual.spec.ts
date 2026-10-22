@@ -2,6 +2,7 @@
 // 本文件第一条是纯布局断言（jsdom 验不了横向滚动），必须走 Playwright。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 const VIEWPORTS = [
   { width: 1280, height: 800 },
@@ -30,7 +31,7 @@ test('完整链路 → /scoring：维度卡可见、点击定位仍高亮', asyn
   await page.getByTestId('submit-sample').click()
   await expect(page.getByTestId('confirm-sections')).toBeVisible({ timeout: 20_000 })
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
 
   await page.goto('/scoring')
   await expect(page.getByTestId('dimension-card')).toHaveCount(5)

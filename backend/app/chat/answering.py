@@ -6,7 +6,8 @@ import os
 import re
 from typing import Any, Callable
 
-from . import retrieval
+from ..llm.client import LLMResponseError
+from . import records, retrieval
 
 
 SYSTEM_PROMPT = """你是竞赛论文预审工作台的记录助手，只能依据下面提供的评审记录片段回答问题。
@@ -16,6 +17,7 @@ SYSTEM_PROMPT = """你是竞赛论文预审工作台的记录助手，只能依�
 4. 用中文回答，控制在 300 字以内，先给结论再给依据。"""
 
 EMPTY_RETRIEVAL_CONTENT = "这些记录里没有相关信息。可以换一个说法，或确认赛题范围是否正确。"
+RECORD_NOT_FOUND_CONTENT = "找不到该记录编号对应的评审内容，请确认编号是否正确或该记录是否已归档。"
 _CITATION_RE = re.compile(r"\[review_id=([^\]\s]+)\s+dim=([^\]\s]+)\]")
 _BAND_RE = re.compile(r"【档位】([^\r\n【]*)")
 
@@ -25,6 +27,8 @@ class AnswerError(RuntimeError):
 
 
 def failure_reason(error: AnswerError) -> str:
+    if str(error) == "检索失败，请稍后重试":
+        return "retrieval_failed"
     cause = error.__cause__
     if cause is not None and type(cause).__name__ == "LLMConfigError":
         return "not_found_model"
@@ -39,6 +43,7 @@ def validate_citations(
     allowed: set[tuple[str, str]] = {
         (str(item.get("review_id", "")), str(item.get("dimension_code", "")))
         for item in available
+        if item.get("citable", True)
     }
     cited: list[tuple[str, str]] = []
     rejected: list[tuple[str, str]] = []
@@ -105,30 +110,55 @@ def answer_question(
     search_fn: Callable[..., list[dict[str, Any]]] | None = None,
     chat_fn: Callable[[list[dict[str, str]]], str] | None = None,
 ) -> dict[str, Any]:
-    """检索赛题片段并生成带有可验证引用的回答。"""
-    del session_db, session_row  # 接口保留会话上下文，持久化由事务型路由统一处理。
-    searcher = search_fn or retrieval.search_records
-    records = list(searcher(question, contest_id=contest_id, limit=8) or [])[:8]
-    if not records:
+    """检索并回答；定点记录只用其自身块，避免混入其他记录成为依据。"""
+    del session_row  # 接口保留会话上下文，持久化由事务型路由统一处理。
+    target_review = retrieval.extract_review_id(question) or ""
+    mode = "vector"
+    direct_count = 0
+    if target_review:
+        direct_records = records.load_record_blocks(target_review, session=session_db)
+        if not direct_records:
+            return {
+                "content": RECORD_NOT_FOUND_CONTENT,
+                "refs": [],
+                "model_name": os.environ.get("LLM_MODEL", "").strip(),
+                "notes": {
+                    "mode": "record_missing", "target_review": target_review, "direct": 0,
+                    "retrieved": 0, "model_called": False, "rejected": [], "unused": 0,
+                },
+            }
+        mode = "record"
+        direct_count = len(direct_records)
+        records_for_prompt = direct_records
+    else:
+        searcher = search_fn or retrieval.search_records
+        try:
+            records_for_prompt = list(searcher(question, contest_id=contest_id, limit=8) or [])[:8]
+        except LLMResponseError as exc:
+            raise AnswerError("检索失败，请稍后重试") from exc
+    available_records = records_for_prompt
+    if not available_records:
         return {
             "content": EMPTY_RETRIEVAL_CONTENT,
             "refs": [],
             "model_name": os.environ.get("LLM_MODEL", "").strip(),
-            "notes": {"retrieved": 0, "model_called": False, "rejected": [], "unused": 0},
+            "notes": {"mode": mode, "target_review": target_review, "direct": direct_count,
+                      "retrieved": 0, "model_called": False, "rejected": [], "unused": 0},
         }
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": _prompt_content(question, records)},
+        {"role": "user", "content": _prompt_content(question, available_records)},
     ]
     raw_answer = call_chat_with_retry(messages, chat_fn)
-    content, refs, rejected, unused = validate_citations(str(raw_answer), records)
+    content, refs, rejected, unused = validate_citations(str(raw_answer), available_records)
     return {
         "content": content,
         "refs": refs,
         "model_name": os.environ.get("LLM_MODEL", "").strip(),
         "notes": {
-            "retrieved": len(records), "model_called": True,
+            "mode": mode, "target_review": target_review, "direct": direct_count,
+            "retrieved": len(available_records), "model_called": True,
             "rejected": rejected, "unused": unused, "cited": len(refs),
         },
     }

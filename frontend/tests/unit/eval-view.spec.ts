@@ -40,18 +40,21 @@ const SUMMARY: EvalSummary = {
     matched: 26,
     total: 60,
     rate: 0.43333333333333335,
+    low_sample: false,
     caliber: '档位一致率 = 系统档位与 gold 档位一致的维度数 / 有 gold 的维度总数',
   },
   quote_exact_match: {
     matched: 60,
     total: 60,
     rate: 1.0,
+    low_sample: false,
     caliber: '引用精确匹配率 = 原句逐字出现在所引父块里的维度数 / 给出原句的维度数',
   },
   insufficient_evidence_hit: {
     matched: 0,
     total: 2,
     rate: 0.0,
+    low_sample: true,
     caliber: '证据不足命中情况 = gold 为证据不足且系统也判证据不足的维度数 / gold 为证据不足的维度数',
   },
   no_samples: false,
@@ -112,7 +115,7 @@ describe('评测对照页', () => {
     ])
   })
 
-  it('2. 每张卡显示 rate 的百分比、matched / total、caliber 原文', async () => {
+  it('2. 常规指标显示百分比，小样本指标改显示样本量提示', async () => {
     const wrapper = await mountAt('/eval')
 
     const band = wrapper.get('[data-metric="band_agreement"]')
@@ -123,13 +126,18 @@ describe('评测对照页', () => {
     const quote = wrapper.get('[data-metric="quote_exact_match"]')
     expect(quote.get('[data-testid="metric-rate"]').text()).toBe('100%')
     expect(quote.get('[data-testid="metric-fraction"]').text()).toBe('60 / 60')
+
+    const insufficient = wrapper.get('[data-metric="insufficient_evidence_hit"]')
+    expect(insufficient.get('[data-testid="metric-rate"]').text()).toBe('样本过少')
+    expect(insufficient.get('[data-testid="metric-rate"]').text()).not.toContain('%')
+    expect(insufficient.get('[data-testid="metric-fraction"]').text()).toBe('0 / 2')
   })
 
   it('3. rate 为 null（no_samples=true）：显示「—（无样本）」，不显示 NaN 或 0', async () => {
     vi.mocked(api.getEvalSummary).mockResolvedValue({
       ...SUMMARY,
       no_samples: true,
-      band_agreement: { matched: 0, total: 0, rate: null, caliber: '档位一致率口径' },
+      band_agreement: { matched: 0, total: 0, rate: null, low_sample: false, caliber: '档位一致率口径' },
     })
     const wrapper = await mountAt('/eval')
 

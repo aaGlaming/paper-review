@@ -1,16 +1,10 @@
 /**
- * 一致性审查页的偏移定位器（P8 阶段 4/6）。
- *
- * 审查类条目的 `char_start / char_end` 是**论文全文**的偏移，而前端共享状态里只有 `sections[]`
- * （每个 `{title, section_type, level, content}`），没有整篇 `paper_text`。
- * 所以先把各段 `content` 按顺序拼接（段间一个换行 `\n`）复现全文，再用 `evidence.text` 做
- * `indexOf` 校准：能精确找到就用精确位置，找不到就落到 `char_start` 的大致位置并诚实标注
- * 「按偏移定位，未精确匹配」，绝不静默跳到错误处。
- *
- * 这是「全文偏移 vs 分段正文」的双源风险（见 findings.md 的 Ruling）。
+ * 共享的原文偏移定位工具。
+ * 产物优先按 `section.char_start` 折算到单个 section 的 paper_text 原文片段；
+ * 只有缺少 section 区间时，旧的 change evidence 才沿用正文 `indexOf` 校准与偏移降级。
  */
 
-import type { ChangeEvidence, PaperSection } from '../api/types'
+import type { ChangeEvidence, PaperSection, ReviewArtifact } from '../api/types'
 
 /** 一次定位的结果：命中位置与是否精确。 */
 export interface EvidenceLocation {
@@ -68,4 +62,34 @@ export function locateEvidence(body: string, evidence: ChangeEvidence): Evidence
     exact: false,
     approximateNote: '按偏移定位，未精确匹配',
   }
+}
+
+/** Locate an artifact inside one raw section slice using its paper_text base offset. */
+export function locateSectionArtifact(
+  section: PaperSection,
+  sourceSlice: string,
+  artifact: ReviewArtifact,
+): EvidenceLocation | null {
+  const text = artifact.claim_text ?? artifact.table_markdown ?? artifact.citation_text ?? ''
+  if (!text) return null
+
+  if (typeof section.char_start === 'number' && typeof section.char_end === 'number') {
+    const local = artifact.char_start - section.char_start
+    const start = clampStart(local, sourceSlice.length)
+    const end = clampEnd(start + text.length, sourceSlice.length)
+    const actual = sourceSlice.slice(start, end)
+    const exact = local >= 0 && actual === text
+    return {
+      start,
+      text: actual,
+      exact,
+      ...(exact ? {} : { approximateNote: '按偏移定位，未精确匹配' }),
+    }
+  }
+
+  return locateEvidence(section.content ?? '', {
+    text,
+    char_start: artifact.char_start,
+    char_end: artifact.char_end,
+  })
 }

@@ -19,7 +19,7 @@ def _root(tmp_path: Path, *, valid=True) -> Path:
 
 def test_check_logs_valid(tmp_path, capsys):
     assert check_logs.main(["--root", str(_root(tmp_path)), "--date", DAY]) == 0
-    assert "[ok] 15 dirs, 8 writers, 0 issue" in capsys.readouterr().out
+    assert "[ok] 15 dirs, 8 writers, 0 issue (window=20261014..20261020)" in capsys.readouterr().out
 
 
 def test_check_logs_redacts_secret(tmp_path, capsys):
@@ -51,4 +51,4 @@ def test_check_logs_required_writer_empty(tmp_path, capsys):
     root = _root(tmp_path)
     (root / "report" / f"report-{DAY}.log").unlink()
     assert check_logs.main(["--root", str(root), "--date", DAY]) == 1
-    assert "required writer empty: report" in capsys.readouterr().out
+    assert "report 在最近 7 天无任何日志" in capsys.readouterr().out

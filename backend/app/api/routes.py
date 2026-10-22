@@ -3,7 +3,7 @@
 导入路径固定为 `POST /api/imports`（任务文档第 4.4 节的裁决），不实现 `/api/catalog/imports`。
 评审：`POST /api/reviews` 解析章节树后停在确认节点，`POST /api/reviews/{review_id}/resume`
 带上确认后的章节树继续到终态，`GET /api/reviews/{review_id}` 先读存档、未落档时落到会话快照。
-不实现上传文件与 PDF/docx 解析，也不实现取消、删除等冻结清单之外的路径。
+Markdown 与 DOCX 文件通过 `/api/uploads` 创建评审；PDF 需在系统外转成文本或 Markdown，运行时不解析 PDF。
 
 坏包一律返回 400，响应体带 `filename` 与 `field`，页面据此指出改哪个文件的哪个字段。
 响应体里不出现奖项字样。
@@ -12,11 +12,12 @@
 from __future__ import annotations
 
 import os
+import hashlib
 import uuid
 from pathlib import Path
 from typing import Any, Iterator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -24,11 +25,16 @@ from sqlalchemy.orm import Session
 from ..agent import trace
 from ..agent.context import build_context
 from ..agent.runner import make_agent_runner
-from ..auth.deps import require_user
-from ..auth.permissions import PERM_READ_ALL
+from ..auth.deps import require_permission, require_user
+from ..auth.permissions import PERM_CREATE, PERM_READ_ALL
 from ..importing import catalog, db
+from ..importing.docx_text import docx_to_markdown
+from ..importing.models import Contest
+from ..importing.spans import SectionRangeMismatch, sections_with_source_ranges
 from ..report import catalog as report_catalog
+from ..report import artifact_models
 from ..report import evaluation as report_evaluation
+from ..report import models as report_models
 from ..report import rubric as report_rubric
 from ..report import store as report_store
 from ..report.change_list import build_change_list
@@ -37,6 +43,9 @@ from ..review import samples as review_samples
 from ..review.consistency import check_numbers_citations_ranges
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+UPLOAD_ROOT = PROJECT_ROOT / "data" / "uploads"
+MAX_UPLOAD_BYTES = 20_000_000
+MAX_PAPER_CHARS = 200_000
 
 # 与状态图的 REVIEW_STATUSES 同词表；这里写死字面量是为了不在导入期拉进向量库（见 get_graph）。
 STATUS_PENDING = "待确认"
@@ -126,6 +135,32 @@ def _resolve_paper_text(payload: CreateReviewRequest) -> str:
     if not text.strip():
         raise HTTPException(status_code=400, detail="paper_text 为空或全是空白，不创建评审")
     return text
+
+
+def _load_evaluable_inputs(
+    contest_id: str,
+    *,
+    session: Session,
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Return published rubric inputs only when the contest and its dimensions exist."""
+    contest_key = str(contest_id or "").strip()
+    if not contest_key or session.get(Contest, contest_key) is None:
+        return None, "contest_missing"
+
+    inputs = report_rubric.load_review_inputs(contest_key, session=session)
+    rubric_id = inputs.get("rubric_id")
+    if not rubric_id:
+        return None, "published_rubric_missing"
+    dimensions = inputs.get("dimensions") or []
+    if not dimensions:
+        return None, "rubric_dimensions_empty"
+
+    # Full dimension payload includes bands and prompts needed by scoring; the initial
+    # load also checks that a published rubric has at least one dimension.
+    inputs["dimensions"] = report_rubric.load_rubric_dimensions(str(rubric_id), session=session)
+    if not inputs["dimensions"]:
+        return None, "rubric_dimensions_empty"
+    return inputs, None
 
 
 def _load_sample_text(sample_id: str) -> str:
@@ -406,22 +441,167 @@ def create_review_endpoint(
     """创建评审：解析章节树后停在确认节点。未确认不评分，响应里没有档位字段。"""
     from ..graph.review_graph import create_review
 
+    contest_id = str(payload.contest_id or "").strip()
+    if contest_id:
+        evaluable, reason = _load_evaluable_inputs(contest_id, session=session)
+        if evaluable is None:
+            log_event("review", "review_rejected", reason=reason or "not_evaluable", contest_id=contest_id)
+            raise HTTPException(status_code=422, detail="该赛题不存在或没有已发布量规，无法开始评审")
+
     text = _resolve_paper_text(payload)
     review_id = uuid.uuid4().hex
     create_review(text, review_id, graph=graph)
     snapshot = graph.get_state(_thread_config(review_id)).values or {}
     sections = list(snapshot.get("sections") or ())
+    if not contest_id:
+        # A parse-only parent row lets the existing artifact table's review_id FK
+        # persist extracted artifacts. It carries no scoring dimensions or rubric.
+        session.add(
+            report_models.Review(
+                review_id=review_id,
+                user_id=user["user_id"],
+                contest_id="",
+                rubric_id="",
+                rubric_version=1,
+                model_name="",
+                change_list=[],
+            )
+        )
+        session.flush()
     report_store.save_session(
         review_id,
         paper_text=text,
         sections=sections,
         confirmed=False,
         status=STATUS_PENDING,
-        contest_id=str(payload.contest_id or ""),
+        contest_id=contest_id,
         user_id=user["user_id"],
         session=session,
     )
     return {"review_id": review_id, "status": STATUS_PENDING, "sections": sections}
+
+
+@router.post("/uploads", status_code=201)
+async def upload_markdown_endpoint(
+    file: UploadFile = File(...),
+    contest_id: str = Form(...),
+    session: Session = Depends(get_session),
+    graph: Any = Depends(get_graph),
+    user: dict[str, Any] = Depends(require_permission(PERM_CREATE)),
+) -> dict[str, Any]:
+    """Upload Markdown or DOCX and create the same pending review as POST /reviews."""
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in {".md", ".docx"}:
+        raise HTTPException(
+            status_code=415,
+            detail="仅支持 .md 与 .docx。PDF 请先在外部转成文本或 Markdown 后再上传；系统不在线上解析 PDF。",
+        )
+    if not contest_id.strip():
+        raise HTTPException(status_code=422, detail="contest_id 不能为空")
+
+    try:
+        raw = await file.read(MAX_UPLOAD_BYTES + 1)
+        if len(raw) > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail=f"文件超过 {MAX_UPLOAD_BYTES} 字节上限")
+        if suffix == ".md":
+            try:
+                decoded = raw.decode("utf-8-sig")
+            except UnicodeDecodeError:
+                try:
+                    decoded = raw.decode("gb18030")
+                except UnicodeDecodeError as exc:
+                    raise HTTPException(
+                        status_code=422, detail="文件编码不是有效 UTF-8/GB18030"
+                    ) from exc
+        elif suffix == ".docx":
+            try:
+                decoded = docx_to_markdown(raw)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+        paper_text = decoded.replace("\r\n", "\n").replace("\r", "\n")
+        if not paper_text.strip():
+            raise HTTPException(status_code=422, detail="文件为空或全是空白文本")
+        if len(paper_text) > MAX_PAPER_CHARS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"规范化文本字符数超过 {MAX_PAPER_CHARS} 个字符上限",
+            )
+
+        sha256 = hashlib.sha256(raw).hexdigest()
+        review_id = uuid.uuid4().hex
+        target_dir = UPLOAD_ROOT / review_id
+        target_path = target_dir / f"{sha256}{suffix}"
+        persisted = False
+        try:
+            target_dir.mkdir(parents=True, exist_ok=False)
+            target_path.write_bytes(raw)
+            persisted = True
+
+            from ..graph.review_graph import create_review
+
+            resolved_text = _resolve_paper_text(
+                CreateReviewRequest(paper_text=paper_text, contest_id=contest_id.strip())
+            )
+            create_review(resolved_text, review_id, graph=graph)
+            snapshot = graph.get_state(_thread_config(review_id)).values or {}
+            sections = list(snapshot.get("sections") or ())
+            report_store.save_session(
+                review_id,
+                paper_text=resolved_text,
+                sections=sections,
+                confirmed=False,
+                status=STATUS_PENDING,
+                contest_id=contest_id.strip(),
+                user_id=user["user_id"],
+                session=session,
+            )
+            session.commit()
+        except Exception as exc:
+            session.rollback()
+            file_removed = not target_path.exists()
+            if target_path.exists():
+                try:
+                    target_path.unlink()
+                    file_removed = True
+                except OSError:
+                    file_removed = False
+            if target_dir.exists():
+                try:
+                    target_dir.rmdir()
+                except OSError:
+                    pass
+            if persisted:
+                log_event(
+                    "importing",
+                    "paper_upload_rollback",
+                    review_id=review_id,
+                    bytes=len(raw),
+                    chars=len(paper_text),
+                    ext=suffix,
+                    sha256=sha256,
+                    file_removed=file_removed,
+                )
+            raise HTTPException(status_code=500, detail="评审写入失败，已尝试清理上传文件") from exc
+
+        log_event(
+            "importing",
+            "paper_uploaded",
+            review_id=review_id,
+            bytes=len(raw),
+            chars=len(paper_text),
+            ext=suffix,
+            sha256=sha256,
+            source_format=suffix.lstrip("."),
+        )
+        return {
+            "review_id": review_id,
+            "status": STATUS_PENDING,
+            "sections": sections,
+            "source_sha256": sha256,
+            "paper_chars": len(paper_text),
+        }
+    finally:
+        await file.close()
 
 
 @router.post("/reviews/{review_id}/resume")
@@ -439,21 +619,27 @@ def resume_review_endpoint(
     if record is None:
         raise HTTPException(status_code=404, detail=f"找不到评审会话 {review_id}")
 
+    sections = payload.sections if payload.sections is not None else record.get("sections") or []
+    contest_id = str(record.get("contest_id") or "")
+    inputs, reason = _load_evaluable_inputs(contest_id, session=session)
+    if inputs is None:
+        log_event(
+            "review",
+            "review_rejected",
+            reason=reason or "not_evaluable",
+            contest_id=contest_id,
+            review_id=review_id,
+        )
+        raise HTTPException(status_code=422, detail="该赛题没有已发布量规，无法评分")
+
     if not (graph.get_state(_thread_config(review_id)).values or {}):
         _restore_snapshot(graph, review_id, record)
 
-    sections = payload.sections if payload.sections is not None else record.get("sections") or []
-    contest_id = str(record.get("contest_id") or "")
-    inputs = report_rubric.load_review_inputs(contest_id, session=session)
-    if inputs["rubric_id"] is not None:
-        inputs["dimensions"] = report_rubric.load_rubric_dimensions(
-            str(inputs["rubric_id"]), session=session
-        )
     dimensions = inputs["dimensions"]
     paper_text = record.get("paper_text", "")
     from .app import model_available
 
-    use_model = model_available() and inputs["rubric_id"] is not None
+    use_model = model_available()
     if use_model:
         index = _prepare_review_index(
             review_id=review_id,
@@ -506,14 +692,9 @@ def resume_review_endpoint(
         ]
     else:
         results = report_evaluation.deterministic_results(paper_text, dimensions)
-    if inputs["rubric_id"] is None:
-        # 没绑定赛题就没有量规可依据：各维为空，修改清单也为空，不兜底到别的赛题。
-        change_list: list[dict[str, Any]] = []
-        note = NOTE_NO_CONTEST
-    else:
-        findings = check_numbers_citations_ranges(paper_text, inputs["constraints"])
-        change_list = build_change_list(results, findings, dimensions)
-        note = NOTE_MODEL if use_model else NOTE_DETERMINISTIC
+    findings = check_numbers_citations_ranges(paper_text, inputs["constraints"])
+    change_list = build_change_list(results, findings, dimensions)
+    note = NOTE_MODEL if use_model else NOTE_DETERMINISTIC
 
     report_store.save_session(
         review_id,
@@ -613,6 +794,98 @@ def _check_review_access(
     raise HTTPException(status_code=404, detail="找不到评审记录")
 
 
+@router.get("/reviews/{review_id}/artifacts")
+def get_review_artifacts(
+    review_id: str,
+    session: Session = Depends(get_session),
+    user: dict[str, Any] = Depends(require_user),
+) -> list[dict[str, Any]]:
+    """Read artifacts for an accessible review; an empty artifact set is `[]`."""
+    from sqlalchemy import select
+
+    _check_review_access(review_id, user, session=session)
+    rows = session.scalars(
+        select(artifact_models.ReviewArtifact)
+        .where(artifact_models.ReviewArtifact.review_id == review_id)
+        .order_by(artifact_models.ReviewArtifact.ordinal, artifact_models.ReviewArtifact.artifact_id)
+    ).all()
+    return [
+        {
+            "artifact_id": row.artifact_id,
+            "review_id": row.review_id,
+            "ordinal": row.ordinal,
+            "artifact_type": row.artifact_type,
+            "section_type": row.section_type,
+            "char_start": row.char_start,
+            "char_end": row.char_end,
+            "claim_text": row.claim_text,
+            "table_markdown": row.table_markdown,
+            "citation_text": row.citation_text,
+        }
+        for row in rows
+    ]
+
+
+@router.post("/reviews/{review_id}/artifacts/extract")
+def extract_review_artifacts(
+    review_id: str,
+    session: Session = Depends(get_session),
+    user: dict[str, Any] = Depends(require_user),
+) -> dict[str, Any]:
+    """Extract deterministic Markdown artifacts and replace this review's rows atomically."""
+    from sqlalchemy import delete, func, select
+
+    from ..importing.artifacts import extract_artifacts
+
+    _check_review_access(review_id, user, session=session)
+    snapshot = report_store.load_session(review_id, session=session)
+    if snapshot is None:
+        raise HTTPException(status_code=409, detail="缺少评审会话，无法读取已确认章节与正文")
+    if not snapshot.get("confirmed") and str(snapshot.get("contest_id") or "").strip():
+        raise HTTPException(status_code=409, detail="评审章节尚未确认，不能抽取产物")
+    # Unbound sessions are parse-only: keep their extraction path available without
+    # invoking resume/scoring. Their parser-produced sections are still range-checked below.
+    paper_text = snapshot.get("paper_text") or ""
+    if not paper_text.strip():
+        raise HTTPException(status_code=422, detail="评审会话缺少非空正文，不能抽取产物")
+    sections = snapshot.get("sections") or []
+    if not sections:
+        raise HTTPException(status_code=409, detail="评审会话缺少已确认章节，不能抽取产物")
+    try:
+        positioned_sections = sections_with_source_ranges(paper_text, sections)
+    except SectionRangeMismatch as exc:
+        raise HTTPException(status_code=409, detail="已确认章节结构与评审正文不一致，请重新确认章节") from exc
+    try:
+        items = extract_artifacts(paper_text, positioned_sections)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"产物抽取校验失败：{exc}") from exc
+
+    artifact_model = artifact_models.ReviewArtifact
+    replaced = session.scalar(
+        select(func.count()).select_from(artifact_model).where(artifact_model.review_id == review_id)
+    ) or 0
+    session.execute(delete(artifact_model).where(artifact_model.review_id == review_id))
+    try:
+        artifact_models.save_artifacts(review_id, items, session=session)
+        session.flush()
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=f"产物保存校验失败：{exc}") from exc
+
+    by_type = {
+        artifact_type: sum(item["artifact_type"] == artifact_type for item in items)
+        for artifact_type in ("claim", "table", "citation")
+    }
+    log_event(
+        "importing",
+        "artifacts_extracted",
+        review_id=review_id,
+        count=len(items),
+        by_type=by_type,
+        replaced=int(replaced),
+    )
+    return {"count": len(items), "by_type": by_type, "replaced": int(replaced)}
+
+
 @router.get("/reviews/{review_id}")
 def get_review(
     review_id: str,
@@ -621,6 +894,18 @@ def get_review(
 ) -> dict[str, Any]:
     """两段式读取：已落档的返回存档；只有会话快照的返回章节树；都没有返回 404。"""
     record = _check_review_access(review_id, user, session=session)
+    pending = report_store.load_session(review_id, session=session)
+    parse_only_parent = bool(
+        record is not None
+        and not record.get("contest_id")
+        and not record.get("rubric_id")
+        and not record.get("model_name")
+        and not record.get("dimensions")
+        and pending is not None
+        and not pending.get("confirmed")
+    )
+    if parse_only_parent:
+        record = None
     owner_id = record.get("user_id") if record is not None else None
     if record is not None:
         if PERM_READ_ALL in (user.get("permissions") or []) and owner_id != user["user_id"]:
@@ -628,10 +913,18 @@ def get_review(
                 "audit", "record_viewed", viewer_id=user["user_id"],
                 review_id=review_id, owner_id=owner_id,
             )
-        pending = report_store.load_session(review_id, session=session)
-        record["sections"] = list(pending.get("sections") or []) if pending else []
+        paper_text = str(pending.get("paper_text") or "") if pending else ""
+        sections = list(pending.get("sections") or []) if pending else []
+        try:
+            ranged = sections_with_source_ranges(paper_text, sections) if sections else []
+            sections_ranged = bool(sections) and bool(paper_text)
+        except SectionRangeMismatch:
+            ranged = [{key: value for key, value in section.items() if key not in {"char_start", "char_end"}} for section in sections]
+            sections_ranged = False
+        record["sections"] = ranged
+        record["sections_ranged"] = sections_ranged
+        record["paper_text"] = paper_text
         return record
-    pending = report_store.load_session(review_id, session=session)
     if pending is None:
         raise HTTPException(status_code=404, detail="找不到评审记录")
     owner_id = pending.get("user_id")
@@ -640,10 +933,21 @@ def get_review(
             "audit", "record_viewed", viewer_id=user["user_id"],
             review_id=review_id, owner_id=owner_id,
         )
+    paper_text = str(pending.get("paper_text") or "")
+    sections = list(pending.get("sections") or [])
+    try:
+        ranged = sections_with_source_ranges(paper_text, sections) if sections else []
+        sections_ranged = bool(sections) and bool(paper_text)
+    except SectionRangeMismatch:
+        ranged = [{key: value for key, value in section.items() if key not in {"char_start", "char_end"}} for section in sections]
+        sections_ranged = False
     return {
         "review_id": pending["review_id"],
+        "user_id": pending.get("user_id"),
         "status": pending["status"],
-        "sections": pending["sections"],
+        "sections": ranged,
+        "sections_ranged": sections_ranged,
+        "paper_text": paper_text,
         "confirmed": bool(pending["confirmed"]),
     }
 

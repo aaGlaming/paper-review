@@ -145,7 +145,10 @@ def test_tampered_signature_rejected(client, monkeypatch):
     _register(client)
     token = _login(client).json()["token"]
     head, body, sig = token.split(".")
-    tampered = f"{head}.{body}.{'A' if sig[-1] != 'A' else 'B'}{sig[1:]}"
+    signature_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    replacement = signature_alphabet[(signature_alphabet.index(sig[-1]) + 16) % 64]
+    tampered = f"{head}.{body}.{sig[:-1]}{replacement}"
+    assert tampered != token
     response = client.get("/api/auth/me", headers={"Authorization": f"Bearer {tampered}"})
     assert response.status_code == 401
     with pytest.raises(TokenError) as exc_info:

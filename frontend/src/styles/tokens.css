@@ -15,6 +15,9 @@
   --pr-ink: #1b2430;
   --pr-ink-muted: #4a5563;
   --pr-ink-faint: #6d7885;
+  --pr-chart-1: #4a5563;
+  --pr-chart-2: #6d7885;
+  --pr-chart-3: #87909a;
 
   /* 主色：只承载「可操作」，不做装饰性渐变。 */
   --pr-primary: #2b5797;
@@ -246,6 +249,9 @@ body {
   --pr-ink: #ece7db;
   --pr-ink-muted: #bfb9aa;
   --pr-ink-faint: #98917f;
+  --pr-chart-1: #bfb9aa;
+  --pr-chart-2: #98917f;
+  --pr-chart-3: #737b87;
 
   --pr-primary: #9db6dd;
   --pr-primary-strong: #c2d2ec;

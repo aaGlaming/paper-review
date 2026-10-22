@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import os
 import time
-from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -135,7 +134,8 @@ def get_session_messages(
     return {"session_id": session_id, "messages": [
         {
             "message_id": row.message_id, "role": row.role, "content": row.content,
-            "refs": row.refs, "model_name": row.model_name, "created_at": _iso(row.created_at),
+            "refs": row.refs, "model_name": row.model_name, "seq": row.seq,
+            "created_at": _iso(row.created_at),
         }
         for row in messages
     ]}
@@ -150,6 +150,7 @@ def post_answer(
     search_fn=Depends(get_search_fn),
     chat_fn=Depends(get_chat_fn),
 ) -> dict[str, Any]:
+    """完成一轮问询；顺序由 chat_message.seq 保证，不再改写时间戳。"""
     owner = _owned_session(session, session_id, user["user_id"])
     question = (body.question or "").strip()
     if not question:
@@ -173,20 +174,17 @@ def post_answer(
                   user_id=user["user_id"], reason=answering.failure_reason(exc))
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    user_message = chat_store.append_message(session, session_id, "user", question)
+    chat_store.append_message(session, session_id, "user", question)
     assistant_message = chat_store.append_message(
         session, session_id, "assistant", result["content"],
         refs=result["refs"], model_name=result["model_name"],
-    )
-    # MySQL DATETIME 默认精度为秒；为同轮 user/assistant 消息建立可读的确定顺序。
-    assistant_message.created_at = max(
-        assistant_message.created_at, user_message.created_at + timedelta(seconds=1)
     )
     chat_store.touch_session(session, session_id)
     notes = result["notes"]
     log_event(
         "ai_chat", "chat_answered", session_id=session_id, user_id=user["user_id"],
         question_chars=len(question), retrieved=notes["retrieved"], cited=len(result["refs"]),
+        mode=notes["mode"], target_review=notes["target_review"],
         rejected=len(notes["rejected"]), unused=notes["unused"],
         elapsed_ms=int((time.perf_counter() - started) * 1000),
     )
@@ -195,6 +193,8 @@ def post_answer(
         "content": result["content"], "refs": result["refs"],
         "model_name": result["model_name"],
         "notifications": {"rejected": len(notes["rejected"]), "unused": notes["unused"]},
+        "notes": {"mode": notes["mode"], "target_review": notes["target_review"],
+                  "direct": notes["direct"]},
     }
 
 
@@ -232,6 +232,7 @@ def post_analytics(
 _SUMMARY_SYSTEM_PROMPT = (
     "你是教研摘要助手。只能使用下面给出的统计数字与记录引用；不得新增任何数字；"
     "不得输出奖项、名次、获奖概率；用中文回答，控制在 300 字以内，先给结论再给依据。"
+    "合计已由系统算好，禁止自行相加或改写；凡引用数字必须逐字照抄【结论数字·照抄】里的值。"
 )
 
 
@@ -269,8 +270,42 @@ def post_summary(
          "dimension_code": str(item.get("dimension_code", ""))}
         for item in available
     ]
+    band_result = statistics["bands"]
+    normalized_bands = [
+        {
+            "dimension_code": item["dimension_code"],
+            "counts_normalized": item["counts_normalized"],
+            "insufficient": item["insufficient"],
+            "reviews": item["reviews"],
+        }
+        for item in band_result["bands"]
+    ]
+    details = {
+        "bands": {
+            "reviews": band_result["reviews"],
+            "students": band_result["students"],
+            "orphan_reviews": band_result["orphan_reviews"],
+            "insufficient_total": band_result["insufficient_total"],
+            "bands": normalized_bands,
+        },
+        "conflicts": statistics["conflicts"],
+        "gaps": {"count": statistics["gaps"]["count"]},
+    }
+    insufficient_dimensions = " / ".join(
+        f"{item['dimension_code']} {item['insufficient']}" for item in band_result["bands"]
+    ) or "无"
+    conflict_kinds = " / ".join(
+        f"{kind} {count}" for kind, count in statistics["conflicts"]["kinds"].items()
+    ) or "无"
+    conclusion_numbers = "\n".join((
+        f"提交 {band_result['reviews']} 条（学生 {band_result['students']} 人，无主 {band_result['orphan_reviews']} 条）",
+        f"证据不足合计 {band_result['insufficient_total']} 条：{insufficient_dimensions}",
+        f"冲突条目合计 {statistics['conflicts']['finding_total']} 条：{conflict_kinds}",
+        f"缺原句证据 {statistics['gaps']['count']} 条",
+    ))
     prompt = "\n".join((
-        "【统计】" + json.dumps(statistics, ensure_ascii=False, separators=(",", ":")),
+        "【结论数字·照抄】\n" + conclusion_numbers,
+        "【明细】" + json.dumps(details, ensure_ascii=False, separators=(",", ":")),
         "【可用引用】" + json.dumps(references, ensure_ascii=False, separators=(",", ":")),
         "【任务】写一段给教研会用的情况摘要，并在结尾用 "
         "[review_id=xxx dim=yyy] 标注至少 3 条证据。",

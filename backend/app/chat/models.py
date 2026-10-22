@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -41,13 +41,22 @@ class ChatMessage(ChatBase):
     # v3.3.1 起写入 `[{review_id, dimension_code}]`，v3.3.0 恒为 null。
     refs: Mapped[list[dict[str, str]] | None] = mapped_column(JSON, nullable=True)
     model_name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
+    # 同一会话内的写入序号，只用于同一秒内的稳定排序，不是全局 id。
+    seq: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
 
 
 def create_chat_schema(engine: Engine | None = None) -> None:
-    """幂等建聊天表；应用启动不会隐式调用本函数。"""
+    """幂等建表并补 seq 列；旧消息初始为 0，可由显式回填脚本编号。
+
+    应用启动不会隐式调用本函数；不修改已有时间戳或索引。
+    """
     if engine is None:
         from ..importing.db import get_engine
 
         engine = get_engine()
     ChatBase.metadata.create_all(engine)
+    columns = {column["name"] for column in inspect(engine).get_columns("chat_message")}
+    if "seq" not in columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE chat_message ADD COLUMN seq INT NOT NULL DEFAULT 0"))

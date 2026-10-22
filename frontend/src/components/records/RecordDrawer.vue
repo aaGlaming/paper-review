@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 
-import { ApiError, getReview } from '../../api'
+import { ApiError, extractReviewArtifacts, getReview, getReviewArtifacts } from '../../api'
 import type {
   ChangeEvidence,
   ChangeListItem,
   DimensionResult,
   ReviewArchive,
+  ReviewArtifact,
 } from '../../api/types'
 import { concatSections, locateEvidence } from '../../composables/useOffsetLocator'
+import { useAuth } from '../../composables/useAuth'
 import ConflictItem from '../ConflictItem.vue'
 import DimensionCard from '../DimensionCard.vue'
+import SectionReader from '../SectionReader.vue'
 import SuggestionItem from '../SuggestionItem.vue'
 
 const props = defineProps<{ reviewId: string | null }>()
@@ -23,8 +26,13 @@ const drawerOpen = computed({
   },
 })
 const review = ref<ReviewArchive | null>(null)
+const artifacts = ref<ReviewArtifact[]>([])
 const loading = ref(false)
 const errorMessage = ref('')
+const artifactError = ref('')
+const extracting = ref(false)
+const activeSectionIndex = ref(0)
+const auth = useAuth()
 const activeDimension = ref<string | null>(null)
 const focusedChange = ref<{ key: string; evidence: ChangeEvidence } | null>(null)
 const quoteSection = ref<HTMLElement | null>(null)
@@ -34,6 +42,12 @@ const archived = computed(() => review.value && 'dimensions' in review.value ? r
 const dimensions = computed(() => archived.value?.dimensions ?? [])
 const sections = computed(() => review.value?.sections ?? [])
 const body = computed(() => concatSections(sections.value))
+const paperText = computed(() => review.value?.paper_text ?? '')
+const sectionsRanged = computed(() => review.value?.sections_ranged === true)
+const activeSection = computed(() => sections.value[activeSectionIndex.value] ?? sections.value[0] ?? null)
+const canExtract = computed(() => Boolean(
+  review.value && (auth.isTeacher() || review.value.user_id === auth.user.value?.user_id),
+))
 const changes = computed(() => archived.value?.change_list ?? [])
 
 function groupByKind(items: ChangeListItem[]): Array<{ kind: string; items: ChangeListItem[] }> {
@@ -89,8 +103,12 @@ const focusedExcerpt = computed(() => focusedChange.value ? excerpt(focusedChang
 function clearInternalState(): void {
   requestSequence += 1
   review.value = null
+  artifacts.value = []
   loading.value = false
   errorMessage.value = ''
+  artifactError.value = ''
+  extracting.value = false
+  activeSectionIndex.value = 0
   activeDimension.value = null
   focusedChange.value = null
 }
@@ -114,8 +132,17 @@ watch(
     const sequence = requestSequence
     loading.value = true
     try {
-      const result = await getReview(reviewId)
-      if (sequence === requestSequence) review.value = result
+      const [result, artifactRows] = await Promise.all([
+        getReview(reviewId),
+        getReviewArtifacts(reviewId).catch((reason: unknown) => {
+          artifactError.value = messageFrom(reason)
+          return []
+        }),
+      ])
+      if (sequence === requestSequence) {
+        review.value = result
+        artifacts.value = artifactRows
+      }
     } catch (reason) {
       if (sequence === requestSequence) errorMessage.value = messageFrom(reason)
     } finally {
@@ -124,6 +151,20 @@ watch(
   },
   { immediate: true },
 )
+
+async function extractArtifacts(): Promise<void> {
+  if (!props.reviewId || extracting.value || !canExtract.value) return
+  extracting.value = true
+  artifactError.value = ''
+  try {
+    await extractReviewArtifacts(props.reviewId)
+    artifacts.value = await getReviewArtifacts(props.reviewId)
+  } catch (reason) {
+    artifactError.value = messageFrom(reason)
+  } finally {
+    extracting.value = false
+  }
+}
 
 async function scrollToQuotes(): Promise<void> {
   await nextTick()
@@ -157,6 +198,30 @@ async function locateChange(payload: { key: string; evidence: ChangeEvidence }):
     <p v-if="loading" class="record-drawer__status" role="status">正在读取…</p>
     <p v-else-if="errorMessage" class="record-drawer__error" role="alert">{{ errorMessage }}</p>
     <template v-else-if="review">
+      <section v-if="sections.length" class="record-drawer__section" aria-labelledby="record-drawer-artifacts">
+        <h2 id="record-drawer-artifacts">产物与原文定位</h2>
+        <nav v-if="sections.length > 1" class="record-drawer__section-nav" aria-label="选择章节">
+          <button
+            v-for="(section, index) in sections"
+            :key="`${index}-${section.title}`"
+            type="button"
+            :aria-pressed="activeSectionIndex === index"
+            @click="activeSectionIndex = index"
+          >{{ section.title }}</button>
+        </nav>
+        <SectionReader
+          :section="activeSection"
+          :sections="sections"
+          :paper-text="paperText"
+          :sections-ranged="sectionsRanged"
+          :review-id="reviewId ?? ''"
+          :artifacts="artifacts"
+          :can-extract="canExtract"
+          :extracting="extracting"
+          :extract-error="artifactError"
+          @extract="extractArtifacts"
+        />
+      </section>
       <section class="record-drawer__section" aria-labelledby="record-drawer-dimensions">
         <h2 id="record-drawer-dimensions">五维档位</h2>
         <div v-if="dimensions.length" class="record-drawer__dimensions">
@@ -253,6 +318,18 @@ async function locateChange(payload: { key: string; evidence: ChangeEvidence }):
 .record-drawer__section h2 {
   margin: 0 0 var(--pr-space-4);
   font-size: var(--pr-text-xl);
+}
+
+.record-drawer__section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pr-space-2);
+  margin-bottom: var(--pr-space-3);
+}
+
+.record-drawer__section-nav button[aria-pressed='true'] {
+  border-color: var(--pr-primary-strong);
+  background: var(--pr-primary-soft);
 }
 
 .record-drawer__section h3,

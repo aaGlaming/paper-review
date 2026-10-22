@@ -57,9 +57,9 @@ const SUMMARY: EvalSummary = {
   gradable_papers: 12,
   gradable_dimensions: 60,
   source: 'deterministic',
-  band_agreement: { matched: 26, total: 60, rate: 0.43333333333333335, caliber: '档位一致率口径' },
-  quote_exact_match: { matched: 60, total: 60, rate: 1.0, caliber: '引用精确匹配率口径' },
-  insufficient_evidence_hit: { matched: 0, total: 2, rate: 0.0, caliber: '证据不足命中口径' },
+  band_agreement: { matched: 26, total: 60, rate: 0.43333333333333335, low_sample: false, caliber: '档位一致率口径' },
+  quote_exact_match: { matched: 60, total: 60, rate: 1.0, low_sample: false, caliber: '引用精确匹配率口径' },
+  insufficient_evidence_hit: { matched: 2, total: 5, rate: 0.4, low_sample: false, caliber: '证据不足命中口径' },
   no_samples: false,
   demo_papers_without_gold: 3,
   note: 'source=deterministic 脚本自检',
@@ -172,7 +172,7 @@ describe('手稿风修复', () => {
       props: {
         code: 'band_agreement',
         name: '档位一致率',
-        metric: { matched: 0, total: 0, rate: null, caliber: '无样本口径' },
+        metric: { matched: 0, total: 0, rate: null, low_sample: false, caliber: '无样本口径' },
       },
     })
     expect(wrapper.find('.metric__chart-line').exists()).toBe(false)
@@ -234,7 +234,11 @@ describe('手稿风修复', () => {
       }
     }
     walk(SRC)
-    expect(ids.size).toBe(87)
+    expect(ids.size).toBe(97)
     expect(ids.has('theme-toggle')).toBe(true)
+    expect(ids.has('artifact-panel')).toBe(true)
+    expect(ids.has('artifact-empty')).toBe(true)
+    expect(ids.has('`artifact-group-${group.type}`')).toBe(true)
+    expect(ids.has('artifact-mark')).toBe(true)
   })
 })

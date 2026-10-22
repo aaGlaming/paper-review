@@ -42,5 +42,12 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 120_000,
     },
+    {
+      command: 'npm run preview -- --host 127.0.0.1 --port 5174',
+      cwd: CONFIG_DIR,
+      url: 'http://127.0.0.1:5174',
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
   ],
 })

@@ -1,0 +1,72 @@
+{
+  "category": "横向对比",
+  "http_status": 200,
+  "request": {
+    "contest_id": "cumcm-2024-A",
+    "kind": "bands"
+  },
+  "response": {
+    "kind": "bands",
+    "result": {
+      "contest_id": "cumcm-2024-A",
+      "reviews": 106,
+      "students": 2,
+      "orphan_reviews": 70,
+      "bands": [
+        {
+          "dimension_code": "assumption",
+          "counts": {
+            "不足": 4,
+            "基本": 101,
+            "证据不足": 1
+          },
+          "insufficient": 5,
+          "reviews": 106
+        },
+        {
+          "dimension_code": "constraint_check",
+          "counts": {
+            "不足": 7,
+            "充分": 2,
+            "基本": 76,
+            "证据不足": 21
+          },
+          "insufficient": 28,
+          "reviews": 106
+        },
+        {
+          "dimension_code": "modeling",
+          "counts": {
+            "充分": 63,
+            "基本": 26,
+            "证据不足": 17
+          },
+          "insufficient": 17,
+          "reviews": 106
+        },
+        {
+          "dimension_code": "presentation",
+          "counts": {
+            "不足": 1,
+            "充分": 5,
+            "基本": 78,
+            "证据不足": 22
+          },
+          "insufficient": 23,
+          "reviews": 106
+        },
+        {
+          "dimension_code": "solution",
+          "counts": {
+            "充分": 2,
+            "基本": 82,
+            "证据不足": 22
+          },
+          "insufficient": 22,
+          "reviews": 106
+        }
+      ],
+      "insufficient_total": 95
+    }
+  }
+}

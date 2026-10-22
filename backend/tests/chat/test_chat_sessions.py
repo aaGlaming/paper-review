@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import secrets
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -129,6 +130,13 @@ def test_list_sessions_sorts_updated_descending(client, engine, actors):
     headers = _headers(_token(engine, actors["teacher"]))
     first = client.post("/api/chat/sessions", headers=headers, json={}).json()
     second = client.post("/api/chat/sessions", headers=headers, json={}).json()
+    # Use distinct timestamps so the ordering assertion does not depend on two
+    # requests landing in the same clock tick; equal timestamps use session_id.
+    with Session(engine) as session:
+        base = datetime(2026, 1, 1)
+        session.get(chat_models.ChatSession, first["session_id"]).updated_at = base
+        session.get(chat_models.ChatSession, second["session_id"]).updated_at = base + timedelta(seconds=1)
+        session.commit()
     response = client.get("/api/chat/sessions", headers=headers)
     assert [item["session_id"] for item in response.json()["sessions"]] == [
         second["session_id"], first["session_id"]
@@ -158,6 +166,7 @@ def test_messages_are_ordered_and_refs_are_null(client, engine, actors):
     response = client.get(f"/api/chat/sessions/{session_id}/messages", headers=headers)
     assert response.status_code == 200
     assert [message["content"] for message in response.json()["messages"]] == ["second", "first"]
+    assert [message["seq"] for message in response.json()["messages"]] == [1, 2]
     assert all(message["refs"] is None for message in response.json()["messages"])
 
 

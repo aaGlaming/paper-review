@@ -13,15 +13,12 @@ const items = [
   { label: '修改建议', to: '/suggestions' },
   { label: '评测对照', to: '/eval' },
   { label: '记录总览', to: '/records', permission: 'review:read:all' },
+  { label: 'AI 问询', to: '/chat', permission: 'chat:use' },
+  { label: '数据大屏', to: '/dashboard', permission: 'dashboard:view' },
 ] as const
 
-// P19 / P20 仍是 disabled 占位；只有权限项通过 hasPermission 才加入可点导航。
-const pendingItems = [
-  { label: 'AI 问询', version: 'P19' },
-  { label: '数据大屏', version: 'P20' },
-] as const
-
-const { user, isTeacher, hasPermission, logout } = useAuth()
+// 权限项通过 hasPermission 才加入可点导航。
+const { user, hasPermission, logout } = useAuth()
 const router = useRouter()
 const visibleItems = computed(() =>
   items.filter((item) => !('permission' in item) || hasPermission(item.permission)),
@@ -56,17 +53,6 @@ async function signOut(): Promise<void> {
       >
         {{ item.label }}
       </RouterLink>
-      <span
-        v-for="item in (isTeacher() ? pendingItems : [])"
-        :key="item.label"
-        class="nav__link nav__link--pending"
-        data-nav-item
-        data-nav-pending
-        :title="`${item.version} 上线`"
-        aria-disabled="true"
-      >
-        {{ item.label }}
-      </span>
     </nav>
     <div class="nav__spacer" aria-hidden="true"></div>
     <div v-if="user" class="nav__user" data-nav-user>
@@ -146,12 +132,6 @@ async function signOut(): Promise<void> {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
-}
-
-/* P18–P20 占位：不可点，视觉置灰 */
-.nav__link--pending {
-  color: var(--pr-ink-faint);
-  cursor: not-allowed;
 }
 
 .nav__user {

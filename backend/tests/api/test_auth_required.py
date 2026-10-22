@@ -123,7 +123,7 @@ def test_student_create_review_persists_student_owner(client, engine):
     student = _make_user(engine, "stu001", "student")
     response = client.post(
         "/api/reviews",
-        json={"paper_text": "第一章\n\n研究内容。", "contest_id": "c1"},
+        json={"paper_text": "第一章\n\n研究内容。", "contest_id": ""},
         headers=_auth(_token(engine, student)),
     )
     assert response.status_code == 201, response.text
@@ -170,7 +170,10 @@ def test_tampered_token_has_same_401_message(client, engine):
     student = _make_user(engine, "stu001", "student")
     token = _token(engine, student)
     head, body, signature = token.split(".")
-    altered = f"{head}.{body}.{'A' if signature[-1] != 'A' else 'B'}{signature[1:]}"
+    signature_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    replacement = signature_alphabet[(signature_alphabet.index(signature[-1]) + 16) % 64]
+    altered = f"{head}.{body}.{signature[:-1]}{replacement}"
+    assert altered != token
     response = client.get("/api/reviews/r1", headers=_auth(altered))
     assert response.status_code == 401
     assert response.json() == {"detail": "未登录或登录已过期"}

@@ -8,7 +8,7 @@ import RecordDrawer from '../../src/components/records/RecordDrawer.vue'
 
 vi.mock('../../src/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/api')>()
-  return { ...actual, getReview: vi.fn() }
+  return { ...actual, getReview: vi.fn(), getReviewArtifacts: vi.fn().mockResolvedValue([]) }
 })
 
 const REVIEW: ReviewArchive = {

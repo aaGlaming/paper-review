@@ -215,7 +215,7 @@ def test_teacher_gets_other_detail_200_with_permissions_and_reviews(
 def test_create_review_with_token_stores_owner(client, engine, student):
     response = client.post(
         "/api/reviews",
-        json={"paper_text": "第一章\n\n本研究以板凳龙为对象。", "contest_id": "c1"},
+        json={"paper_text": "第一章\n\n本研究以板凳龙为对象。", "contest_id": ""},
         headers=_auth(_token(engine, student)),
     )
     assert response.status_code == 201, response.text

@@ -18,6 +18,7 @@ import type {
   ImportSummary,
   PaperSection,
   ReviewArchive,
+  ReviewArtifact,
   ReviewCreated,
   ReviewReport,
   PublishedRubricText,
@@ -27,6 +28,9 @@ import type {
   AgentStepsResponse,
   AuthUser,
   ReviewListResponse,
+  ChatSessionListResponse, ChatSessionItem, ChatMessageListResponse, ChatAnswerResponse,
+  AnalyticsKind, AnalyticsResponse, SummaryResponse,
+  DashboardSummary, DashboardTrend,
 } from './types'
 
 let authToken: string | null = null
@@ -111,6 +115,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T
 }
 
+export function getDashboardSummary(): Promise<DashboardSummary> {
+  return request<DashboardSummary>('/api/dashboard/summary')
+}
+
+export function getDashboardTrend(days = 30): Promise<DashboardTrend> {
+  return request<DashboardTrend>(`/api/dashboard/trend?days=${encodeURIComponent(String(days))}`)
+}
+
 export function authRegister(payload: { username: string; email: string; password: string; display_name: string }): Promise<AuthUser> {
   return request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) })
 }
@@ -171,6 +183,18 @@ export function resumeReview(reviewId: string, sections: PaperSection[]): Promis
 /** 读取一条评审：已落档返回报告，只有会话快照时返回章节树。 */
 export function getReview(reviewId: string): Promise<ReviewArchive> {
   return request<ReviewArchive>(`/api/reviews/${encodeURIComponent(reviewId)}`)
+}
+
+export function getReviewArtifacts(reviewId: string): Promise<ReviewArtifact[]> {
+  return request<ReviewArtifact[]>(`/api/reviews/${encodeURIComponent(reviewId)}/artifacts`)
+}
+
+export function extractReviewArtifacts(reviewId: string): Promise<{
+  count: number
+  by_type: Record<ReviewArtifact['artifact_type'], number>
+  replaced: number
+}> {
+  return request(`/api/reviews/${encodeURIComponent(reviewId)}/artifacts/extract`, { method: 'POST' })
 }
 
 export function listReviews(params: {
@@ -247,5 +271,42 @@ export function copyRubricAsDraft(contestId: string): Promise<RubricCopyResult> 
 export function publishRubric(rubricId: string): Promise<RubricPublishResult> {
   return request<RubricPublishResult>(`/api/rubrics/${encodeURIComponent(rubricId)}/publish`, {
     method: 'POST',
+  })
+}
+
+export function listChatSessions(): Promise<ChatSessionListResponse> {
+  return request('/api/chat/sessions')
+}
+export async function createChatSession(title?: string): Promise<ChatSessionItem> {
+  const created = await request<{ session_id: string; title: string; created_at: string }>('/api/chat/sessions', {
+    method: 'POST', body: JSON.stringify(title ? { title } : {}),
+  })
+  return { ...created, updated_at: created.created_at, message_count: 0 }
+}
+export async function deleteChatSession(id: string): Promise<void> {
+  await request<void>(`/api/chat/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+export function listChatMessages(sessionId: string): Promise<ChatMessageListResponse> {
+  return request(`/api/chat/sessions/${encodeURIComponent(sessionId)}/messages`)
+}
+export function askQuestion(sessionId: string, input: { question: string; contestId: string }): Promise<ChatAnswerResponse> {
+  return request(`/api/chat/sessions/${encodeURIComponent(sessionId)}/messages`, {
+    method: 'POST', body: JSON.stringify({ question: input.question, contest_id: input.contestId }),
+  })
+}
+export function runAnalytics(input: { contestId: string; kind: AnalyticsKind; dimensionCode?: string }): Promise<AnalyticsResponse> {
+  return request('/api/chat/analytics', {
+    method: 'POST', body: JSON.stringify({
+      contest_id: input.contestId, kind: input.kind,
+      ...(input.dimensionCode ? { dimension_code: input.dimensionCode } : {}),
+    }),
+  })
+}
+export function generateSummary(input: { contestId: string; top?: number; sessionId?: string }): Promise<SummaryResponse> {
+  return request('/api/chat/summary', {
+    method: 'POST', body: JSON.stringify({
+      contest_id: input.contestId, ...(input.top !== undefined ? { top: input.top } : {}),
+      ...(input.sessionId ? { session_id: input.sessionId } : {}),
+    }),
   })
 }

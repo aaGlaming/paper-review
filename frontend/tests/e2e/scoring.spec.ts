@@ -2,6 +2,7 @@
 // 第一条会真写库（创建 + 确认），接口没有删除路径——这是已知且已记档的污染。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 const BAND_WORDS = ['充分', '基本', '不足', '证据不足']
 
@@ -15,11 +16,13 @@ test('解析 → 确认 → 评分页：维度卡、原句定位、刷新仍在'
   // 先在解析页走完整链路
   await page.goto('/parse')
   await page.getByTestId('contest-select').selectOption({ index: 1 })
-  await page.getByTestId('demo-item').first().click()
+  await page.locator('[data-testid="demo-item"][data-sample-id="bench-dragon"]').click()
   await page.getByTestId('submit-sample').click()
   await expect(page.getByTestId('confirm-sections')).toBeVisible()
+  const confirmStartedAt = Date.now()
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
+  console.log(`[p26] scoring-confirm-wall-ms=${Date.now() - confirmStartedAt}`)
 
   // 进评分页
   await page.goto('/scoring')

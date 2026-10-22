@@ -32,6 +32,7 @@ FALLBACK_BAND = "基本"
 SOURCE_MODEL = "model"
 SOURCE_DETERMINISTIC = "deterministic"
 NO_SAMPLES = "无可算样本"
+LOW_SAMPLE_THRESHOLD = 5  # 这是一条呈现阈值，不是统计阈值；它决定页面敢不敢给百分比，不改变 rate 的值。
 
 CALIBER_BAND = "档位一致率 = 系统档位与 gold 档位一致的维度数 / 有 gold 的维度总数"
 CALIBER_QUOTE = "引用精确匹配率 = 原句逐字出现在所引父块里的维度数 / 给出原句的维度数"
@@ -41,14 +42,22 @@ CALIBER_INSUFFICIENT = (
 
 
 def _metric(matched: int, total: int, caliber: str) -> dict[str, Any]:
+    low_sample = 0 < total < LOW_SAMPLE_THRESHOLD
     if total <= 0:
         return {
             "matched": 0,
             "total": 0,
             "rate": None,
+            "low_sample": low_sample,
             "caliber": f"{caliber}；当前{NO_SAMPLES}（分母为 0）",
         }
-    return {"matched": matched, "total": total, "rate": matched / total, "caliber": caliber}
+    return {
+        "matched": matched,
+        "total": total,
+        "rate": matched / total,
+        "low_sample": low_sample,
+        "caliber": caliber,
+    }
 
 
 def _width(value: Any) -> int:

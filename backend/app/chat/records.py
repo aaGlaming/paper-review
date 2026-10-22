@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from sqlalchemy import delete
@@ -73,6 +74,61 @@ def build_review_record(
             review_id=review_id,
         ))
     return parents, children
+
+
+def load_record_blocks(review_id: str, *, session: Any = None) -> list[dict[str, Any]]:
+    """Load exact review parents from MySQL without consulting the vector index."""
+    review = report_store.load_review(str(review_id), session=session)
+    if review is None:
+        return []
+    parents, _ = build_review_record(
+        review,
+        contest_id=str(review.get("contest_id") or ""),
+        rubric_id=str(review.get("rubric_id") or ""),
+    )
+    blocks: list[dict[str, Any]] = []
+    for parent in parents:
+        blocks.append({
+            "review_id": str(review_id),
+            "dimension_code": parent.parent_id.rsplit("-", 1)[1],
+            "parent_id": parent.parent_id,
+            "content": parent.content,
+            "citable": True,
+        })
+
+    raw_changes = review.get("change_list") or []
+    if isinstance(raw_changes, str):
+        try:
+            raw_changes = json.loads(raw_changes)
+        except (TypeError, ValueError):
+            raw_changes = None
+    overview = [
+        f"赛题：{review.get('contest_id') or '未知'}",
+        f"提交时间：{review.get('created_at') or review.get('submitted_at') or '未知'}",
+        "五维档位：" + " / ".join(
+            f"{item.get('dimension_code') or item.get('code') or '未知'} {item.get('band') or '未选档'}"
+            for item in (review.get("dimensions") or ()) if isinstance(item, dict)
+        ),
+    ]
+    if raw_changes is None:
+        overview.append("修改条目解析失败")
+    else:
+        changes = [item for item in raw_changes if isinstance(item, dict)] if isinstance(raw_changes, list) else []
+        for item in changes[:12]:
+            text = str(item.get("text") or item.get("action") or "")[:80]
+            overview.append(
+                f"[{item.get('kind') or '建议'}] {item.get('target') or ''} → {text}"
+            )
+        if len(changes) > 12:
+            overview.append(f"另 {len(changes) - 12} 条略")
+    blocks.append({
+        "review_id": str(review_id),
+        "dimension_code": "record_summary",
+        "parent_id": f"rr-{review_id}-overview",
+        "content": "\n".join(overview),
+        "citable": False,
+    })
+    return blocks
 
 
 def _delete_parent_blocks(review_id: str) -> None:

@@ -17,8 +17,10 @@ from backend.app.auth import store as auth_store
 from backend.app.auth.models import User, create_auth_schema
 from backend.app.auth.security import hash_password
 from backend.app.auth.token import issue_token
+from backend.app.chat import answering
 from backend.app.chat import models as chat_models
 from backend.app.chat import store as chat_store
+from backend.app.llm.client import LLMResponseError
 
 
 @pytest.fixture()
@@ -189,6 +191,19 @@ def test_empty_retrieval_does_not_call_model(client, engine, actors, monkeypatch
     assert "没有相关信息" in response.json()["content"]
     assert response.json()["refs"] == []
     assert calls == {"search": 1, "chat": 0}
+
+
+def test_search_failure_becomes_readable_answer_error():
+    def search_fn(*args, **kwargs):
+        raise LLMResponseError("embedding unavailable")
+
+    with pytest.raises(answering.AnswerError, match="检索失败，请稍后重试") as caught:
+        answering.answer_question(
+            None, session_row=None, question="generic question", contest_id="contest-a",
+            search_fn=search_fn,
+        )
+
+    assert answering.failure_reason(caught.value) == "retrieval_failed"
 
 
 def test_answer_persists_user_and_assistant_with_refs(client, engine, actors, monkeypatch):

@@ -34,6 +34,8 @@ describe('路由表', () => {
         ['/suggestions', 'suggestions'],
         ['/eval', 'eval'],
         ['/records', 'records'],
+        ['/dashboard', 'dashboard'],
+        ['/chat', 'chat'],
         ['/login', 'login'],
         ['/register', 'register'],
       ]
@@ -45,7 +47,7 @@ describe('路由表', () => {
       }
 
       // 一条重定向 + 五条页面 + 一条带参数的评测单篇 + 登录 + 注册
-      expect(routes).toHaveLength(10)
+      expect(routes).toHaveLength(12)
     } finally {
       vi.unstubAllGlobals()
       resetAuthStateForTest()

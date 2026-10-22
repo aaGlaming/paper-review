@@ -2,18 +2,27 @@
 // 两条用例都会真写库（创建评审 + 确认），接口里没有删除路径，这是已知且已记档的污染。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 const FLOW_STORAGE_KEY = 'paper-review:review-flow'
 
-test('完整链路：选赛题 → 点第一篇演示 → 章节树 → 确认 → 已确认结果卡', async ({ page }) => {
+test('完整链路：选赛题 → 点 bench-dragon 演示稿 → 章节树 → 确认 → 已确认结果卡', async ({ page }) => {
   await page.goto('/parse')
 
   // 演示按钮的文案与条数来自 listSamples(true)，源码里没有写死标题
-  await expect(page.getByTestId('demo-item')).toHaveCount(3)
+  const demoCount = await page.evaluate(async () => {
+    const token = localStorage.getItem('pr.auth.token')
+    const response = await fetch('/api/samples?is_demo=true', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    const payload = await response.json() as { samples: unknown[] }
+    return payload.samples.length
+  })
+  await expect(page.getByTestId('demo-item')).toHaveCount(demoCount)
   await expect(page.getByTestId('submit-sample')).toBeDisabled()
 
   await page.getByTestId('contest-select').selectOption({ index: 1 })
-  await page.getByTestId('demo-item').first().click()
+  await page.locator('[data-testid="demo-item"][data-sample-id="bench-dragon"]').click()
   await page.getByTestId('submit-sample').click()
 
   // 章节树出来了，条数 ≥ 5
@@ -28,7 +37,7 @@ test('完整链路：选赛题 → 点第一篇演示 → 章节树 → 确认 �
   await page.getByTestId('confirm-sections').click()
 
   const card = page.getByTestId('confirmed-card')
-  await expect(card).toBeVisible()
+  await waitForConfirmed(page)
   await expect(page.getByTestId('confirmed-dimension-count')).toHaveText('5')
   await expect(card).toContainText('完成')
   await expect(page.getByTestId('stage-badge')).toHaveText('已完成')
@@ -72,7 +81,7 @@ test('粘贴正文这条：内联一小段 Markdown → 创建 → 确认', asyn
 
   await page.getByTestId('confirm-sections').click()
   const card = page.getByTestId('confirmed-card')
-  await expect(card).toBeVisible()
+  await waitForConfirmed(page)
   await expect(card).toContainText('完成')
 
   const dimensionCount = await page.getByTestId('confirmed-dimension-count').textContent()

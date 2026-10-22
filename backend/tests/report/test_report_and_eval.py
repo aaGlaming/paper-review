@@ -275,6 +275,49 @@ def test_insufficient_evidence_hit_counts_gold_insufficient():
     assert outcome["quote_exact_match"]["matched"] == 1
 
 
+def test_eval_metrics_mark_small_denominator_without_changing_rates():
+    small_gold = [
+        {"dimension_code": f"small-{index}", "band": "证据不足"}
+        for index in range(2)
+    ]
+    small_system = [
+        {"dimension_code": f"small-{index}", "band": "不足", "quote": None}
+        for index in range(2)
+    ]
+    small = summarize_eval([(small_gold, small_system, {})])
+
+    assert small["insufficient_evidence_hit"]["total"] == 2
+    assert small["insufficient_evidence_hit"]["rate"] == 0.0
+    assert small["insufficient_evidence_hit"]["low_sample"] is True
+
+    large_gold = [
+        {"dimension_code": f"dimension-{index}", "band": "充分"}
+        for index in range(60)
+    ]
+    large_system = [
+        {
+            "dimension_code": f"dimension-{index}",
+            "band": "充分" if index < 26 else "不足",
+            "quote": None,
+        }
+        for index in range(60)
+    ]
+    large = summarize_eval([(large_gold, large_system, {})])
+
+    assert large["band_agreement"]["matched"] == 26
+    assert large["band_agreement"]["total"] == 60
+    assert large["band_agreement"]["rate"] == pytest.approx(26 / 60)
+    assert large["band_agreement"]["low_sample"] is False
+
+
+def test_empty_eval_metric_is_not_low_sample():
+    empty = summarize_eval([])
+
+    assert empty["band_agreement"]["total"] == 0
+    assert empty["band_agreement"]["rate"] is None
+    assert empty["band_agreement"]["low_sample"] is False
+
+
 # --- 用例 9-10：评审记录持久化 --------------------------------------------------
 
 
@@ -424,9 +467,11 @@ def test_new_endpoints_return_200(client):
 
     demos_only = client.get("/api/samples", params={"is_demo": "true"}).json()["samples"]
     assert demos_only and all(item["is_demo"] for item in demos_only)
-    # 演示样例已从「固定三篇演示稿」改为「样例目录下的真实参赛论文」，
-    # 数量随载入的论文文件数变化，因此只断言非空与标记正确。
+    # 真实论文与三篇演示稿并列返回，避免目录加载变化时互相遮蔽。
     assert len(demos_only) >= 1
+    demo_ids = {item["sample_id"] for item in demos_only}
+    assert {"bench-dragon", "planting", "smoke"} <= demo_ids
+    assert any(sample_id.startswith("cumcm-") for sample_id in demo_ids)
 
     summary = client.get("/api/eval/summary")
     assert summary.status_code == 200
@@ -434,6 +479,7 @@ def test_new_endpoints_return_200(client):
     assert body["corpus_papers"] == 15
     assert body["gradable_papers"] == 12
     assert body["gradable_dimensions"] == 60
+    assert body["source"] == "deterministic"
     assert body["insufficient_evidence_hit"]["total"] == 2
 
 

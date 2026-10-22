@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from .models import ChatMessage, ChatSession
@@ -51,11 +51,19 @@ def append_message(
     refs: list[dict[str, str]] | None = None,
     model_name: str = "",
 ) -> ChatMessage:
+    """按会话分配 max(seq)+1；并发可能重复，不设唯一约束以免写入失败。
+
+    重复序号由 message_id 最终排序兜底，与旧行为等价。
+    """
     if role not in {"user", "assistant"}:
         raise ValueError("role must be user or assistant")
+    seq = int(session.scalar(
+        select(func.coalesce(func.max(ChatMessage.seq), 0) + 1)
+        .where(ChatMessage.session_id == session_id)
+    ))
     row = ChatMessage(
         message_id=new_message_id(), session_id=session_id, role=role, content=content,
-        refs=refs, model_name=model_name,
+        refs=refs, model_name=model_name, seq=seq,
     )
     session.add(row)
     session.flush()
@@ -65,7 +73,7 @@ def append_message(
 def load_messages(session: Session, session_id: str) -> list[ChatMessage]:
     return list(session.scalars(
         select(ChatMessage).where(ChatMessage.session_id == session_id)
-        .order_by(ChatMessage.created_at.asc(), ChatMessage.message_id.asc())
+        .order_by(ChatMessage.created_at.asc(), ChatMessage.seq.asc(), ChatMessage.message_id.asc())
     ).all())
 
 

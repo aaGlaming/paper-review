@@ -2,6 +2,7 @@
 // 走 5173 吃代理；第一条会真写库（创建 + 确认），接口没有删除路径——已知污染。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 test('完整链路 → /scoring：圈中心与"基本"档位文本中心偏差 ≤ 4px', async ({ page }) => {
   await page.goto('/parse')
@@ -10,7 +11,7 @@ test('完整链路 → /scoring：圈中心与"基本"档位文本中心偏差 �
   await page.getByTestId('submit-sample').click()
   await expect(page.getByTestId('confirm-sections')).toBeVisible({ timeout: 20_000 })
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
 
   await page.goto('/scoring')
   await expect(page.getByTestId('dimension-card')).toHaveCount(5)
@@ -40,7 +41,7 @@ test('/consistency：冲突数值的圈中心偏差 ≤ 4px', async ({ page }) =
   await page.getByTestId('submit-sample').click()
   await expect(page.getByTestId('confirm-sections')).toBeVisible({ timeout: 20_000 })
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
 
   await page.goto('/consistency')
   await expect(page.getByTestId('conflict-item').first()).toBeVisible()
@@ -65,14 +66,47 @@ test('/eval：三张指标卡的折线 path 互不相同', async ({ page }) => {
   await page.goto('/eval')
   await expect(page.getByTestId('metric-card')).toHaveCount(3)
 
-  const ds: string[] = []
+  const response = await page.evaluate(async () => {
+    const token = localStorage.getItem('pr.auth.token')
+    const result = await fetch('/api/eval/summary', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    return { status: result.status, summary: await result.json() as Record<string, unknown> }
+  })
+  expect(response.status).toBe(200)
+
+  const paths: Array<{ code: string; d: string }> = []
   for (const code of ['band_agreement', 'quote_exact_match', 'insufficient_evidence_hit']) {
-    const line = page.locator(`[data-metric="${code}"] .metric__chart-line`)
-    await expect(line).toHaveCount(1)
-    ds.push((await line.getAttribute('d')) ?? '')
+    const metric = response.summary[code] as
+      | { low_sample?: unknown; matched?: number; total?: number }
+      | undefined
+    expect(
+      typeof metric?.low_sample,
+      '后端进程未加载 low_sample 字段，请重启后再跑',
+    ).toBe('boolean')
+    if (!metric || typeof metric.low_sample !== 'boolean') {
+      throw new Error('后端进程未加载 low_sample 字段，请重启后再跑')
+    }
+
+    const card = page.locator(`[data-metric="${code}"]`)
+    const line = card.locator('.metric__chart-line')
+    if (metric.low_sample) {
+      await expect(line).toHaveCount(0)
+      await expect(card.getByTestId('metric-rate')).toHaveText('样本过少')
+      await expect(card.getByTestId('metric-low-sample-note')).toBeVisible()
+      await expect(card.getByTestId('metric-fraction')).toHaveText(
+        `${metric.matched} / ${metric.total}`,
+      )
+    } else {
+      await expect(line).toHaveCount(1)
+      paths.push({ code, d: (await line.getAttribute('d')) ?? '' })
+    }
   }
-  console.log(`[sketch-fix] 三条折线 path：\n  band_agreement = ${ds[0]}\n  quote_exact_match = ${ds[1]}\n  insufficient_evidence_hit = ${ds[2]}`)
-  expect(ds[0]).not.toBe(ds[1])
-  expect(ds[1]).not.toBe(ds[2])
-  expect(ds[0]).not.toBe(ds[2])
+
+  for (let left = 0; left < paths.length; left += 1) {
+    for (let right = left + 1; right < paths.length; right += 1) {
+      expect(paths[left].d, `${paths[left].code} 与 ${paths[right].code} 折线重合`).not.toBe(paths[right].d)
+    }
+  }
+  console.log(`[sketch-fix] 正常样本折线 path：\n${paths.map(({ code, d }) => `  ${code} = ${d}`).join('\n')}`)
 })

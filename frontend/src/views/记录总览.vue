@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { ApiError, listContests, listReviews } from '../api'
 import type { ContestSummary, ReviewListResponse } from '../api/types'
@@ -16,6 +17,8 @@ const pageSize = 20
 const loading = shallowRef(false)
 const loadError = shallowRef('')
 const selectedId = ref<string | null>(null)
+const route = useRoute()
+const router = useRouter()
 
 function errorMessage(reason: unknown): string {
   return reason instanceof ApiError
@@ -68,12 +71,21 @@ function changePage(value: number): void {
   void loadReviews()
 }
 
+function closeDrawer(): void {
+  selectedId.value = null
+  if (route?.query.review !== undefined) {
+    void router?.replace({ query: { ...route.query, review: undefined } })
+  }
+}
+
 function contestLabel(id: string): string {
   const contest = contests.value.find((item) => item.contest_id === id)
   return contest ? `${contest.year} · ${contest.problem_code}` : id
 }
 
 onMounted(() => {
+  const preset = route?.query.review
+  if (typeof preset === 'string' && preset) selectedId.value = preset
   void loadContests()
   void loadReviews()
 })
@@ -119,7 +131,7 @@ onMounted(() => {
     <p v-else-if="loading && !loadError" class="records__loading" aria-live="polite">
       正在读取评审记录…
     </p>
-    <RecordDrawer :review-id="selectedId" @close="selectedId = null" />
+    <RecordDrawer :review-id="selectedId" @close="closeDrawer" />
   </main>
 </template>
 

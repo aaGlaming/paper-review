@@ -2,6 +2,7 @@
 // 第一条会真写库（创建 + 确认），接口没有删除路径——这是已知且已记档的污染。
 
 import { expect, test } from '@playwright/test'
+import { waitForConfirmed } from './timeouts'
 
 test('解析 → 确认 → 修改建议：三段分组、上游指针、刷新仍在', async ({ page }) => {
   // 先在解析页走完整链路
@@ -11,7 +12,7 @@ test('解析 → 确认 → 修改建议：三段分组、上游指针、刷新�
   await page.getByTestId('submit-sample').click()
   await expect(page.getByTestId('confirm-sections')).toBeVisible()
   await page.getByTestId('confirm-sections').click()
-  await expect(page.getByTestId('confirmed-card')).toBeVisible()
+  await waitForConfirmed(page)
 
   // 进修改建议页
   await page.goto('/suggestions')

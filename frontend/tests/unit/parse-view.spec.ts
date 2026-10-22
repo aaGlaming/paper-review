@@ -5,7 +5,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiError } from '../../src/api'
 import * as api from '../../src/api'
@@ -20,12 +20,14 @@ import { REVIEW_FLOW_STORAGE_KEY } from '../../src/composables/useReviewFlow'
 import { createAppRouter } from '../../src/router'
 import type { PaperSection, ReviewReport } from '../../src/api/types'
 import ParseView from '../../src/views/论文解析.vue'
+import StageTracker from '../../src/components/StageTracker.vue'
 
 vi.mock('../../src/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/api')>()
   return {
     ...actual,
     listContests: vi.fn(),
+    getContestRubric: vi.fn(),
     listSamples: vi.fn(),
     createReview: vi.fn(),
     resumeReview: vi.fn(),
@@ -124,6 +126,17 @@ beforeEach(() => {
   vi.clearAllMocks()
   sessionStorage.clear()
   vi.mocked(api.listContests).mockResolvedValue(CONTESTS)
+  vi.mocked(api.getContestRubric).mockResolvedValue({
+    contest_id: CONTEST_A,
+    rubric_id: 'contest-demo-a-v1',
+    version: 1,
+    dimensions: Array.from({ length: 5 }, (_, index) => ({
+      dimension_code: `dimension-${index}`,
+      name: `维度 ${index}`,
+      weight: 20,
+      bands: [],
+    })),
+  })
   vi.mocked(api.listSamples).mockResolvedValue(SAMPLES)
   vi.mocked(api.createReview).mockResolvedValue({
     review_id: 'review-1',
@@ -134,21 +147,89 @@ beforeEach(() => {
   vi.mocked(api.getReview).mockRejectedValue(new ApiError(404, '未使用'))
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('论文解析页', () => {
-  it('1. 未选赛题时提交按钮禁用，点击也不会调 createReview', async () => {
+  it('running态显示已等待秒数，并随真实经过时间递增', async () => {
+    const wrapper = await mountView()
+    await createOne(wrapper)
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    vi.mocked(api.resumeReview).mockImplementation(() => new Promise<ReviewReport>(() => {}))
+
+    await wrapper.get('[data-testid="confirm-sections"]').trigger('click')
+    expect(wrapper.get('[data-testid="stage-tracker"]').attributes('data-phase')).toBe('running')
+    expect(vi.getTimerCount()).toBeGreaterThan(0)
+    expect(wrapper.get('[data-testid="stage-elapsed"]').text()).toContain('0')
+
+    await vi.advanceTimersByTimeAsync(2_000)
+    await flushPromises()
+    expect(wrapper.get('[data-testid="stage-elapsed"]').text()).toContain('2')
+    wrapper.unmount()
+  })
+
+  it('等待超过20秒后显示带实际秒数的慢提示', async () => {
+    const wrapper = await mountView()
+    await createOne(wrapper)
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    vi.mocked(api.resumeReview).mockImplementation(() => new Promise<ReviewReport>(() => {}))
+
+    await wrapper.get('[data-testid="confirm-sections"]').trigger('click')
+    await vi.advanceTimersByTimeAsync(21_000)
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="stage-slow-hint"]').text()).toContain('21')
+    expect(wrapper.get('[data-testid="stage-slow-hint"]').text()).toContain(
+      '仍在处理；本流程正常需数十秒，可继续等待或稍后回来查看',
+    )
+    wrapper.unmount()
+  })
+
+  it('非running态不显示耗时与慢提示钩子', () => {
+    for (const phase of ['idle', 'parsed', 'done', 'failed'] as const) {
+      const wrapper = mount(StageTracker, { props: { phase, reachedIndex: -1, elapsedSeconds: 21 } })
+      expect(wrapper.find('[data-testid="stage-elapsed"]').exists()).toBe(false)
+      expect(wrapper.find('[data-testid="stage-slow-hint"]').exists()).toBe(false)
+      wrapper.unmount()
+    }
+  })
+
+  it('1. 空赛题仍可创建解析会话，并明确标记为仅解析', async () => {
     const wrapper = await mountView()
 
-    // 先把演示选上，让「没选赛题」成为唯一的拦阻原因
     await wrapper.get('[data-testid="demo-item"]').trigger('click')
 
-    expect(wrapper.get('[data-testid="submit-sample"]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[data-testid="submit-text"]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[data-testid="submit-hint"]').text()).toContain('赛题')
+    expect(wrapper.get('[data-testid="contest-assessment-meta"]').text()).toBe('未绑定赛题 · 仅解析')
+    expect(wrapper.get('[data-testid="submit-sample"]').attributes('disabled')).toBeUndefined()
 
     await wrapper.get('[data-testid="submit-sample"]').trigger('click')
     await flushPromises()
 
-    expect(api.createReview).not.toHaveBeenCalled()
+    expect(api.createReview).toHaveBeenCalledWith({ sample_id: 'demo-alpha', contest_id: '' })
+    expect(wrapper.get('[data-testid="confirm-sections"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('确认区显示所选赛题、published 量规版本与维度数', async () => {
+    const wrapper = await mountView()
+    await wrapper.get('[data-testid="contest-select"]').setValue(CONTEST_A)
+    await flushPromises()
+
+    expect(api.getContestRubric).toHaveBeenCalledWith(CONTEST_A)
+    expect(wrapper.get('[data-testid="contest-assessment-meta"]').text()).toBe('演示赛题甲 · 量规 v1 · 5 个维度')
+  })
+
+  it('无 published 量规时说明原因并禁用创建入口', async () => {
+    vi.mocked(api.getContestRubric).mockRejectedValueOnce(new ApiError(404, 'missing rubric'))
+    const wrapper = await mountView()
+    await wrapper.get('[data-testid="contest-select"]').setValue(CONTEST_B)
+    await flushPromises()
+    await wrapper.get('[data-testid="demo-item"]').trigger('click')
+
+    expect(wrapper.get('[data-testid="contest-assessment-meta"]').text()).toBe(
+      '该赛题没有已发布量规，暂时无法评分',
+    )
+    expect(wrapper.get('[data-testid="submit-sample"]').attributes('disabled')).toBeDefined()
   })
 
   it('2. 演示按钮由 listSamples(true) 渲染，点击后用 sample_id 与当前赛题调 createReview', async () => {
@@ -305,6 +386,9 @@ describe('论文解析页', () => {
     const card = wrapper.get('[data-testid="confirmed-card"]')
     expect(card.text()).toContain(REPORT.status)
     expect(card.text()).toContain(REPORT.source)
+    expect(wrapper.get('[data-testid="confirmed-assessment-meta"]').text()).toBe(
+      '演示赛题甲 · 量规 v1 · 5 个维度',
+    )
     expect(wrapper.get('[data-testid="confirmed-dimension-count"]').text()).toBe(
       String(REPORT.dimensions.length),
     )
@@ -332,6 +416,7 @@ describe('论文解析页', () => {
     const stillChanged = wrapper.findAll('[data-testid="section-type"]')[2]
     expect((stillChanged?.element as HTMLSelectElement).value).toBe('参考文献')
     expect(wrapper.get('[data-testid="stage-badge"]').text()).toBe('停在：等待服务返回')
+    expect(wrapper.get('[data-testid="stage-note"]').text()).toContain('已等待 0 秒')
   })
 
   it('11. 章节类型词表恰好六个类型 + 未分类，顺序一致，且只在一处定义', async () => {
@@ -359,7 +444,7 @@ describe('论文解析页', () => {
     expect(holders).toEqual(['composables/reviewVocabulary.ts'])
   })
 
-  it('12. 源码约束：不出现 band / 奖项字样 / 题号，不直接发请求，也不用定时器伪造进度', async () => {
+  it('12. 源码约束：不出现 band / 奖项字样 / 题号、不直接发请求，计时器不伪造步骤', async () => {
     const files = [
       'composables/reviewVocabulary.ts',
       'composables/useReviewFlow.ts',
@@ -376,13 +461,18 @@ describe('论文解析页', () => {
       for (const word of AWARD_WORDS) {
         expect(source.includes(word), `${file} 出现 ${word}`).toBe(false)
       }
-      expect(source, `${file} 用定时器伪造进度`).not.toContain('setInterval')
-      expect(source, `${file} 用定时器伪造进度`).not.toContain('setTimeout')
+      if (file !== 'views/论文解析.vue') {
+        expect(source, `${file} 用定时器伪造进度`).not.toContain('setInterval')
+        expect(source, `${file} 用定时器伪造进度`).not.toContain('setTimeout')
+      }
       // 页面与组件不得直接发请求：URL 字面量与 fetch 只许待在 src/api 下。
       // 这里认的是**引号紧邻**的 /api/...，免得把 `../api/types` 这种类型导入路径也算进来。
       expect(source, `${file} 直接发请求`).not.toContain('fetch(')
       expect(/['"`]\/api\//.test(source), `${file} 出现 URL 字面量`).toBe(false)
     }
+    expect(sourceOf('views/论文解析.vue')).toContain('计时器只显示经过时间，不更新步骤')
+    expect(sourceOf('components/StageTracker.vue')).not.toContain('setInterval')
+    expect(sourceOf('components/StageTracker.vue')).not.toContain('setTimeout')
   })
 
   it('12b. 页面在任何状态下都恰好一个 h1，文案为论文解析', async () => {

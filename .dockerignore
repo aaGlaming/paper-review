@@ -1,0 +1,10 @@
+.git
+.env
+node_modules
+frontend/dist
+chroma_data
+logs
+data/uploads
+.pytest_tmp
+backend/tests
+docs

@@ -20,6 +20,83 @@ export interface AuthUser {
   display_name?: string
 }
 
+export interface ChatSessionItem {
+  session_id: string
+  title: string
+  created_at: string
+  updated_at: string
+  message_count: number
+}
+export interface ChatSessionListResponse { sessions: ChatSessionItem[] }
+export interface ChatRef { review_id: string; dimension_code: string }
+export interface ChatMessageItem {
+  message_id: string
+  role: 'user' | 'assistant'
+  content: string
+  refs: ChatRef[] | null
+  model_name: string | null
+  seq: number
+  created_at: string
+}
+export interface ChatMessageListResponse { session_id: string; messages: ChatMessageItem[] }
+export interface ChatAnswerResponse {
+  message_id: string
+  content: string
+  refs: ChatRef[]
+  model_name: string
+  notifications: { rejected: number; unused: number }
+}
+export type AnalyticsKind = 'bands' | 'conflicts' | 'gaps'
+export interface BandsResult {
+  contest_id: string; reviews: number; students: number; orphan_reviews: number
+  bands: Array<{ dimension_code: string; counts: Record<string, number>; insufficient: number; reviews: number }>
+  insufficient_total: number
+}
+export interface ConflictsResult {
+  contest_id: string; reviews_with_changes: number; kinds: Record<string, number>
+  hotspots: Array<{ target: string; count: number; review_ids: string[] }>
+  finding_total: number; unparsable: number
+}
+export interface GapsResult {
+  contest_id: string; dimension_code: string | null
+  gaps: Array<{ review_id: string; dimension_code: string; band: string; has_quote: boolean }>
+  count: number
+}
+export type AnalyticsResult = BandsResult | ConflictsResult | GapsResult
+export interface AnalyticsResponse { kind: AnalyticsKind; result: AnalyticsResult }
+export interface SummaryResponse {
+  content: string; refs: ChatRef[]; model_name: string
+  notes: { rejected: number; evidence_short?: number }
+}
+
+export interface DashboardSummary {
+  cached: boolean
+  cards: {
+    total_submissions: number
+    weekly_new: number
+    parse_only: number
+    pending_conflicts: number
+    gold_agreement: { agreement: number; matched: number; total: number; source: string } | null
+  }
+  contests: Array<{ contest_id: string; review_count: number }>
+  bands: Array<{
+    dimension_code: string
+    counts: Record<'充分' | '基本' | '不足' | '证据不足', number>
+    insufficient_total: number
+  }>
+  insufficient_top: Array<{ dimension_code: string; counts: Record<string, number>; insufficient_total: number }>
+  conflicts: Array<{ kind: string; count: number }>
+  hotspots: Array<{ target: string; count: number }>
+  citation: { failure_count: number; total_dimensions: number; citation_rate: number }
+  gold: { agreement: number; matched: number; total: number; source: string } | null
+}
+
+export interface DashboardTrend {
+  cached: boolean
+  days: number
+  series: Array<{ date: string; total: number; ownerless: number }>
+}
+
 /** 赛题约束。check_type 只注册三种：mention / numeric_range / required_case。 */
 export interface ContestConstraint {
   constraint_id: string
@@ -86,6 +163,7 @@ export interface EvalMetric {
   matched: number
   total: number
   rate: number | null
+    low_sample: boolean
   caliber: string
 }
 
@@ -147,6 +225,21 @@ export interface PaperSection {
   section_type: string
   level: number
   content: string
+  char_start?: number
+  char_end?: number
+}
+
+export interface ReviewArtifact {
+  artifact_id: number
+  review_id: string
+  ordinal: number
+  artifact_type: 'claim' | 'table' | 'citation'
+  section_type: string | null
+  char_start: number
+  char_end: number
+  claim_text: string | null
+  table_markdown: string | null
+  citation_text: string | null
 }
 
 /** `POST /api/reviews` 的响应：停在确认节点，响应里没有档位字段。 */
@@ -162,6 +255,9 @@ export interface ReviewPending {
   status: string
   sections: PaperSection[]
   confirmed: boolean
+  sections_ranged?: boolean
+  paper_text?: string
+  user_id?: string | null
 }
 
 /** `resume` 响应的 `dimensions[]` 一条。`band` 为「证据不足」时 `quote` 为 null。 */
@@ -270,6 +366,9 @@ export interface ArchivedReview {
   change_list: ChangeListItem[]
   change_list_note: string | null
   sections?: PaperSection[]
+  sections_ranged?: boolean
+  paper_text?: string
+  user_id?: string | null
 }
 
 /** `GET /api/reviews/{id}` 的两段式：已落档返回存档，只有会话快照时返回章节树。 */

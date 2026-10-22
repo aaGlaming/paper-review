@@ -58,6 +58,9 @@ def compare_bands(session: Session, *, contest_id: str) -> dict[str, Any]:
         {
             "dimension_code": dimension,
             "counts": dict(sorted(counts.items())),
+            "counts_normalized": dict(sorted(
+                _normalize_band_counts(counts).items()
+            )),
             "insufficient": insufficient_by_dimension[dimension],
             "reviews": dimension_reviews[dimension],
         }
@@ -71,6 +74,14 @@ def compare_bands(session: Session, *, contest_id: str) -> dict[str, Any]:
         "bands": bands,
         "insufficient_total": sum(insufficient_by_dimension.values()),
     }
+
+
+def _normalize_band_counts(counts: dict[str, int]) -> dict[str, int]:
+    normalized: Counter[str] = Counter()
+    for band, count in counts.items():
+        key = "证据不足" if band in INSUFFICIENT_BANDS else band
+        normalized[key] += count
+    return dict(normalized)
 
 
 def _decode_change_list(raw: Any) -> tuple[list[dict[str, Any]], bool]:

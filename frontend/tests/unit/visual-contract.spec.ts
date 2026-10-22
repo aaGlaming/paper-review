@@ -1,6 +1,5 @@
 // 视觉重设计（阶段 7/7）的回归契约：本版只改外观，不碰语义与测试钩子。
-// 这两条守住「87 个 data-testid 一个不少」与「不用 emoji 当图标」。
-// 87 = P8 收尾时的 86 + 昼夜主题切换按钮（theme-toggle）1 个新增功能钩子。
+// 这两条守住既有 data-testid 与产物面板新增钩子，并检查不使用 emoji 图标。
 
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
@@ -23,7 +22,7 @@ function sourceFiles(): string[] {
 }
 
 describe('视觉契约', () => {
-  it('87 个 data-testid 一个不少（新增只有 theme-toggle 一个功能钩子）', () => {
+  it('91 个 data-testid 包含主题切换与产物面板钩子', () => {
     const ids = new Set<string>()
     for (const file of sourceFiles().filter((f) => f.endsWith('.vue'))) {
       const text = readFileSync(file, 'utf8')
@@ -31,8 +30,12 @@ describe('视觉契约', () => {
         ids.add(match[1])
       }
     }
-    expect(ids.size).toBe(87)
+    expect(ids.size).toBe(97)
     expect(ids.has('theme-toggle')).toBe(true)
+    expect(ids.has('artifact-panel')).toBe(true)
+    expect(ids.has('artifact-empty')).toBe(true)
+    expect(ids.has('`artifact-group-${group.type}`')).toBe(true)
+    expect(ids.has('artifact-mark')).toBe(true)
   })
 
   it('src 下不用 emoji 当图标（手绘图形一律用 sketch SVG，不用 emoji）', () => {
