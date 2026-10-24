@@ -1,0 +1,267 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "paper-review agent loop control",
+    "subtitle": "Actual limits: main 12 model / 24 tools / 150s / 45 recursion; no token budget field",
+    "locale": "zh-CN",
+    "output": "agent-loop-control.html",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    }
+  },
+  "lanes": [
+    {
+      "id": "runtime",
+      "label": "Agent runtime"
+    },
+    {
+      "id": "policy",
+      "label": "Budget and stop policy",
+      "variant": "exception"
+    },
+    {
+      "id": "output",
+      "label": "Result and trace"
+    }
+  ],
+  "phases": [
+    {
+      "id": "start",
+      "label": "Start",
+      "fromCol": 0,
+      "toCol": 0
+    },
+    {
+      "id": "loop",
+      "label": "Plan → act → observe",
+      "fromCol": 1,
+      "toCol": 4,
+      "variant": "emphasis"
+    },
+    {
+      "id": "finish",
+      "label": "Stop / write",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "iteration",
+      "label": "Bounded iteration",
+      "lane": "runtime",
+      "fromCol": 1,
+      "toCol": 4,
+      "variant": "emphasis"
+    },
+    {
+      "id": "budget",
+      "label": "Budget gate",
+      "lane": "policy",
+      "fromCol": 3,
+      "toCol": 5,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "start_task",
+    "plan",
+    "call_tools",
+    "observe",
+    "stop_check",
+    "emit"
+  ],
+  "nodes": [
+    {
+      "id": "start_task",
+      "lane": "runtime",
+      "col": 0,
+      "type": "backend",
+      "label": "Task start",
+      "sublabel": "state",
+      "sources": [
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 120,
+          "end_line": 176,
+          "label": "runner context"
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "lane": "runtime",
+      "col": 1,
+      "type": "backend",
+      "label": "Plan",
+      "sublabel": "prompt + tool",
+      "sources": [
+        {
+          "path": "backend/app/agent/prompt.py",
+          "line": 4,
+          "end_line": 23,
+          "label": "prompt rules"
+        }
+      ]
+    },
+    {
+      "id": "call_tools",
+      "lane": "runtime",
+      "col": 2,
+      "type": "backend",
+      "label": "Call tools",
+      "sublabel": "24 tools",
+      "sources": [
+        {
+          "path": "backend/app/agent/middleware.py",
+          "line": 21,
+          "end_line": 72,
+          "label": "BudgetMiddleware"
+        }
+      ]
+    },
+    {
+      "id": "observe",
+      "lane": "runtime",
+      "col": 3,
+      "type": "backend",
+      "label": "Observe result",
+      "sublabel": "progress / error",
+      "sources": [
+        {
+          "path": "backend/app/agent/middleware.py",
+          "line": 73,
+          "end_line": 103,
+          "label": "_update_progress"
+        }
+      ]
+    },
+    {
+      "id": "stop_check",
+      "lane": "policy",
+      "col": 4,
+      "type": "security",
+      "label": "Stop condition?",
+      "sublabel": "done? budget?",
+      "sources": [
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 176,
+          "end_line": 176,
+          "label": "termination and force submit"
+        }
+      ]
+    },
+    {
+      "id": "emit",
+      "lane": "output",
+      "col": 5,
+      "type": "backend",
+      "label": "Output + trace",
+      "sublabel": "score + trace",
+      "sources": [
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 176,
+          "end_line": 176,
+          "label": "verifier and return"
+        }
+      ]
+    },
+    {
+      "id": "budget_stop",
+      "lane": "policy",
+      "col": 5,
+      "type": "security",
+      "label": "Budget exit",
+      "sublabel": "12 model / 24 tools / 150s",
+      "tag": "token budget: not implemented",
+      "sources": [
+        {
+          "path": "backend/app/agent/middleware.py",
+          "line": 13,
+          "end_line": 41,
+          "label": "BudgetExceeded"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-plan",
+      "from": "start_task",
+      "to": "plan",
+      "label": "begin",
+      "variant": "emphasis"
+    },
+    {
+      "id": "plan-call",
+      "from": "plan",
+      "to": "call_tools",
+      "label": "next tool call",
+      "variant": "emphasis"
+    },
+    {
+      "id": "call-observe",
+      "from": "call_tools",
+      "to": "observe",
+      "label": "ToolMessage / result",
+      "variant": "default"
+    },
+    {
+      "id": "observe-stop",
+      "from": "observe",
+      "to": "stop_check",
+      "label": "progress snapshot",
+      "variant": "default"
+    },
+    {
+      "id": "continue",
+      "from": "stop_check",
+      "to": "plan",
+      "label": "no: continue loop",
+      "variant": "emphasis",
+      "role": "branch"
+    },
+    {
+      "id": "done",
+      "from": "stop_check",
+      "to": "emit",
+      "label": "yes: all submitted",
+      "variant": "emphasis"
+    },
+    {
+      "id": "budget",
+      "from": "stop_check",
+      "to": "budget_stop",
+      "label": "budget / timeout / recursion",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Limits from code",
+      "items": [
+        "Main: 12 model calls, 24 tool calls, 3 steps per dimension, 150 seconds, recursion_limit 45",
+        "Specialists: evidence 6/24/90s, topic fit 3/12/45s, coherence 4/16/60s"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Token budget",
+      "items": [
+        "No token count, output-token cap, or cost budget is implemented",
+        "The tag is intentionally an explicit unknown, not a fabricated numeric limit"
+      ]
+    }
+  ]
+}

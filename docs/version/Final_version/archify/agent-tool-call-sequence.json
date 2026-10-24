@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "paper-review agent tool call sequence",
+    "subtitle": "Human confirmation precedes scoring; route auth is already complete before tool execution",
+    "locale": "zh-CN",
+    "output": "agent-tool-call-sequence.html",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    },
+    "viewBox": [
+      1085,
+      700
+    ]
+  },
+  "participants": [
+    {
+      "id": "api",
+      "type": "security",
+      "label": "API",
+      "sublabel": "resume",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 608,
+          "end_line": 775,
+          "label": "resume_review_endpoint"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "Graph",
+      "sublabel": "confirm / score",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 203,
+          "end_line": 213,
+          "label": "_confirm_node"
+        }
+      ]
+    },
+    {
+      "id": "human",
+      "type": "external",
+      "label": "Reviewer",
+      "sublabel": "confirm",
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 203,
+          "end_line": 213,
+          "label": "interrupt"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Agent",
+      "sublabel": "runner",
+      "sources": [
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 120,
+          "end_line": 176,
+          "label": "make_agent_runner"
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "type": "cloud",
+      "label": "LLM",
+      "sublabel": "chat tools",
+      "sources": [
+        {
+          "path": "backend/app/llm/client.py",
+          "line": 209,
+          "end_line": 234,
+          "label": "chat_with_tools"
+        }
+      ]
+    },
+    {
+      "id": "schema",
+      "type": "security",
+      "label": "Schema",
+      "sublabel": "validate",
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 331,
+          "end_line": 331,
+          "label": "build_tools"
+        },
+        {
+          "path": "backend/app/scoring/selection.py",
+          "line": 89,
+          "end_line": 139,
+          "label": "apply_mention_guard"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "type": "backend",
+      "label": "Tools",
+      "sublabel": "search/read",
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 113,
+          "end_line": 181,
+          "label": "search/read"
+        },
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 331,
+          "end_line": 331,
+          "label": "submit_dimension"
+        }
+      ]
+    },
+    {
+      "id": "audit",
+      "type": "database",
+      "label": "Audit",
+      "sublabel": "trace",
+      "sources": [
+        {
+          "path": "backend/app/agent/trace.py",
+          "line": 18,
+          "end_line": 129,
+          "label": "AgentStep/append_step"
+        }
+      ]
+    },
+    {
+      "id": "context",
+      "type": "database",
+      "label": "Context",
+      "sublabel": "state",
+      "sources": [
+        {
+          "path": "backend/app/agent/context.py",
+          "line": 1,
+          "end_line": 25,
+          "label": "build_context"
+        },
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 107,
+          "end_line": 146,
+          "label": "ReviewState"
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "Report",
+      "sublabel": "store",
+      "sources": [
+        {
+          "path": "backend/app/report/store.py",
+          "line": 88,
+          "end_line": 220,
+          "label": "save_review/save_session"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "id": "request",
+      "from": "api",
+      "to": "graph",
+      "y": 160,
+      "label": "resume_review(sections)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "interrupt",
+      "from": "graph",
+      "to": "human",
+      "y": 188,
+      "label": "confirm chapters",
+      "variant": "security"
+    },
+    {
+      "id": "confirm",
+      "from": "human",
+      "to": "api",
+      "y": 216,
+      "label": "confirmed",
+      "variant": "return"
+    },
+    {
+      "id": "run",
+      "from": "api",
+      "to": "agent",
+      "y": 244,
+      "label": "make_agent_runner(ctx)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "chat",
+      "from": "agent",
+      "to": "model",
+      "y": 272,
+      "label": "chat_with_tools(messages, tools)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "call",
+      "from": "model",
+      "to": "schema",
+      "y": 300,
+      "label": "tool_calls + JSON args",
+      "variant": "default"
+    },
+    {
+      "id": "policy",
+      "from": "schema",
+      "to": "tool",
+      "y": 328,
+      "label": "schema + whitelist + context rules",
+      "variant": "security"
+    },
+    {
+      "id": "retryable",
+      "from": "tool",
+      "to": "model",
+      "y": 356,
+      "label": "ToolMessage: valid result",
+      "variant": "return"
+    },
+    {
+      "id": "retry-http",
+      "from": "model",
+      "to": "agent",
+      "y": 384,
+      "label": "retry once",
+      "variant": "dashed"
+    },
+    {
+      "id": "no-retry",
+      "from": "schema",
+      "to": "agent",
+      "y": 412,
+      "label": "bad args / permission / quote",
+      "variant": "security"
+    },
+    {
+      "id": "audit-call",
+      "from": "tool",
+      "to": "audit",
+      "y": 440,
+      "label": "record_call(args_digest, result)",
+      "variant": "dashed"
+    },
+    {
+      "id": "context-write",
+      "from": "tool",
+      "to": "context",
+      "y": 468,
+      "label": "ctx.results / submitted / packets",
+      "variant": "default"
+    },
+    {
+      "id": "verify",
+      "from": "agent",
+      "to": "model",
+      "y": 496,
+      "label": "verify_review(decisions)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "audit-verify",
+      "from": "model",
+      "to": "audit",
+      "y": 524,
+      "label": "verifier action trace",
+      "variant": "dashed"
+    },
+    {
+      "id": "write",
+      "from": "context",
+      "to": "report",
+      "y": 552,
+      "label": "save report",
+      "variant": "emphasis"
+    },
+    {
+      "id": "response",
+      "from": "report",
+      "to": "api",
+      "y": 580,
+      "label": "JSON report",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Non-retryable inputs",
+      "items": [
+        "Unknown tool, invalid enum, missing parent, non-substring quote and permission errors need a new input",
+        "Duplicate submit_dimension is rejected rather than treated as success"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Risk control",
+      "items": [
+        "mention_guard can downgrade a result",
+        "verifier can keep, downgrade, mark insufficient or reject; it never upgrades"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "paper-review evaluation and attribution",
+    "subtitle": "Current checks score rubric agreement and evidence quotes; Hit Rate/MRR and RAGAS dimensions are planned extensions",
+    "locale": "zh-CN",
+    "output": "eval-and-attribution.html",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    }
+  },
+  "stages": [
+    {
+      "label": "Gold 与运行轨迹"
+    },
+    {
+      "label": "检索指标"
+    },
+    {
+      "label": "生成指标"
+    },
+    {
+      "label": "归因分支"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gold",
+      "type": "database",
+      "label": "eval papers",
+      "sublabel": "gold rubric",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "eval data directory"
+        }
+      ]
+    },
+    {
+      "id": "trace",
+      "type": "backend",
+      "label": "run traces",
+      "sublabel": "candidates + quotes",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/agent/trace.py",
+          "line": 18,
+          "end_line": 129,
+          "label": "AgentStep trace"
+        },
+        {
+          "path": "backend/app/retrieve/models.py",
+          "line": 22,
+          "end_line": 32,
+          "label": "retrieval result"
+        }
+      ]
+    },
+    {
+      "id": "hit",
+      "type": "backend",
+      "label": "Hit Rate",
+      "sublabel": "planned; absent",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "no Hit Rate implementation found"
+        }
+      ]
+    },
+    {
+      "id": "mrr",
+      "type": "backend",
+      "label": "MRR",
+      "sublabel": "planned; absent",
+      "stage": 1,
+      "row": 1,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "no MRR implementation found"
+        }
+      ]
+    },
+    {
+      "id": "agreement",
+      "type": "backend",
+      "label": "Band agreement",
+      "sublabel": "implemented",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "eval scoring scripts"
+        }
+      ]
+    },
+    {
+      "id": "quote",
+      "type": "backend",
+      "label": "Quote match",
+      "sublabel": "implemented",
+      "stage": 2,
+      "row": 1,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "quote scoring"
+        }
+      ]
+    },
+    {
+      "id": "faithfulness",
+      "type": "backend",
+      "label": "Faithfulness",
+      "sublabel": "RAGAS; absent",
+      "stage": 2,
+      "row": 2,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "no RAGAS implementation found"
+        }
+      ]
+    },
+    {
+      "id": "relevance",
+      "type": "backend",
+      "label": "Relevance",
+      "sublabel": "RAGAS; absent",
+      "stage": 2,
+      "row": 3,
+      "sources": [
+        {
+          "path": "data/samples/eval/README.md",
+          "line": 1,
+          "end_line": 1,
+          "label": "no RAGAS implementation found"
+        }
+      ]
+    },
+    {
+      "id": "slice",
+      "type": "security",
+      "label": "切片问题",
+      "sublabel": "chunk boundary",
+      "stage": 3,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 20,
+          "end_line": 90,
+          "label": "parent-child chunks"
+        }
+      ]
+    },
+    {
+      "id": "drift",
+      "type": "security",
+      "label": "召回跑偏",
+      "sublabel": "route / rank drift",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 117,
+          "end_line": 211,
+          "label": "three-route retrieval"
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "type": "security",
+      "label": "知识库缺失",
+      "sublabel": "no supporting text",
+      "stage": 3,
+      "row": 2,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 184,
+          "end_line": 184,
+          "label": "retrieval fallback"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "from": "gold",
+      "to": "hit",
+      "label": "rank",
+      "variant": "default"
+    },
+    {
+      "from": "hit",
+      "to": "agreement",
+      "label": "retrieve",
+      "variant": "emphasis"
+    },
+    {
+      "from": "agreement",
+      "to": "slice",
+      "label": "audit",
+      "variant": "security"
+    },
+    {
+      "from": "trace",
+      "to": "mrr",
+      "label": "rank",
+      "variant": "default"
+    },
+    {
+      "from": "mrr",
+      "to": "quote",
+      "label": "retrieve",
+      "variant": "emphasis"
+    },
+    {
+      "from": "quote",
+      "to": "drift",
+      "label": "audit",
+      "variant": "security"
+    },
+    {
+      "from": "trace",
+      "to": "faithfulness",
+      "label": "context",
+      "variant": "dashed"
+    },
+    {
+      "from": "faithfulness",
+      "to": "missing",
+      "label": "audit",
+      "variant": "security"
+    },
+    {
+      "from": "trace",
+      "to": "relevance",
+      "label": "answer",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Current baseline",
+      "items": [
+        "The repository contains self-built evaluation data and scores band agreement, quote exact match, and insufficient-evidence hits",
+        "Retrieval Hit Rate and MRR are not implemented in the current code"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Planned split",
+      "items": [
+        "Run retrieval metrics on ranked candidates before generation",
+        "Run Faithfulness and Relevance separately on answer/context pairs, with RAGAS plus manual sampling"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Attribution",
+      "items": [
+        "Use failures to separate chunking, retrieval drift, and knowledge-base coverage issues",
+        "Keep trace fields sufficient to connect a score back to route, parent, and quote"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+<svg viewBox="0 0 853 626" data-reader-fit="intrinsic-height" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="blueprint" data-quality-profile="showcase" data-motion-choreography="stream">
+        <title id="archify-diagram-title">paper-review evaluation and attribution</title>
+        <desc id="archify-diagram-description">Current checks score rubric agreement and evidence quotes; Hit Rate/MRR and RAGAS dimensions are planned extensions</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Data Stages -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="0" x="16" y="46" width="168" height="506" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="100" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">01 / Gold 与运行轨迹</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="1" x="231" y="46" width="168" height="506" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="315" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">02 / 检索指标</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="2" x="446" y="46" width="168" height="506" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="530" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">03 / 生成指标</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="3" x="661" y="46" width="168" height="506" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="745" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">04 / 归因分支</text>
+
+        <!-- Flow paths -->
+        <path data-edge-from="gold" data-edge-to="hit" data-edge-label="rank" data-edge-key="0" data-composition-points="156,157;259,157" d="M 156 157 L 259 157" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="hit" data-edge-to="agreement" data-edge-label="retrieve" data-edge-key="1" data-composition-points="371,157;474,157" d="M 371 157 L 474 157" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="agreement" data-edge-to="slice" data-edge-label="audit" data-edge-key="2" data-composition-points="586,157;689,157" d="M 586 157 L 689 157" class="a-security" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="trace" data-edge-to="mrr" data-edge-label="rank" data-edge-key="3" data-composition-points="156,258;259,258" d="M 156 258 L 259 258" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="mrr" data-edge-to="quote" data-edge-label="retrieve" data-edge-key="4" data-composition-points="371,271;474,271" d="M 371 271 L 474 271" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="quote" data-edge-to="drift" data-edge-label="audit" data-edge-key="5" data-composition-points="586,271;689,271" d="M 586 271 L 689 271" class="a-security" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="trace" data-edge-to="faithfulness" data-edge-label="context" data-edge-key="6" data-composition-points="156,271;207.5,271;207.5,385;474,385" d="M 156 271 L 207.5 271 L 207.5 385 L 474 385" class="a-dashed" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="faithfulness" data-edge-to="missing" data-edge-label="audit" data-edge-key="7" data-composition-points="586,385;689,385" d="M 586 385 L 689 385" class="a-security" data-animate="edge" style="--step:7" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="trace" data-edge-to="relevance" data-edge-label="answer" data-edge-key="8" data-composition-points="156,284;207.5,284;207.5,499;474,499" d="M 156 284 L 207.5 284 L 207.5 499 L 474 499" class="a-dashed" data-animate="edge" style="--step:8" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+
+        <!-- Nodes -->
+        <g id="node-gold" data-node-id="gold" data-node-label="eval papers" tabindex="0" role="button" aria-label="聚焦eval papers，gold rubric, 01 / Gold 与运行轨迹" aria-pressed="false" data-node-kind="database" data-node-sublabel="gold rubric" data-node-context="01 / Gold 与运行轨迹">
+          <title>eval papers · gold rubric · 01 / Gold 与运行轨迹</title>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(50 134) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">eval papers</text>
+          <text data-detail="context" x="100" y="174.4" class="t-muted" font-size="7" text-anchor="middle">gold rubric</text>
+        </g>
+
+        <g id="node-trace" data-node-id="trace" data-node-label="run traces" tabindex="0" role="button" aria-label="聚焦run traces，candidates + quotes, 01 / Gold 与运行轨迹" aria-pressed="false" data-node-kind="backend" data-node-sublabel="candidates + quotes" data-node-context="01 / Gold 与运行轨迹">
+          <title>run traces · candidates + quotes · 01 / Gold 与运行轨迹</title>
+          <rect x="44" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="242" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(50 248) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">run traces</text>
+          <text data-detail="context" x="100" y="288.4" class="t-muted" font-size="7" text-anchor="middle">candidates + quotes</text>
+        </g>
+
+        <g id="node-hit" data-node-id="hit" data-node-label="Hit Rate" tabindex="0" role="button" aria-label="聚焦Hit Rate，planned; absent, 02 / 检索指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="planned; absent" data-node-context="02 / 检索指标">
+          <title>Hit Rate · planned; absent · 02 / 检索指标</title>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(265 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="305" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Hit Rate</text>
+          <text data-detail="context" x="315" y="165" class="t-muted" font-size="7" text-anchor="middle">planned; absent</text>
+        </g>
+
+        <g id="node-mrr" data-node-id="mrr" data-node-label="MRR" tabindex="0" role="button" aria-label="聚焦MRR，planned; absent, 02 / 检索指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="planned; absent" data-node-context="02 / 检索指标">
+          <title>MRR · planned; absent · 02 / 检索指标</title>
+          <rect x="259" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="242" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(265 248) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="315" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">MRR</text>
+          <text data-detail="context" x="315" y="279" class="t-muted" font-size="7" text-anchor="middle">planned; absent</text>
+        </g>
+
+        <g id="node-agreement" data-node-id="agreement" data-node-label="Band agreement" tabindex="0" role="button" aria-label="聚焦Band agreement，implemented, 03 / 生成指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="implemented" data-node-context="03 / 生成指标">
+          <title>Band agreement · implemented · 03 / 生成指标</title>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Band agreement</text>
+          <text data-detail="context" x="530" y="174.4" class="t-muted" font-size="7" text-anchor="middle">implemented</text>
+        </g>
+
+        <g id="node-quote" data-node-id="quote" data-node-label="Quote match" tabindex="0" role="button" aria-label="聚焦Quote match，implemented, 03 / 生成指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="implemented" data-node-context="03 / 生成指标">
+          <title>Quote match · implemented · 03 / 生成指标</title>
+          <rect x="474" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="242" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 248) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Quote match</text>
+          <text data-detail="context" x="530" y="288.4" class="t-muted" font-size="7" text-anchor="middle">implemented</text>
+        </g>
+
+        <g id="node-faithfulness" data-node-id="faithfulness" data-node-label="Faithfulness" tabindex="0" role="button" aria-label="聚焦Faithfulness，RAGAS; absent, 03 / 生成指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="RAGAS; absent" data-node-context="03 / 生成指标">
+          <title>Faithfulness · RAGAS; absent · 03 / 生成指标</title>
+          <rect x="474" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="356" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:7" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 362) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="389" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Faithfulness</text>
+          <text data-detail="context" x="530" y="402.4" class="t-muted" font-size="7" text-anchor="middle">RAGAS; absent</text>
+        </g>
+
+        <g id="node-relevance" data-node-id="relevance" data-node-label="Relevance" tabindex="0" role="button" aria-label="聚焦Relevance，RAGAS; absent, 03 / 生成指标" aria-pressed="false" data-node-kind="backend" data-node-sublabel="RAGAS; absent" data-node-context="03 / 生成指标">
+          <title>Relevance · RAGAS; absent · 03 / 生成指标</title>
+          <rect x="474" y="470" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="470" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:9" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 476) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="503" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Relevance</text>
+          <text data-detail="context" x="530" y="516.4" class="t-muted" font-size="7" text-anchor="middle">RAGAS; absent</text>
+        </g>
+
+        <g id="node-slice" data-node-id="slice" data-node-label="切片问题" tabindex="0" role="button" aria-label="聚焦切片问题，chunk boundary, 04 / 归因分支" aria-pressed="false" data-node-kind="security" data-node-sublabel="chunk boundary" data-node-context="04 / 归因分支">
+          <title>切片问题 · chunk boundary · 04 / 归因分支</title>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-security" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(695 134) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="735" y="149" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">切片问题</text>
+          <text data-detail="context" x="745" y="165" class="t-muted" font-size="7" text-anchor="middle">chunk boundary</text>
+        </g>
+
+        <g id="node-drift" data-node-id="drift" data-node-label="召回跑偏" tabindex="0" role="button" aria-label="聚焦召回跑偏，route / rank drift, 04 / 归因分支" aria-pressed="false" data-node-kind="security" data-node-sublabel="route / rank drift" data-node-context="04 / 归因分支">
+          <title>召回跑偏 · route / rank drift · 04 / 归因分支</title>
+          <rect x="689" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="242" width="112" height="58" rx="6" class="c-security" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(695 248) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="735" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">召回跑偏</text>
+          <text data-detail="context" x="745" y="279" class="t-muted" font-size="7" text-anchor="middle">route / rank drift</text>
+        </g>
+
+        <g id="node-missing" data-node-id="missing" data-node-label="知识库缺失" tabindex="0" role="button" aria-label="聚焦知识库缺失，no supporting text, 04 / 归因分支" aria-pressed="false" data-node-kind="security" data-node-sublabel="no supporting text" data-node-context="04 / 归因分支">
+          <title>知识库缺失 · no supporting text · 04 / 归因分支</title>
+          <rect x="689" y="356" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="356" width="112" height="58" rx="6" class="c-security" data-animate="node" style="--step:8" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(695 362) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="745" y="389" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">知识库缺失</text>
+          <text data-detail="context" x="745" y="402.4" class="t-muted" font-size="7" text-anchor="middle">no supporting text</text>
+        </g>
+
+        <!-- Flow labels -->
+        <g data-detail="context" data-edge-from="gold" data-edge-to="hit" data-edge-label="rank" data-edge-key="0">
+          <rect x="190.5" y="136" width="34" height="16" rx="4" class="c-mask"/>
+          <text x="207.5" y="147" class="t-edge-default" font-size="8" text-anchor="middle">rank</text>
+        </g>
+        <g data-detail="context" data-edge-from="hit" data-edge-to="agreement" data-edge-label="retrieve" data-edge-key="1">
+          <rect x="396.9" y="136" width="51.2" height="16" rx="4" class="c-mask"/>
+          <text x="422.5" y="147" class="t-edge-emphasis" font-size="8" text-anchor="middle">retrieve</text>
+        </g>
+        <g data-detail="context" data-edge-from="agreement" data-edge-to="slice" data-edge-label="audit" data-edge-key="2">
+          <rect x="619.25" y="136" width="36.5" height="16" rx="4" class="c-mask"/>
+          <text x="637.5" y="147" class="t-edge-security" font-size="8" text-anchor="middle">audit</text>
+        </g>
+        <g data-detail="context" data-edge-from="trace" data-edge-to="mrr" data-edge-label="rank" data-edge-key="3">
+          <rect x="190.5" y="237" width="34" height="16" rx="4" class="c-mask"/>
+          <text x="207.5" y="248" class="t-edge-default" font-size="8" text-anchor="middle">rank</text>
+        </g>
+        <g data-detail="context" data-edge-from="mrr" data-edge-to="quote" data-edge-label="retrieve" data-edge-key="4">
+          <rect x="396.9" y="250" width="51.2" height="16" rx="4" class="c-mask"/>
+          <text x="422.5" y="261" class="t-edge-emphasis" font-size="8" text-anchor="middle">retrieve</text>
+        </g>
+        <g data-detail="context" data-edge-from="quote" data-edge-to="drift" data-edge-label="audit" data-edge-key="5">
+          <rect x="619.25" y="250" width="36.5" height="16" rx="4" class="c-mask"/>
+          <text x="637.5" y="261" class="t-edge-security" font-size="8" text-anchor="middle">audit</text>
+        </g>
+        <g data-detail="context" data-edge-from="trace" data-edge-to="faithfulness" data-edge-label="context" data-edge-key="6">
+          <rect x="155.2" y="321" width="46.3" height="16" rx="4" class="c-mask"/>
+          <text x="178.35" y="332" class="t-edge-dashed" font-size="8" text-anchor="middle">context</text>
+        </g>
+        <g data-detail="context" data-edge-from="faithfulness" data-edge-to="missing" data-edge-label="audit" data-edge-key="7">
+          <rect x="619.25" y="364" width="36.5" height="16" rx="4" class="c-mask"/>
+          <text x="637.5" y="375" class="t-edge-security" font-size="8" text-anchor="middle">audit</text>
+        </g>
+        <g data-detail="context" data-edge-from="trace" data-edge-to="relevance" data-edge-label="answer" data-edge-key="8">
+          <rect x="161.05" y="294" width="41.4" height="16" rx="4" class="c-mask"/>
+          <text x="181.75" y="305" class="t-edge-dashed" font-size="8" text-anchor="middle">answer</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="570" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="590" data-legend-width="93">
+            <path d="M 40 587 L 74 587" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="590" class="t-muted" font-size="10" font-weight="500">主要数据</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-x="155" data-legend-baseline="590" data-legend-width="105">
+            <path d="M 155 587 L 189 587" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+            <text x="198" y="590" class="t-muted" font-size="10" font-weight="500">策略 / PII</text>
+          </g>
+          <g data-legend-semantic-kind="dashed" data-legend-x="282" data-legend-baseline="590" data-legend-width="105">
+            <path d="M 282 587 L 316 587" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="325" y="590" class="t-muted" font-size="10" font-weight="500">异步批处理</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="数据存储" data-legend-x="409" data-legend-baseline="590" data-legend-width="93">
+            <rect x="409" y="582" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="431" y="590" class="t-muted" font-size="10" font-weight="500">数据存储</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="524" data-legend-baseline="590" data-legend-width="81">
+            <path d="M 524 587 L 558 587" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="567" y="590" class="t-muted" font-size="10" font-weight="500">数据流</text>
+          </g>
+        </g>
+      </svg>

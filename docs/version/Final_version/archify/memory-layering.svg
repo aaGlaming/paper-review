@@ -1,0 +1,177 @@
+<svg viewBox="0 0 853 398" data-reader-fit="intrinsic-height" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="blueprint" data-quality-profile="showcase" data-motion-choreography="stream">
+        <title id="archify-diagram-title">paper-review memory layering</title>
+        <desc id="archify-diagram-description">Working state is process scoped; session records and chat history are durable; no rolling summary or semantic Agent memory is implemented</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Data Stages -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="0" x="16" y="46" width="168" height="278" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="100" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">01 / 工作记忆</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="1" x="231" y="46" width="168" height="278" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="315" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">02 / 会话记忆</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="2" x="446" y="46" width="168" height="278" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="530" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">03 / 持久记录</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="stage" data-composition-frame-id="3" x="661" y="46" width="168" height="278" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="745" y="68" class="t-dim" font-size="9" font-weight="600" text-anchor="middle">04 / 回读与删除</text>
+
+        <!-- Flow paths -->
+        <path data-edge-from="state" data-edge-to="session" data-edge-label="persist" data-edge-key="0" data-composition-points="156,157;259,157" d="M 156 157 L 259 157" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="session" data-edge-to="review" data-edge-label="save" data-edge-key="1" data-composition-points="371,157;474,157" d="M 371 157 L 474 157" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="review" data-edge-to="readback" data-edge-label="load" data-edge-key="2" data-composition-points="586,157;689,157" d="M 586 157 L 689 157" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="readback" data-edge-to="delete" data-edge-label="delete" data-edge-key="3" data-composition-points="745,186;745,242" d="M 745 186 L 745 242" class="a-security" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+
+        <!-- Nodes -->
+        <g id="node-state" data-node-id="state" data-node-label="ReviewState" tabindex="0" role="button" aria-label="聚焦ReviewState，run state, 01 / 工作记忆" aria-pressed="false" data-node-kind="backend" data-node-sublabel="run state" data-node-context="01 / 工作记忆">
+          <title>ReviewState · run state · 01 / 工作记忆</title>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="128" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(50 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">ReviewState</text>
+          <text data-detail="context" x="100" y="174.4" class="t-muted" font-size="7" text-anchor="middle">run state</text>
+        </g>
+
+        <g id="node-checkpoint" data-node-id="checkpoint" data-node-label="InMemorySaver" tabindex="0" role="button" aria-label="聚焦InMemorySaver，checkpoint; process, 01 / 工作记忆" aria-pressed="false" data-node-kind="backend" data-node-sublabel="checkpoint; process" data-node-context="01 / 工作记忆">
+          <title>InMemorySaver · checkpoint; process · 01 / 工作记忆</title>
+          <rect x="44" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="44" y="242" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(50 248) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="100" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">InMemorySaver</text>
+          <text data-detail="context" x="100" y="288.4" class="t-muted" font-size="7" text-anchor="middle">checkpoint; process</text>
+        </g>
+
+        <g id="node-session" data-node-id="session" data-node-label="review_session" tabindex="0" role="button" aria-label="聚焦review_session，snapshot; no TTL, 02 / 会话记忆" aria-pressed="false" data-node-kind="database" data-node-sublabel="snapshot; no TTL" data-node-context="02 / 会话记忆">
+          <title>review_session · snapshot; no TTL · 02 / 会话记忆</title>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="128" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(265 134) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="315" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">review_session</text>
+          <text data-detail="context" x="315" y="174.4" class="t-muted" font-size="7" text-anchor="middle">snapshot; no TTL</text>
+        </g>
+
+        <g id="node-chat" data-node-id="chat" data-node-label="chat history" tabindex="0" role="button" aria-label="聚焦chat history，ordered; no TTL, 02 / 会话记忆" aria-pressed="false" data-node-kind="database" data-node-sublabel="ordered; no TTL" data-node-context="02 / 会话记忆">
+          <title>chat history · ordered; no TTL · 02 / 会话记忆</title>
+          <rect x="259" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="259" y="242" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(265 248) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="315" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">chat history</text>
+          <text data-detail="context" x="315" y="288.4" class="t-muted" font-size="7" text-anchor="middle">ordered; no TTL</text>
+        </g>
+
+        <g id="node-review" data-node-id="review" data-node-label="review records" tabindex="0" role="button" aria-label="聚焦review records，final + dimensions, 03 / 持久记录" aria-pressed="false" data-node-kind="database" data-node-sublabel="final + dimensions" data-node-context="03 / 持久记录">
+          <title>review records · final + dimensions · 03 / 持久记录</title>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="128" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(480 134) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">review records</text>
+          <text data-detail="context" x="530" y="174.4" class="t-muted" font-size="7" text-anchor="middle">final + dimensions</text>
+        </g>
+
+        <g id="node-trace" data-node-id="trace" data-node-label="AgentStep logs" tabindex="0" role="button" aria-label="聚焦AgentStep logs，events; retention ext, 03 / 持久记录" aria-pressed="false" data-node-kind="database" data-node-sublabel="events; retention ext" data-node-context="03 / 持久记录">
+          <title>AgentStep logs · events; retention ext · 03 / 持久记录</title>
+          <rect x="474" y="242" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="474" y="242" width="112" height="58" rx="6" class="c-database" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(480 248) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="530" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">AgentStep logs</text>
+          <text data-detail="context" x="530" y="288.4" class="t-muted" font-size="7" text-anchor="middle">events; retention ext</text>
+        </g>
+
+        <g id="node-readback" data-node-id="readback" data-node-label="load / resume" tabindex="0" role="button" aria-label="聚焦load / resume，read session/chat, 04 / 回读与删除" aria-pressed="false" data-node-kind="backend" data-node-sublabel="read session/chat" data-node-context="04 / 回读与删除">
+          <title>load / resume · read session/chat · 04 / 回读与删除</title>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-mask"/>
+          <rect x="689" y="128" width="112" height="58" rx="6" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(695 134) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="745" y="161" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">load / resume</text>
+          <text data-detail="context" x="745" y="174.4" class="t-muted" font-size="7" text-anchor="middle">read session/chat</text>
+        </g>
+
+        <g id="node-delete" data-node-id="delete" data-node-label="delete entry" tabindex="0" role="button" aria-label="聚焦delete entry，chat delete; purge absent, 04 / 回读与删除" aria-pressed="false" data-node-kind="security" data-node-sublabel="chat delete; purge absent" data-node-context="04 / 回读与删除">
+          <title>delete entry · chat delete; purge absent · 04 / 回读与删除</title>
+          <rect x="688.5" y="242" width="113" height="58" rx="6" class="c-mask"/>
+          <rect x="688.5" y="242" width="113" height="58" rx="6" class="c-security" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(694.5 248) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="745" y="275" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">delete entry</text>
+          <text data-detail="context" x="745" y="288.4" class="t-muted" font-size="7" text-anchor="middle">chat delete; purge absent</text>
+        </g>
+
+        <!-- Flow labels -->
+        <g data-detail="context" data-edge-from="state" data-edge-to="session" data-edge-label="persist" data-edge-key="0">
+          <rect x="184.35" y="136" width="46.3" height="16" rx="4" class="c-mask"/>
+          <text x="207.5" y="147" class="t-edge-emphasis" font-size="8" text-anchor="middle">persist</text>
+        </g>
+        <g data-detail="context" data-edge-from="session" data-edge-to="review" data-edge-label="save" data-edge-key="1">
+          <rect x="405.5" y="136" width="34" height="16" rx="4" class="c-mask"/>
+          <text x="422.5" y="147" class="t-edge-default" font-size="8" text-anchor="middle">save</text>
+        </g>
+        <g data-detail="context" data-edge-from="review" data-edge-to="readback" data-edge-label="load" data-edge-key="2">
+          <rect x="620.5" y="136" width="34" height="16" rx="4" class="c-mask"/>
+          <text x="637.5" y="147" class="t-edge-default" font-size="8" text-anchor="middle">load</text>
+        </g>
+        <g data-detail="context" data-edge-from="readback" data-edge-to="delete" data-edge-label="delete" data-edge-key="3">
+          <rect x="724.3" y="193" width="41.4" height="16" rx="4" class="c-mask"/>
+          <text x="745" y="204" class="t-edge-security" font-size="8" text-anchor="middle">delete</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="342" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="362" data-legend-width="93">
+            <path d="M 40 359 L 74 359" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="362" class="t-muted" font-size="10" font-weight="500">主要数据</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-x="155" data-legend-baseline="362" data-legend-width="105">
+            <path d="M 155 359 L 189 359" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+            <text x="198" y="362" class="t-muted" font-size="10" font-weight="500">策略 / PII</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="数据存储" data-legend-x="282" data-legend-baseline="362" data-legend-width="93">
+            <rect x="282" y="354" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="304" y="362" class="t-muted" font-size="10" font-weight="500">数据存储</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="397" data-legend-baseline="362" data-legend-width="81">
+            <path d="M 397 359 L 431 359" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="440" y="362" class="t-muted" font-size="10" font-weight="500">数据流</text>
+          </g>
+        </g>
+      </svg>

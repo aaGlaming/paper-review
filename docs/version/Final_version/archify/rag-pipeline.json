@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "paper-review RAG pipeline",
+    "subtitle": "Code-backed path: query rewrite on empty result; vector retrieval or MySQL fallback; three doc-type routes, not same-round hybrid keyword search",
+    "locale": "zh-CN",
+    "output": "rag-pipeline.html",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    }
+  },
+  "stages": [
+    {
+      "label": "Query"
+    },
+    {
+      "label": "Recall"
+    },
+    {
+      "label": "Rank"
+    },
+    {
+      "label": "Context"
+    },
+    {
+      "label": "Generate"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "query",
+      "type": "backend",
+      "label": "search_evidence",
+      "sublabel": "query + filters",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 113,
+          "end_line": 156,
+          "label": "search_evidence"
+        }
+      ]
+    },
+    {
+      "id": "rewrite",
+      "type": "backend",
+      "label": "default_rewrite",
+      "sublabel": "empty → rewrite",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 55,
+          "end_line": 58,
+          "label": "default_rewrite"
+        }
+      ]
+    },
+    {
+      "id": "vector",
+      "type": "cloud",
+      "label": "Chroma vector",
+      "sublabel": "embedding → children",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 454,
+          "end_line": 513,
+          "label": "search_children_then_parents"
+        }
+      ]
+    },
+    {
+      "id": "fallback",
+      "type": "database",
+      "label": "MySQL fallback",
+      "sublabel": "parent rows; no rank",
+      "stage": 1,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 332,
+          "end_line": 365,
+          "label": "mysql_search_round"
+        }
+      ]
+    },
+    {
+      "id": "dedupe",
+      "type": "backend",
+      "label": "merge_candidates",
+      "sublabel": "3 routes; unique parent",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 68,
+          "end_line": 83,
+          "label": "merge_candidates"
+        }
+      ]
+    },
+    {
+      "id": "rerank",
+      "type": "cloud",
+      "label": "optional rerank",
+      "sublabel": "same IDs reordered",
+      "stage": 3,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 193,
+          "end_line": 199,
+          "label": "rerank validation"
+        }
+      ]
+    },
+    {
+      "id": "topk",
+      "type": "backend",
+      "label": "Top-K parents",
+      "sublabel": "≤ 4 parents; bounded",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 33,
+          "end_line": 35,
+          "label": "MAX_PARENTS"
+        },
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 158,
+          "end_line": 181,
+          "label": "read_parent"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "backend",
+      "label": "Agent context",
+      "sublabel": "tools + preload + msgs",
+      "stage": 4,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/agent/prompt.py",
+          "line": 4,
+          "end_line": 23,
+          "label": "build_system_prompt"
+        },
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 160,
+          "end_line": 176,
+          "label": "preload context"
+        }
+      ]
+    },
+    {
+      "id": "generate",
+      "type": "cloud",
+      "label": "chat_with_tools",
+      "sublabel": "tool calls / final",
+      "stage": 4,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/llm/client.py",
+          "line": 209,
+          "end_line": 234,
+          "label": "chat_with_tools"
+        },
+        {
+          "path": "backend/app/agent/chat_model.py",
+          "line": 67,
+          "end_line": 144,
+          "label": "adapter"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "from": "query",
+      "to": "rewrite",
+      "label": "rewrite",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelDy": -8
+    },
+    {
+      "from": "rewrite",
+      "to": "vector",
+      "label": "embed",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "query",
+      "to": "fallback",
+      "label": "fallback",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "vector",
+      "to": "dedupe",
+      "label": "recall",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "fallback",
+      "to": "dedupe",
+      "label": "recall",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "dedupe",
+      "to": "rerank",
+      "label": "rank",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "rerank",
+      "to": "topk",
+      "label": "Top-K",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 16,
+      "labelDy": 25
+    },
+    {
+      "from": "dedupe",
+      "to": "topk",
+      "label": "no rerank",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left",
+      "channelY": 260
+    },
+    {
+      "from": "topk",
+      "to": "prompt",
+      "label": "context",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "from": "prompt",
+      "to": "generate",
+      "label": "generate",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 16,
+      "labelDy": 25
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Actual recall boundary",
+      "items": [
+        "The code has three doc_type routes, not two",
+        "MySQL is a no-embedding fallback filtered by review_id/section_types, not BM25 keyword ranking"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failure points",
+      "items": [
+        "Empty after two rounds becomes 证据不足",
+        "Rerank may reorder only the original candidate set",
+        "Quote must remain a continuous substring of a retrieved parent"
+      ]
+    }
+  ]
+}

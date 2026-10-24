@@ -1,0 +1,207 @@
+<svg viewBox="0 0 976 540" data-layout-contract="readable-v2" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase" data-node-ui="">
+        <title id="archify-diagram-title">paper-review agent loop control</title>
+        <desc id="archify-diagram-description">Actual limits: main 12 model / 24 tools / 150s / 45 recursion; no token budget field</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <style>
+          svg[data-node-ui] [data-node-id] > rect:not(.c-mask) { stroke-width: 1.25px; }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-frontend { fill: color-mix(in srgb, var(--frontend-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--frontend-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-backend { fill: color-mix(in srgb, var(--backend-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--backend-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-database { fill: color-mix(in srgb, var(--database-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--database-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-cloud { fill: color-mix(in srgb, var(--cloud-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--cloud-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-security { fill: color-mix(in srgb, var(--security-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--security-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-messagebus { fill: color-mix(in srgb, var(--messagebus-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--messagebus-stroke) 72%, var(--mask)); }
+          :is([data-theme="dark"] svg[data-node-ui], svg[data-node-ui][data-theme="dark"]) [data-node-id] > rect:not(.c-mask).c-external { fill: color-mix(in srgb, var(--external-stroke) 13%, var(--mask)); stroke: color-mix(in srgb, var(--external-stroke) 72%, var(--mask)); }
+          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-region { fill: color-mix(in srgb, var(--cloud-stroke) 3%, transparent); stroke: color-mix(in srgb, var(--cloud-stroke) 42%, var(--lane-stroke)); stroke-dasharray: none; }
+          svg[data-node-ui] .c-security-group { stroke: color-mix(in srgb, var(--security-stroke) 58%, var(--lane-stroke)); }
+          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-security-group { stroke-dasharray: 4 3; }
+          svg[data-node-ui]:is([data-preset="classic"], [data-preset="signal-flow"], [data-preset="editorial"]) .c-lane { stroke: var(--lane-stroke); stroke-dasharray: none; }
+          svg[data-node-ui] [data-graph-role="structural-frame-label-mask"] { rx: 5px; fill: color-mix(in srgb, var(--cloud-stroke) 10%, var(--mask)); stroke: color-mix(in srgb, var(--cloud-stroke) 38%, var(--mask)); stroke-width: .8px; }
+          svg[data-node-ui] [data-composition-frame-kind="security-group"] > [data-graph-role="structural-frame-label-mask"] { fill: color-mix(in srgb, var(--security-stroke) 9%, var(--mask)); stroke: color-mix(in srgb, var(--security-stroke) 36%, var(--mask)); }
+          svg[data-node-ui] .phase-rule { opacity: .5; stroke-dasharray: none; }
+          svg[data-node-ui] .phase-chip { stroke: var(--lane-stroke); stroke-width: .75px; }
+          svg[data-node-ui] g[data-edge-from] > rect.c-mask { rx: 7px; stroke: var(--lane-stroke); stroke-width: .75px; }
+          svg[data-node-ui][data-preset="blueprint"] :is([data-graph-role="structural-frame-label-mask"], g[data-edge-from] > rect.c-mask, .phase-chip) { rx: 2px; }
+          svg[data-node-ui][data-preset="editorial"] :is([data-graph-role="structural-frame-label-mask"], g[data-edge-from] > rect.c-mask, .phase-chip) { rx: 3px; }
+        </style>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Swimlanes -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="920" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="74" class="t-muted" font-size="10" font-weight="600">01 / Agent runtime</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="920" height="112" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-1-exception" x="46" y="184" width="908" height="100" rx="8" class="c-security-group" stroke-width="1"/>
+        <text x="54" y="200" class="t-security" font-size="10" font-weight="600">EX / Budget and stop policy</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="310" width="920" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="332" class="t-muted" font-size="10" font-weight="600">03 / Result and trace</text>
+
+        <!-- Phase headers -->
+        <path d="M 56 35 H 132" class="a-default phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
+        <rect x="72" y="27" width="44" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="94" y="38.5" class="t-muted" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Start</text>
+        <path d="M 190 35 H 769.2" class="a-emphasis phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
+        <rect x="421.6" y="27" width="116" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="479.6" y="38.5" class="t-backend" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Plan → act → observe</text>
+        <path d="M 841.2 35 H 917.2" class="a-dashed phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
+        <rect x="840.4000000000001" y="27" width="77.6" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="879.2" y="38.5" class="t-messagebus" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Stop / write</text>
+
+        <!-- Workflow groups -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-0" x="178" y="90" width="603.2" height="64" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="188" y="88" class="t-backend" font-size="7" font-weight="600">Bounded iteration</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-1" x="561.2" y="216" width="390" height="70" rx="9" class="c-security-group" stroke-width="1"/>
+        <text x="571.2" y="214" class="t-security" font-size="7" font-weight="600">Budget gate</text>
+
+        <!-- Edge paths -->
+        <path data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="budget / timeout / recursion" data-edge-key="0" data-edge-id="budget" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="731.2,277;731.2,306;879.2,306;879.2,285" d="M 731.2 277 L 731.2 298 Q 731.2 306 739.2 306 L 871.2 306 Q 879.2 306 879.2 298 L 879.2 285" class="a-security" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / result" data-edge-key="1" data-edge-id="call-observe" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="451.2,120;565.2,120" d="M 451.2 120 L 565.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="stop_check" data-edge-to="plan" data-edge-label="no: continue loop" data-edge-key="2" data-edge-id="continue" data-composition-routing="workflow-v2-auto" data-edge-role="branch" data-composition-points="683.2,244;228,244;228,146" d="M 683.2 244 L 236 244 Q 228 244 228 236 L 228 146" class="a-emphasis" data-animate="edge" style="--step:8" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="stop_check" data-edge-to="emit" data-edge-label="yes: all submitted" data-edge-key="3" data-edge-id="done" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="707.2,277;707.2,378;833.2,378" d="M 707.2 277 L 707.2 370 Q 707.2 378 715.2 378 L 833.2 378" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="observe" data-edge-to="stop_check" data-edge-label="progress snapshot" data-edge-key="4" data-edge-id="observe-stop" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="611.2,146;611.2,168;731.2,168;731.2,225" d="M 611.2 146 L 611.2 160 Q 611.2 168 619.2 168 L 723.2 168 Q 731.2 168 731.2 176 L 731.2 225" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="plan" data-edge-to="call_tools" data-edge-label="next tool call" data-edge-key="5" data-edge-id="plan-call" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="274,120;359.2,120" d="M 274 120 L 359.2 120" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="start_task" data-edge-to="plan" data-edge-label="begin" data-edge-key="6" data-edge-id="start-plan" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="140,120;182,120" d="M 140 120 L 182 120" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+
+        <!-- Nodes -->
+        <g id="node-start_task" data-node-id="start_task" data-node-label="Task start" tabindex="0" role="button" aria-label="聚焦Task start，state, Agent runtime › Start" aria-pressed="false" data-node-kind="backend" data-node-sublabel="state" data-node-context="Agent runtime › Start">
+          <title>Task start · state · Agent runtime › Start</title>
+          <rect x="48" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="48" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(54 100) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="94" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Task start</text>
+          <text data-detail="context" x="94" y="138.3" class="t-muted" font-size="8" text-anchor="middle">state</text>
+        </g>
+
+        <g id="node-plan" data-node-id="plan" data-node-label="Plan" tabindex="0" role="button" aria-label="聚焦Plan，prompt + tool, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="prompt + tool" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
+          <title>Plan · prompt + tool · Agent runtime › Bounded iteration › Plan → act → observe</title>
+          <rect x="182" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="182" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(188 100) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="218.8" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Plan</text>
+          <text data-detail="context" x="228" y="132" class="t-muted" font-size="8" text-anchor="middle">prompt + tool</text>
+        </g>
+
+        <g id="node-call_tools" data-node-id="call_tools" data-node-label="Call tools" tabindex="0" role="button" aria-label="聚焦Call tools，24 tools, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="24 tools" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
+          <title>Call tools · 24 tools · Agent runtime › Bounded iteration › Plan → act → observe</title>
+          <rect x="359.2" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="359.2" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(365.2 100) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="405.2" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Call tools</text>
+          <text data-detail="context" x="405.2" y="138.3" class="t-muted" font-size="8" text-anchor="middle">24 tools</text>
+        </g>
+
+        <g id="node-observe" data-node-id="observe" data-node-label="Observe result" tabindex="0" role="button" aria-label="聚焦Observe result，progress / error, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="progress / error" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
+          <title>Observe result · progress / error · Agent runtime › Bounded iteration › Plan → act → observe</title>
+          <rect x="565.2" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="565.2" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(571.2 100) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="611.2" y="127" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Observe result</text>
+          <text data-detail="context" x="611.2" y="141.6" class="t-muted" font-size="8" text-anchor="middle">progress / error</text>
+        </g>
+
+        <g id="node-stop_check" data-node-id="stop_check" data-node-label="Stop condition?" tabindex="0" role="button" aria-label="聚焦Stop condition?，done? budget?, Budget and stop policy › Budget gate › Plan → act → observe" aria-pressed="false" data-node-kind="security" data-node-sublabel="done? budget?" data-node-context="Budget and stop policy › Budget gate › Plan → act → observe">
+          <title>Stop condition? · done? budget? · Budget and stop policy › Budget gate › Plan → act → observe</title>
+          <rect x="683.2" y="225" width="96" height="52" rx="8" class="c-mask"/>
+          <rect x="683.2" y="225" width="96" height="52" rx="8" class="c-security" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(689.2 231) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="731.2" y="257.7" class="t-primary" font-size="9.7" font-weight="600" text-anchor="middle">Stop condition?</text>
+          <text data-detail="context" x="731.2" y="272.3" class="t-muted" font-size="8" text-anchor="middle">done? budget?</text>
+        </g>
+
+        <g id="node-budget_stop" data-node-id="budget_stop" data-node-label="Budget exit" tabindex="0" role="button" aria-label="聚焦Budget exit，12 model / 24 tools / 150s, Budget and stop policy › Budget gate › Stop / write" aria-pressed="false" data-node-kind="security" data-node-sublabel="12 model / 24 tools / 150s" data-node-tag="token budget: not implemented" data-node-context="Budget and stop policy › Budget gate › Stop / write">
+          <title>Budget exit · 12 model / 24 tools / 150s · Budget and stop policy › Budget gate › Stop / write · token budget: not implemented</title>
+          <rect x="811.2" y="217" width="136" height="68" rx="8" class="c-mask"/>
+          <rect x="811.2" y="217" width="136" height="68" rx="8" class="c-security" data-animate="node" style="--step:11" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(817.2 223) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="868.9000000000001" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Budget exit</text>
+          <text data-detail="context" x="879.2" y="255" class="t-muted" font-size="8" text-anchor="middle">12 model / 24 tools / 150s</text>
+        <text data-detail="fine" x="879.2" y="273" class="t-security" font-size="7" text-anchor="middle">token budget: not implemented</text>
+        </g>
+
+        <g id="node-emit" data-node-id="emit" data-node-label="Output + trace" tabindex="0" role="button" aria-label="聚焦Output + trace，score + trace, Result and trace › Stop / write" aria-pressed="false" data-node-kind="backend" data-node-sublabel="score + trace" data-node-context="Result and trace › Stop / write">
+          <title>Output + trace · score + trace · Result and trace › Stop / write</title>
+          <rect x="833.2" y="352" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="833.2" y="352" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(839.2 358) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="879.2" y="385" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Output + trace</text>
+          <text data-detail="context" x="879.2" y="399.6" class="t-muted" font-size="8" text-anchor="middle">score + trace</text>
+        </g>
+
+        <!-- Edge labels -->
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="budget / timeout / recursion" data-edge-key="0" data-edge-id="budget">
+          <rect x="733" y="286" width="144.4" height="14" rx="3" class="c-mask"/>
+          <text x="805.2" y="296" class="t-edge-security" font-size="8" text-anchor="middle">budget / timeout / recursion</text>
+        </g>
+        <g data-detail="context" data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / result" data-edge-key="1" data-edge-id="call-observe">
+          <rect x="455.20000000000005" y="100" width="106" height="14" rx="3" class="c-mask"/>
+          <text x="508.20000000000005" y="110" class="t-muted" font-size="8" text-anchor="middle">ToolMessage / result</text>
+        </g>
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="plan" data-edge-label="no: continue loop" data-edge-key="2" data-edge-id="continue">
+          <rect x="409.8" y="224" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="455.6" y="234" class="t-edge-emphasis" font-size="8" text-anchor="middle">no: continue loop</text>
+        </g>
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="emit" data-edge-label="yes: all submitted" data-edge-key="3" data-edge-id="done">
+          <rect x="722" y="358" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="770.2" y="368" class="t-edge-emphasis" font-size="8" text-anchor="middle">yes: all submitted</text>
+        </g>
+        <g data-detail="context" data-edge-from="observe" data-edge-to="stop_check" data-edge-label="progress snapshot" data-edge-key="4" data-edge-id="observe-stop">
+          <rect x="625.4000000000001" y="148" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="671.2" y="158" class="t-muted" font-size="8" text-anchor="middle">progress snapshot</text>
+        </g>
+        <g data-detail="context" data-edge-from="plan" data-edge-to="call_tools" data-edge-label="next tool call" data-edge-key="5" data-edge-id="plan-call">
+          <rect x="278" y="100" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="316.6" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">next tool call</text>
+        </g>
+        <g data-detail="context" data-edge-from="start_task" data-edge-to="plan" data-edge-label="begin" data-edge-key="6" data-edge-id="start-plan">
+          <rect x="144" y="100" width="34" height="14" rx="3" class="c-mask"/>
+          <text x="161" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">begin</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="20" y="440" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent 逻辑" data-legend-x="20" data-legend-baseline="460" data-legend-width="90">
+            <rect x="20" y="452" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="42" y="460" class="t-muted" font-size="7.5" font-weight="500">Agent 逻辑</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="策略" data-legend-x="117" data-legend-baseline="460" data-legend-width="62">
+            <rect x="117" y="452" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="139" y="460" class="t-muted" font-size="7.5" font-weight="500">策略</text>
+          </g>
+        </g>
+      </svg>

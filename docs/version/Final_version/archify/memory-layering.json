@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "paper-review memory layering",
+    "subtitle": "Working state is process scoped; session records and chat history are durable; no rolling summary or semantic Agent memory is implemented",
+    "locale": "zh-CN",
+    "output": "memory-layering.html",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    }
+  },
+  "stages": [
+    {
+      "label": "工作记忆"
+    },
+    {
+      "label": "会话记忆"
+    },
+    {
+      "label": "持久记录"
+    },
+    {
+      "label": "回读与删除"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "state",
+      "type": "backend",
+      "label": "ReviewState",
+      "sublabel": "run state",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 107,
+          "end_line": 146,
+          "label": "ReviewState"
+        },
+        {
+          "path": "backend/app/agent/context.py",
+          "line": 1,
+          "end_line": 25,
+          "label": "ToolContext"
+        }
+      ]
+    },
+    {
+      "id": "checkpoint",
+      "type": "backend",
+      "label": "InMemorySaver",
+      "sublabel": "checkpoint; process",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 500,
+          "end_line": 550,
+          "label": "graph checkpoint wiring"
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "type": "database",
+      "label": "review_session",
+      "sublabel": "snapshot; no TTL",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 61,
+          "end_line": 82,
+          "label": "ReviewSession"
+        },
+        {
+          "path": "backend/app/report/store.py",
+          "line": 187,
+          "end_line": 220,
+          "label": "save/load session"
+        }
+      ]
+    },
+    {
+      "id": "chat",
+      "type": "database",
+      "label": "chat history",
+      "sublabel": "ordered; no TTL",
+      "stage": 1,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/chat/models.py",
+          "line": 20,
+          "end_line": 62,
+          "label": "chat models"
+        },
+        {
+          "path": "backend/app/chat/store.py",
+          "line": 46,
+          "end_line": 80,
+          "label": "chat persistence"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "type": "database",
+      "label": "review records",
+      "sublabel": "final + dimensions",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 33,
+          "end_line": 82,
+          "label": "report records"
+        }
+      ]
+    },
+    {
+      "id": "trace",
+      "type": "database",
+      "label": "AgentStep logs",
+      "sublabel": "events; retention ext",
+      "stage": 2,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/agent/trace.py",
+          "line": 18,
+          "end_line": 129,
+          "label": "AgentStep"
+        },
+        {
+          "path": "backend/app/observability/logging.py",
+          "line": 185,
+          "end_line": 247,
+          "label": "structured logging"
+        }
+      ]
+    },
+    {
+      "id": "readback",
+      "type": "backend",
+      "label": "load / resume",
+      "sublabel": "read session/chat",
+      "stage": 3,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/store.py",
+          "line": 187,
+          "end_line": 220,
+          "label": "session readback"
+        },
+        {
+          "path": "backend/app/chat/store.py",
+          "line": 46,
+          "end_line": 80,
+          "label": "chat readback"
+        }
+      ]
+    },
+    {
+      "id": "delete",
+      "type": "security",
+      "label": "delete entry",
+      "sublabel": "chat delete; purge absent",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/chat/store.py",
+          "line": 70,
+          "end_line": 80,
+          "label": "chat deletion"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "from": "state",
+      "to": "session",
+      "label": "persist",
+      "variant": "emphasis"
+    },
+    {
+      "from": "session",
+      "to": "review",
+      "label": "save",
+      "variant": "default"
+    },
+    {
+      "from": "review",
+      "to": "readback",
+      "label": "load",
+      "variant": "default"
+    },
+    {
+      "from": "readback",
+      "to": "delete",
+      "label": "delete",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Implemented layers",
+      "items": [
+        "ReviewState and ToolContext carry the current trajectory",
+        "MySQL-backed review and chat tables persist business/session records"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "No hidden memory",
+      "items": [
+        "Code does not show rolling summaries, TTL jobs, or a separate long-term semantic Agent memory",
+        "Chroma stores retrieval documents, not conversational memory"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Deletion boundary",
+      "items": [
+        "Chat session deletion is explicit; a general memory purge API is not shown in the current code"
+      ]
+    }
+  ]
+}

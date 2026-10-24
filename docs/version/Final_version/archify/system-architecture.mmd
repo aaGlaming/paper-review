@@ -1,0 +1,24 @@
+%% paper-review final architecture; every named component maps to a repository module.
+flowchart TB
+    Browser["Browser / Vue 3 SPA"] -->|"/api via Vite proxy"| API["FastAPI API layer\nbackend/app/api"]
+    API --> Auth["Auth / permissions\nbackend/app/auth"]
+    API --> Graph["LangGraph review graph\nparse → confirm → retrieve → score"]
+    Graph --> Specialists["Specialist Agents\nevidence / topic_fit / coherence"]
+    Specialists --> Review["review_agent"]
+    Review --> Verifier["verifier_agent\nkeep / downgrade / insufficient / reject"]
+    Graph --> Rules["Deterministic rules\nconsistency / quote / aggregate"]
+    Review --> Tools["Local StructuredTools\nbackend/app/agent/tools.py"]
+    Tools --> Retrieve["RAG retrieval\nthree routes + fallback + optional rerank"]
+    Retrieve --> Chroma[("Chroma\nchild vectors")]
+    Retrieve --> MySQL[("MySQL\nparents / rubric / review / chat / trace")]
+    Tools --> Rules
+    Review --> LLM["OpenAI-compatible HTTP\nchat + tool calling"]
+    Retrieve --> Embed["Embedding HTTP"]
+    Retrieve --> Rerank["Optional Rerank HTTP"]
+    LLM --> Model[("Configured model service")]
+    Embed --> ModelE[("Configured embedding service")]
+    Rerank --> ModelR[("Configured rerank service")]
+    API --> Chat["Record-level AI chat"]
+    Chat --> MySQL
+    API --> Obs["JSON logs / metrics / AgentStep"]
+    Graph --> Obs

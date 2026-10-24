@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "paper-review system architecture",
+    "subtitle": "30-second view: Vue → FastAPI → LangGraph/Agents → RAG/Tools/Memory → LLM and report",
+    "locale": "zh-CN",
+    "output": "system-architecture.html",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "327faeff8c7097045e809cfaaf7cf858e2039f34"
+    }
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User",
+      "sublabel": "browser reviewer",
+      "pos": [
+        35,
+        315
+      ],
+      "size": [
+        125,
+        64
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/main.ts",
+          "line": 1,
+          "end_line": 21,
+          "label": "Vue entry"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "security",
+      "label": "FastAPI API",
+      "sublabel": "/api · auth · CORS",
+      "pos": [
+        205,
+        315
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/api/app.py",
+          "line": 49,
+          "end_line": 166,
+          "label": "create_app / app"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "backend",
+      "label": "Review graph",
+      "sublabel": "parse → confirm → retrieve → score",
+      "pos": [
+        400,
+        315
+      ],
+      "size": [
+        175,
+        72
+      ],
+      "sources": [
+        {
+          "path": "backend/app/graph/review_graph.py",
+          "line": 500,
+          "end_line": 550,
+          "label": "build_review_graph"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Agent orchestration",
+      "sublabel": "specialists → review → verifier",
+      "pos": [
+        625,
+        315
+      ],
+      "size": [
+        185,
+        76
+      ],
+      "sources": [
+        {
+          "path": "backend/app/agent/runner.py",
+          "line": 120,
+          "end_line": 176,
+          "label": "make_agent_runner"
+        }
+      ]
+    },
+    {
+      "id": "retrieve",
+      "type": "backend",
+      "label": "RAG retrieval",
+      "sublabel": "3 routes · fallback · rerank",
+      "pos": [
+        625,
+        140
+      ],
+      "size": [
+        175,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 117,
+          "end_line": 211,
+          "label": "retrieve_dimension"
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "Tool registry",
+      "sublabel": "StructuredTool + Pydantic",
+      "pos": [
+        850,
+        315
+      ],
+      "size": [
+        175,
+        72
+      ],
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 331,
+          "end_line": 331,
+          "label": "build_tools"
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "database",
+      "label": "Memory & trace",
+      "sublabel": "ReviewState · sessions · AgentStep",
+      "pos": [
+        625,
+        520
+      ],
+      "size": [
+        190,
+        76
+      ],
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 61,
+          "end_line": 82,
+          "label": "ReviewSession"
+        },
+        {
+          "path": "backend/app/agent/trace.py",
+          "line": 18,
+          "end_line": 44,
+          "label": "AgentStep"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "cloud",
+      "label": "LLM client",
+      "sublabel": "chat / tool calling / embed / rerank",
+      "pos": [
+        850,
+        140
+      ],
+      "size": [
+        190,
+        72
+      ],
+      "sources": [
+        {
+          "path": "backend/app/llm/client.py",
+          "line": 139,
+          "end_line": 275,
+          "label": "HTTP client"
+        }
+      ]
+    },
+    {
+      "id": "output",
+      "type": "backend",
+      "label": "Review output",
+      "sublabel": "score · findings · change list",
+      "pos": [
+        1050,
+        315
+      ],
+      "size": [
+        165,
+        72
+      ],
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 608,
+          "end_line": 775,
+          "label": "resume_review_endpoint"
+        }
+      ]
+    },
+    {
+      "id": "chroma",
+      "type": "database",
+      "label": "Chroma",
+      "sublabel": "local persistent child vectors",
+      "pos": [
+        1070,
+        120
+      ],
+      "size": [
+        155,
+        68
+      ],
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 291,
+          "end_line": 301,
+          "label": "get_collection"
+        }
+      ]
+    },
+    {
+      "id": "mysql",
+      "type": "database",
+      "label": "MySQL 8.4",
+      "sublabel": "rubric · parent · review · chat",
+      "pos": [
+        1070,
+        500
+      ],
+      "size": [
+        155,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 20,
+          "end_line": 108,
+          "label": "ORM models"
+        }
+      ]
+    },
+    {
+      "id": "model_api",
+      "type": "external",
+      "label": "Configured model APIs",
+      "sublabel": "OpenAI-compatible; provider not fixed",
+      "pos": [
+        1080,
+        665
+      ],
+      "size": [
+        185,
+        72
+      ],
+      "sources": [
+        {
+          "path": ".env.example",
+          "line": 10,
+          "end_line": 13,
+          "label": "model configuration"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "External / durable dependencies",
+      "wraps": [
+        "chroma",
+        "mysql",
+        "model_api"
+      ],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "api",
+      "label": "HTTP /api",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "graph",
+      "label": "create / resume review",
+      "variant": "emphasis"
+    },
+    {
+      "from": "graph",
+      "to": "agent",
+      "label": "score node",
+      "variant": "emphasis"
+    },
+    {
+      "from": "agent",
+      "to": "retrieve",
+      "label": "search evidence",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "agent",
+      "to": "tools",
+      "label": "role-scoped tool calls",
+      "variant": "emphasis"
+    },
+    {
+      "from": "tools",
+      "to": "retrieve",
+      "label": "retrieve_fn",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "retrieve",
+      "to": "chroma",
+      "label": "child vector query",
+      "variant": "default"
+    },
+    {
+      "from": "retrieve",
+      "to": "mysql",
+      "label": "parent text / fallback",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "agent",
+      "to": "llm",
+      "label": "chat_with_tools",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "llm",
+      "to": "model_api",
+      "label": "HTTP",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "agent",
+      "to": "memory",
+      "label": "state + evidence + trace",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "memory",
+      "to": "mysql",
+      "label": "durable session/report/trace",
+      "variant": "dashed"
+    },
+    {
+      "from": "agent",
+      "to": "output",
+      "label": "results",
+      "variant": "emphasis"
+    },
+    {
+      "from": "output",
+      "to": "api",
+      "label": "JSON response / archive",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Boundary",
+      "items": [
+        "Core path is a single FastAPI process with LangGraph and local tools",
+        "/api/chat is a separate record-level inquiry path"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "External dependencies",
+      "items": [
+        "MySQL is durable business state; Chroma is local persistent vector state",
+        "Model, embedding and rerank provider values come from runtime configuration"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Evidence rule",
+      "items": [
+        "Parent text remains in MySQL so submitted quotes can be checked as continuous substrings"
+      ]
+    }
+  ]
+}
