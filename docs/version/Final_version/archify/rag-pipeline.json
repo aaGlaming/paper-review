@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "dataflow",
   "meta": {
-    "title": "paper-review RAG pipeline",
-    "subtitle": "Code-backed path: query rewrite on empty result; vector retrieval or MySQL fallback; three doc-type routes, not same-round hybrid keyword search",
+    "title": "paper-review RAG 流程",
+    "subtitle": "代码事实链路：结果为空时进行 query rewrite；使用向量检索或 MySQL 回退；按三类 doc_type 路由，并非同轮 hybrid keyword search",
     "locale": "zh-CN",
     "output": "rag-pipeline.html",
     "visual_preset": "signal-flow",
@@ -17,19 +17,19 @@
   },
   "stages": [
     {
-      "label": "Query"
+      "label": "查询"
     },
     {
-      "label": "Recall"
+      "label": "召回"
     },
     {
-      "label": "Rank"
+      "label": "排序"
     },
     {
-      "label": "Context"
+      "label": "上下文"
     },
     {
-      "label": "Generate"
+      "label": "生成"
     }
   ],
   "nodes": [
@@ -37,7 +37,7 @@
       "id": "query",
       "type": "backend",
       "label": "search_evidence",
-      "sublabel": "query + filters",
+      "sublabel": "query + 过滤条件",
       "stage": 0,
       "row": 1,
       "sources": [
@@ -53,7 +53,7 @@
       "id": "rewrite",
       "type": "backend",
       "label": "default_rewrite",
-      "sublabel": "empty → rewrite",
+      "sublabel": "为空 → rewrite",
       "stage": 0,
       "row": 0,
       "sources": [
@@ -68,8 +68,8 @@
     {
       "id": "vector",
       "type": "cloud",
-      "label": "Chroma vector",
-      "sublabel": "embedding → children",
+      "label": "Chroma 向量",
+      "sublabel": "embedding → 子块",
       "stage": 1,
       "row": 0,
       "sources": [
@@ -84,8 +84,8 @@
     {
       "id": "fallback",
       "type": "database",
-      "label": "MySQL fallback",
-      "sublabel": "parent rows; no rank",
+      "label": "MySQL 回退",
+      "sublabel": "父文档行；不排序",
       "stage": 1,
       "row": 1,
       "sources": [
@@ -101,7 +101,7 @@
       "id": "dedupe",
       "type": "backend",
       "label": "merge_candidates",
-      "sublabel": "3 routes; unique parent",
+      "sublabel": "3 条路由；父文档去重",
       "stage": 2,
       "row": 0,
       "sources": [
@@ -116,8 +116,8 @@
     {
       "id": "rerank",
       "type": "cloud",
-      "label": "optional rerank",
-      "sublabel": "same IDs reordered",
+      "label": "可选 Rerank",
+      "sublabel": "仅重排原有 ID",
       "stage": 3,
       "row": 0,
       "sources": [
@@ -132,8 +132,8 @@
     {
       "id": "topk",
       "type": "backend",
-      "label": "Top-K parents",
-      "sublabel": "≤ 4 parents; bounded",
+      "label": "Top-K 父文档",
+      "sublabel": "≤ 4 个父文档；有界",
       "stage": 3,
       "row": 1,
       "sources": [
@@ -154,8 +154,8 @@
     {
       "id": "prompt",
       "type": "backend",
-      "label": "Agent context",
-      "sublabel": "tools + preload + msgs",
+      "label": "Agent 上下文",
+      "sublabel": "tools + 预加载 + 消息",
       "stage": 4,
       "row": 0,
       "sources": [
@@ -169,7 +169,7 @@
           "path": "backend/app/agent/runner.py",
           "line": 160,
           "end_line": 176,
-          "label": "preload context"
+          "label": "预加载上下文"
         }
       ]
     },
@@ -177,7 +177,7 @@
       "id": "generate",
       "type": "cloud",
       "label": "chat_with_tools",
-      "sublabel": "tool calls / final",
+      "sublabel": "工具调用 / 最终结果",
       "stage": 4,
       "row": 1,
       "sources": [
@@ -191,7 +191,7 @@
           "path": "backend/app/agent/chat_model.py",
           "line": 67,
           "end_line": 144,
-          "label": "adapter"
+          "label": "适配器"
         }
       ]
     }
@@ -200,7 +200,7 @@
     {
       "from": "query",
       "to": "rewrite",
-      "label": "rewrite",
+      "label": "改写",
       "variant": "emphasis",
       "fromSide": "top",
       "toSide": "bottom",
@@ -209,7 +209,7 @@
     {
       "from": "rewrite",
       "to": "vector",
-      "label": "embed",
+      "label": "Embedding",
       "variant": "emphasis",
       "fromSide": "right",
       "toSide": "left"
@@ -217,7 +217,7 @@
     {
       "from": "query",
       "to": "fallback",
-      "label": "fallback",
+      "label": "回退",
       "variant": "dashed",
       "fromSide": "right",
       "toSide": "left"
@@ -225,7 +225,7 @@
     {
       "from": "vector",
       "to": "dedupe",
-      "label": "recall",
+      "label": "召回",
       "variant": "default",
       "fromSide": "right",
       "toSide": "left"
@@ -233,7 +233,7 @@
     {
       "from": "fallback",
       "to": "dedupe",
-      "label": "recall",
+      "label": "召回",
       "variant": "dashed",
       "fromSide": "right",
       "toSide": "left"
@@ -241,7 +241,7 @@
     {
       "from": "dedupe",
       "to": "rerank",
-      "label": "rank",
+      "label": "排序",
       "variant": "default",
       "fromSide": "right",
       "toSide": "left"
@@ -259,7 +259,7 @@
     {
       "from": "dedupe",
       "to": "topk",
-      "label": "no rerank",
+      "label": "不使用 Rerank",
       "variant": "dashed",
       "fromSide": "right",
       "toSide": "left",
@@ -268,7 +268,7 @@
     {
       "from": "topk",
       "to": "prompt",
-      "label": "context",
+      "label": "上下文",
       "variant": "emphasis",
       "fromSide": "right",
       "toSide": "left"
@@ -276,7 +276,7 @@
     {
       "from": "prompt",
       "to": "generate",
-      "label": "generate",
+      "label": "生成",
       "variant": "emphasis",
       "fromSide": "bottom",
       "toSide": "top",
@@ -287,19 +287,19 @@
   "cards": [
     {
       "dot": "amber",
-      "title": "Actual recall boundary",
+      "title": "实际召回边界",
       "items": [
-        "The code has three doc_type routes, not two",
-        "MySQL is a no-embedding fallback filtered by review_id/section_types, not BM25 keyword ranking"
+        "代码中有 3 条 doc_type 路由，而不是 2 条",
+        "MySQL 是不使用 embedding 的回退路径，按 review_id/section_types 过滤，并非 BM25 keyword ranking"
       ]
     },
     {
       "dot": "rose",
-      "title": "Failure points",
+      "title": "失败点",
       "items": [
-        "Empty after two rounds becomes 证据不足",
-        "Rerank may reorder only the original candidate set",
-        "Quote must remain a continuous substring of a retrieved parent"
+        "两轮后仍为空则记为“证据不足”",
+        "Rerank 只能重排原始候选集",
+        "Quote 必须是检索到的父文档连续子串"
       ]
     }
   ]

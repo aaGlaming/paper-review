@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "dataflow",
   "meta": {
-    "title": "paper-review evaluation and attribution",
-    "subtitle": "Current checks score rubric agreement and evidence quotes; Hit Rate/MRR and RAGAS dimensions are planned extensions",
+    "title": "paper-review 评测与归因",
+    "subtitle": "当前检查评分 rubric 一致性和证据引用；Hit Rate/MRR 与 RAGAS 维度属于计划扩展",
     "locale": "zh-CN",
     "output": "eval-and-attribution.html",
     "visual_preset": "blueprint",
@@ -17,7 +17,7 @@
   },
   "stages": [
     {
-      "label": "Gold 与运行轨迹"
+      "label": "Gold 与运行 trace"
     },
     {
       "label": "检索指标"
@@ -33,8 +33,8 @@
     {
       "id": "gold",
       "type": "database",
-      "label": "eval papers",
-      "sublabel": "gold rubric",
+      "label": "评测论文",
+      "sublabel": "Gold rubric",
       "stage": 0,
       "row": 0,
       "sources": [
@@ -42,15 +42,15 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "eval data directory"
+          "label": "评测数据目录"
         }
       ]
     },
     {
       "id": "trace",
       "type": "backend",
-      "label": "run traces",
-      "sublabel": "candidates + quotes",
+      "label": "运行 trace",
+      "sublabel": "候选项 + 引用",
       "stage": 0,
       "row": 1,
       "sources": [
@@ -64,7 +64,7 @@
           "path": "backend/app/retrieve/models.py",
           "line": 22,
           "end_line": 32,
-          "label": "retrieval result"
+          "label": "检索结果"
         }
       ]
     },
@@ -72,7 +72,7 @@
       "id": "hit",
       "type": "backend",
       "label": "Hit Rate",
-      "sublabel": "planned; absent",
+      "sublabel": "计划中；未实现",
       "stage": 1,
       "row": 0,
       "sources": [
@@ -80,7 +80,7 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "no Hit Rate implementation found"
+          "label": "代码中未找到 Hit Rate 实现"
         }
       ]
     },
@@ -88,7 +88,7 @@
       "id": "mrr",
       "type": "backend",
       "label": "MRR",
-      "sublabel": "planned; absent",
+      "sublabel": "计划中；未实现",
       "stage": 1,
       "row": 1,
       "sources": [
@@ -96,15 +96,15 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "no MRR implementation found"
+          "label": "代码中未找到 MRR 实现"
         }
       ]
     },
     {
       "id": "agreement",
       "type": "backend",
-      "label": "Band agreement",
-      "sublabel": "implemented",
+      "label": "分档一致性",
+      "sublabel": "已实现",
       "stage": 2,
       "row": 0,
       "sources": [
@@ -112,15 +112,15 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "eval scoring scripts"
+          "label": "评测评分脚本"
         }
       ]
     },
     {
       "id": "quote",
       "type": "backend",
-      "label": "Quote match",
-      "sublabel": "implemented",
+      "label": "Quote 匹配",
+      "sublabel": "已实现",
       "stage": 2,
       "row": 1,
       "sources": [
@@ -128,15 +128,15 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "quote scoring"
+          "label": "引用评分"
         }
       ]
     },
     {
       "id": "faithfulness",
       "type": "backend",
-      "label": "Faithfulness",
-      "sublabel": "RAGAS; absent",
+      "label": "忠实度",
+      "sublabel": "RAGAS；未实现",
       "stage": 2,
       "row": 2,
       "sources": [
@@ -144,15 +144,15 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "no RAGAS implementation found"
+          "label": "代码中未找到 RAGAS 实现"
         }
       ]
     },
     {
       "id": "relevance",
       "type": "backend",
-      "label": "Relevance",
-      "sublabel": "RAGAS; absent",
+      "label": "相关性",
+      "sublabel": "RAGAS；未实现",
       "stage": 2,
       "row": 3,
       "sources": [
@@ -160,7 +160,7 @@
           "path": "data/samples/eval/README.md",
           "line": 1,
           "end_line": 1,
-          "label": "no RAGAS implementation found"
+          "label": "代码中未找到 RAGAS 实现"
         }
       ]
     },
@@ -168,7 +168,7 @@
       "id": "slice",
       "type": "security",
       "label": "切片问题",
-      "sublabel": "chunk boundary",
+      "sublabel": "Chunk 边界",
       "stage": 3,
       "row": 0,
       "sources": [
@@ -176,7 +176,7 @@
           "path": "backend/app/retrieve/parent_child.py",
           "line": 20,
           "end_line": 90,
-          "label": "parent-child chunks"
+          "label": "父子 Chunk"
         }
       ]
     },
@@ -184,7 +184,7 @@
       "id": "drift",
       "type": "security",
       "label": "召回跑偏",
-      "sublabel": "route / rank drift",
+      "sublabel": "路由 / 排序偏移",
       "stage": 3,
       "row": 1,
       "sources": [
@@ -192,7 +192,7 @@
           "path": "backend/app/retrieve/three_route.py",
           "line": 117,
           "end_line": 211,
-          "label": "three-route retrieval"
+          "label": "三路由检索"
         }
       ]
     },
@@ -200,7 +200,7 @@
       "id": "missing",
       "type": "security",
       "label": "知识库缺失",
-      "sublabel": "no supporting text",
+      "sublabel": "无支撑文本",
       "stage": 3,
       "row": 2,
       "sources": [
@@ -208,7 +208,7 @@
           "path": "backend/app/retrieve/three_route.py",
           "line": 184,
           "end_line": 184,
-          "label": "retrieval fallback"
+          "label": "检索回退"
         }
       ]
     }
@@ -217,81 +217,81 @@
     {
       "from": "gold",
       "to": "hit",
-      "label": "rank",
+      "label": "排序",
       "variant": "default"
     },
     {
       "from": "hit",
       "to": "agreement",
-      "label": "retrieve",
+      "label": "召回",
       "variant": "emphasis"
     },
     {
       "from": "agreement",
       "to": "slice",
-      "label": "audit",
+      "label": "审计",
       "variant": "security"
     },
     {
       "from": "trace",
       "to": "mrr",
-      "label": "rank",
+      "label": "排序",
       "variant": "default"
     },
     {
       "from": "mrr",
       "to": "quote",
-      "label": "retrieve",
+      "label": "召回",
       "variant": "emphasis"
     },
     {
       "from": "quote",
       "to": "drift",
-      "label": "audit",
+      "label": "审计",
       "variant": "security"
     },
     {
       "from": "trace",
       "to": "faithfulness",
-      "label": "context",
+      "label": "上下文",
       "variant": "dashed"
     },
     {
       "from": "faithfulness",
       "to": "missing",
-      "label": "audit",
+      "label": "审计",
       "variant": "security"
     },
     {
       "from": "trace",
       "to": "relevance",
-      "label": "answer",
+      "label": "答案",
       "variant": "dashed"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Current baseline",
+      "title": "当前基线",
       "items": [
-        "The repository contains self-built evaluation data and scores band agreement, quote exact match, and insufficient-evidence hits",
-        "Retrieval Hit Rate and MRR are not implemented in the current code"
+        "仓库包含自建评测数据，并评分分档一致性、引用精确匹配和证据不足命中",
+        "当前代码未实现检索 Hit Rate 和 MRR"
       ]
     },
     {
       "dot": "amber",
-      "title": "Planned split",
+      "title": "计划中的拆分",
       "items": [
-        "Run retrieval metrics on ranked candidates before generation",
-        "Run Faithfulness and Relevance separately on answer/context pairs, with RAGAS plus manual sampling"
+        "在生成前对排序后的候选集运行检索指标",
+        "对答案 / 上下文对分别评估 Faithfulness 和 Relevance，并结合 RAGAS 与人工抽样"
       ]
     },
     {
       "dot": "rose",
-      "title": "Attribution",
+      "title": "归因",
       "items": [
-        "Use failures to separate chunking, retrieval drift, and knowledge-base coverage issues",
-        "Keep trace fields sufficient to connect a score back to route, parent, and quote"
+        "根据失败结果区分 Chunk 切分、召回偏移和知识库覆盖问题",
+        "保留足够的 trace 字段，将评分回溯到路由、父文档和引用"
       ]
     }
   ]

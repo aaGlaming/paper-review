@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "paper-review system architecture",
-    "subtitle": "30-second view: Vue → FastAPI → LangGraph/Agents → RAG/Tools/Memory → LLM and report",
+    "title": "paper-review 系统架构",
+    "subtitle": "30 秒看懂：Vue → FastAPI → LangGraph/Agents → RAG/Tools/Memory → LLM 与报告",
     "locale": "zh-CN",
     "output": "system-architecture.html",
     "visual_preset": "blueprint",
@@ -19,8 +19,8 @@
     {
       "id": "user",
       "type": "external",
-      "label": "User",
-      "sublabel": "browser reviewer",
+      "label": "用户",
+      "sublabel": "浏览器评审端",
       "pos": [
         35,
         315
@@ -34,7 +34,7 @@
           "path": "frontend/src/main.ts",
           "line": 1,
           "end_line": 21,
-          "label": "Vue entry"
+          "label": "Vue 入口"
         }
       ]
     },
@@ -63,8 +63,8 @@
     {
       "id": "graph",
       "type": "backend",
-      "label": "Review graph",
-      "sublabel": "parse → confirm → retrieve → score",
+      "label": "评审 Graph",
+      "sublabel": "解析 → 确认 → 检索 → 评分",
       "pos": [
         400,
         315
@@ -85,8 +85,8 @@
     {
       "id": "agent",
       "type": "backend",
-      "label": "Agent orchestration",
-      "sublabel": "specialists → review → verifier",
+      "label": "Agent 编排",
+      "sublabel": "专项 Agent → 评审 → verifier",
       "pos": [
         625,
         315
@@ -107,8 +107,8 @@
     {
       "id": "retrieve",
       "type": "backend",
-      "label": "RAG retrieval",
-      "sublabel": "3 routes · fallback · rerank",
+      "label": "RAG 检索",
+      "sublabel": "3 条路由 · 回退 · Rerank",
       "pos": [
         625,
         140
@@ -129,7 +129,7 @@
     {
       "id": "tools",
       "type": "backend",
-      "label": "Tool registry",
+      "label": "工具注册表",
       "sublabel": "StructuredTool + Pydantic",
       "pos": [
         850,
@@ -151,8 +151,8 @@
     {
       "id": "memory",
       "type": "database",
-      "label": "Memory & trace",
-      "sublabel": "ReviewState · sessions · AgentStep",
+      "label": "记忆与 trace",
+      "sublabel": "ReviewState · 会话 · AgentStep",
       "pos": [
         625,
         520
@@ -179,8 +179,8 @@
     {
       "id": "llm",
       "type": "cloud",
-      "label": "LLM client",
-      "sublabel": "chat / tool calling / embed / rerank",
+      "label": "LLM 客户端",
+      "sublabel": "chat / tool calling / embedding / Rerank",
       "pos": [
         850,
         140
@@ -194,15 +194,15 @@
           "path": "backend/app/llm/client.py",
           "line": 139,
           "end_line": 275,
-          "label": "HTTP client"
+          "label": "HTTP 客户端"
         }
       ]
     },
     {
       "id": "output",
       "type": "backend",
-      "label": "Review output",
-      "sublabel": "score · findings · change list",
+      "label": "评审输出",
+      "sublabel": "评分 · 问题 · 修改清单",
       "pos": [
         1050,
         315
@@ -224,7 +224,7 @@
       "id": "chroma",
       "type": "database",
       "label": "Chroma",
-      "sublabel": "local persistent child vectors",
+      "sublabel": "本地持久化子向量",
       "pos": [
         1070,
         120
@@ -246,7 +246,7 @@
       "id": "mysql",
       "type": "database",
       "label": "MySQL 8.4",
-      "sublabel": "rubric · parent · review · chat",
+      "sublabel": "rubric · 父文档 · 评审 · 聊天",
       "pos": [
         1070,
         500
@@ -260,15 +260,15 @@
           "path": "backend/app/importing/models.py",
           "line": 20,
           "end_line": 108,
-          "label": "ORM models"
+          "label": "ORM 模型"
         }
       ]
     },
     {
       "id": "model_api",
       "type": "external",
-      "label": "Configured model APIs",
-      "sublabel": "OpenAI-compatible; provider not fixed",
+      "label": "已配置的模型 APIs",
+      "sublabel": "OpenAI-compatible；provider 未固定",
       "pos": [
         1080,
         665
@@ -282,7 +282,7 @@
           "path": ".env.example",
           "line": 10,
           "end_line": 13,
-          "label": "model configuration"
+          "label": "模型配置"
         }
       ]
     }
@@ -290,7 +290,7 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "External / durable dependencies",
+      "label": "外部 / 持久化依赖",
       "wraps": [
         "chroma",
         "mysql",
@@ -309,19 +309,19 @@
     {
       "from": "api",
       "to": "graph",
-      "label": "create / resume review",
+      "label": "创建 / 恢复评审",
       "variant": "emphasis"
     },
     {
       "from": "graph",
       "to": "agent",
-      "label": "score node",
+      "label": "评分节点",
       "variant": "emphasis"
     },
     {
       "from": "agent",
       "to": "retrieve",
-      "label": "search evidence",
+      "label": "检索证据",
       "variant": "default",
       "fromSide": "top",
       "toSide": "bottom"
@@ -329,7 +329,7 @@
     {
       "from": "agent",
       "to": "tools",
-      "label": "role-scoped tool calls",
+      "label": "按角色限定的工具调用",
       "variant": "emphasis"
     },
     {
@@ -343,13 +343,13 @@
     {
       "from": "retrieve",
       "to": "chroma",
-      "label": "child vector query",
+      "label": "子向量查询",
       "variant": "default"
     },
     {
       "from": "retrieve",
       "to": "mysql",
-      "label": "parent text / fallback",
+      "label": "父文档文本 / 回退",
       "variant": "default",
       "fromSide": "bottom",
       "toSide": "top"
@@ -373,7 +373,7 @@
     {
       "from": "agent",
       "to": "memory",
-      "label": "state + evidence + trace",
+      "label": "状态 + 证据 + trace",
       "variant": "dashed",
       "fromSide": "bottom",
       "toSide": "top"
@@ -381,19 +381,19 @@
     {
       "from": "memory",
       "to": "mysql",
-      "label": "durable session/report/trace",
+      "label": "持久化会话 / 报告 / trace",
       "variant": "dashed"
     },
     {
       "from": "agent",
       "to": "output",
-      "label": "results",
+      "label": "结果",
       "variant": "emphasis"
     },
     {
       "from": "output",
       "to": "api",
-      "label": "JSON response / archive",
+      "label": "JSON 响应 / 归档",
       "variant": "dashed",
       "fromSide": "top",
       "toSide": "top"
@@ -402,25 +402,25 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "Boundary",
+      "title": "边界",
       "items": [
-        "Core path is a single FastAPI process with LangGraph and local tools",
-        "/api/chat is a separate record-level inquiry path"
+        "核心链路是单个 FastAPI 进程，使用 LangGraph 和本地工具",
+        "/api/chat 是独立的记录级问答链路"
       ]
     },
     {
       "dot": "amber",
-      "title": "External dependencies",
+      "title": "外部依赖",
       "items": [
-        "MySQL is durable business state; Chroma is local persistent vector state",
-        "Model, embedding and rerank provider values come from runtime configuration"
+        "MySQL 保存持久化业务状态；Chroma 保存本地持久化向量状态",
+        "模型、embedding 与 Rerank provider 来自运行时配置"
       ]
     },
     {
       "dot": "rose",
-      "title": "Evidence rule",
+      "title": "证据规则",
       "items": [
-        "Parent text remains in MySQL so submitted quotes can be checked as continuous substrings"
+        "父文档文本保存在 MySQL 中，便于检查提交的引用是否为连续子串"
       ]
     }
   ]

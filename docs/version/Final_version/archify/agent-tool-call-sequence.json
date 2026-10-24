@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "paper-review agent tool call sequence",
-    "subtitle": "Human confirmation precedes scoring; route auth is already complete before tool execution",
+    "title": "paper-review Agent 工具调用时序",
+    "subtitle": "评分前需要人工确认；工具执行前路由认证已完成",
     "locale": "zh-CN",
     "output": "agent-tool-call-sequence.html",
     "visual_preset": "signal-flow",
@@ -24,7 +24,7 @@
       "id": "api",
       "type": "security",
       "label": "API",
-      "sublabel": "resume",
+      "sublabel": "恢复",
       "sources": [
         {
           "path": "backend/app/api/routes.py",
@@ -38,7 +38,7 @@
       "id": "graph",
       "type": "backend",
       "label": "Graph",
-      "sublabel": "confirm / score",
+      "sublabel": "确认 / 评分",
       "sources": [
         {
           "path": "backend/app/graph/review_graph.py",
@@ -51,8 +51,8 @@
     {
       "id": "human",
       "type": "external",
-      "label": "Reviewer",
-      "sublabel": "confirm",
+      "label": "评审人",
+      "sublabel": "确认",
       "sources": [
         {
           "path": "backend/app/graph/review_graph.py",
@@ -80,7 +80,7 @@
       "id": "model",
       "type": "cloud",
       "label": "LLM",
-      "sublabel": "chat tools",
+      "sublabel": "chat 工具",
       "sources": [
         {
           "path": "backend/app/llm/client.py",
@@ -94,7 +94,7 @@
       "id": "schema",
       "type": "security",
       "label": "Schema",
-      "sublabel": "validate",
+      "sublabel": "校验",
       "sources": [
         {
           "path": "backend/app/agent/tools.py",
@@ -113,14 +113,14 @@
     {
       "id": "tool",
       "type": "backend",
-      "label": "Tools",
-      "sublabel": "search/read",
+      "label": "工具",
+      "sublabel": "检索 / 读取",
       "sources": [
         {
           "path": "backend/app/agent/tools.py",
           "line": 113,
           "end_line": 181,
-          "label": "search/read"
+          "label": "检索 / 读取"
         },
         {
           "path": "backend/app/agent/tools.py",
@@ -133,7 +133,7 @@
     {
       "id": "audit",
       "type": "database",
-      "label": "Audit",
+      "label": "审计",
       "sublabel": "trace",
       "sources": [
         {
@@ -147,8 +147,8 @@
     {
       "id": "context",
       "type": "database",
-      "label": "Context",
-      "sublabel": "state",
+      "label": "上下文",
+      "sublabel": "状态",
       "sources": [
         {
           "path": "backend/app/agent/context.py",
@@ -167,8 +167,8 @@
     {
       "id": "report",
       "type": "backend",
-      "label": "Report",
-      "sublabel": "store",
+      "label": "报告",
+      "sublabel": "存储",
       "sources": [
         {
           "path": "backend/app/report/store.py",
@@ -193,7 +193,7 @@
       "from": "graph",
       "to": "human",
       "y": 188,
-      "label": "confirm chapters",
+      "label": "确认章节",
       "variant": "security"
     },
     {
@@ -201,7 +201,7 @@
       "from": "human",
       "to": "api",
       "y": 216,
-      "label": "confirmed",
+      "label": "已确认",
       "variant": "return"
     },
     {
@@ -225,7 +225,7 @@
       "from": "model",
       "to": "schema",
       "y": 300,
-      "label": "tool_calls + JSON args",
+      "label": "tool_calls + JSON 参数",
       "variant": "default"
     },
     {
@@ -233,7 +233,7 @@
       "from": "schema",
       "to": "tool",
       "y": 328,
-      "label": "schema + whitelist + context rules",
+      "label": "Schema + 白名单 + 上下文规则",
       "variant": "security"
     },
     {
@@ -241,7 +241,7 @@
       "from": "tool",
       "to": "model",
       "y": 356,
-      "label": "ToolMessage: valid result",
+      "label": "ToolMessage：结果有效",
       "variant": "return"
     },
     {
@@ -249,7 +249,7 @@
       "from": "model",
       "to": "agent",
       "y": 384,
-      "label": "retry once",
+      "label": "重试一次",
       "variant": "dashed"
     },
     {
@@ -257,7 +257,7 @@
       "from": "schema",
       "to": "agent",
       "y": 412,
-      "label": "bad args / permission / quote",
+      "label": "参数错误 / 权限 / 引用",
       "variant": "security"
     },
     {
@@ -289,7 +289,7 @@
       "from": "model",
       "to": "audit",
       "y": 524,
-      "label": "verifier action trace",
+      "label": "verifier 操作 trace",
       "variant": "dashed"
     },
     {
@@ -297,7 +297,7 @@
       "from": "context",
       "to": "report",
       "y": 552,
-      "label": "save report",
+      "label": "保存报告",
       "variant": "emphasis"
     },
     {
@@ -305,25 +305,25 @@
       "from": "report",
       "to": "api",
       "y": 580,
-      "label": "JSON report",
+      "label": "JSON 报告",
       "variant": "return"
     }
   ],
   "cards": [
     {
       "dot": "rose",
-      "title": "Non-retryable inputs",
+      "title": "不可重试的输入",
       "items": [
-        "Unknown tool, invalid enum, missing parent, non-substring quote and permission errors need a new input",
-        "Duplicate submit_dimension is rejected rather than treated as success"
+        "未知工具、无效 enum、缺少父文档、非子串引用和权限错误都需要重新输入",
+        "重复 submit_dimension 会被拒绝，不会视为成功"
       ]
     },
     {
       "dot": "cyan",
-      "title": "Risk control",
+      "title": "风险控制",
       "items": [
-        "mention_guard can downgrade a result",
-        "verifier can keep, downgrade, mark insufficient or reject; it never upgrades"
+        "mention_guard 可以降低结果等级",
+        "verifier 可以保持、降级、标记证据不足或拒绝，但不会升级结果"
       ]
     }
   ]

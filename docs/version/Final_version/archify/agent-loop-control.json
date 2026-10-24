@@ -2,8 +2,8 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "paper-review agent loop control",
-    "subtitle": "Actual limits: main 12 model / 24 tools / 150s / 45 recursion; no token budget field",
+    "title": "paper-review Agent 循环控制",
+    "subtitle": "代码中的实际上限：主流程 12 次 model / 24 次 tools / 150s / 45 次 recursion；没有 token budget 字段",
     "locale": "zh-CN",
     "output": "agent-loop-control.html",
     "visual_preset": "signal-flow",
@@ -18,35 +18,35 @@
   "lanes": [
     {
       "id": "runtime",
-      "label": "Agent runtime"
+      "label": "Agent 运行时"
     },
     {
       "id": "policy",
-      "label": "Budget and stop policy",
+      "label": "预算与停止策略",
       "variant": "exception"
     },
     {
       "id": "output",
-      "label": "Result and trace"
+      "label": "结果与 trace"
     }
   ],
   "phases": [
     {
       "id": "start",
-      "label": "Start",
+      "label": "开始",
       "fromCol": 0,
       "toCol": 0
     },
     {
       "id": "loop",
-      "label": "Plan → act → observe",
+      "label": "规划 → 执行 → 观察",
       "fromCol": 1,
       "toCol": 4,
       "variant": "emphasis"
     },
     {
       "id": "finish",
-      "label": "Stop / write",
+      "label": "停止 / 写入",
       "fromCol": 5,
       "toCol": 5,
       "variant": "dashed"
@@ -55,7 +55,7 @@
   "groups": [
     {
       "id": "iteration",
-      "label": "Bounded iteration",
+      "label": "有界迭代",
       "lane": "runtime",
       "fromCol": 1,
       "toCol": 4,
@@ -63,7 +63,7 @@
     },
     {
       "id": "budget",
-      "label": "Budget gate",
+      "label": "预算门控",
       "lane": "policy",
       "fromCol": 3,
       "toCol": 5,
@@ -84,14 +84,14 @@
       "lane": "runtime",
       "col": 0,
       "type": "backend",
-      "label": "Task start",
-      "sublabel": "state",
+      "label": "任务开始",
+      "sublabel": "状态",
       "sources": [
         {
           "path": "backend/app/agent/runner.py",
           "line": 120,
           "end_line": 176,
-          "label": "runner context"
+          "label": "runner 上下文"
         }
       ]
     },
@@ -100,14 +100,14 @@
       "lane": "runtime",
       "col": 1,
       "type": "backend",
-      "label": "Plan",
-      "sublabel": "prompt + tool",
+      "label": "规划",
+      "sublabel": "Prompt + 工具",
       "sources": [
         {
           "path": "backend/app/agent/prompt.py",
           "line": 4,
           "end_line": 23,
-          "label": "prompt rules"
+          "label": "Prompt 规则"
         }
       ]
     },
@@ -116,8 +116,8 @@
       "lane": "runtime",
       "col": 2,
       "type": "backend",
-      "label": "Call tools",
-      "sublabel": "24 tools",
+      "label": "调用工具",
+      "sublabel": "24 个工具",
       "sources": [
         {
           "path": "backend/app/agent/middleware.py",
@@ -132,8 +132,8 @@
       "lane": "runtime",
       "col": 3,
       "type": "backend",
-      "label": "Observe result",
-      "sublabel": "progress / error",
+      "label": "观察结果",
+      "sublabel": "进度 / 错误",
       "sources": [
         {
           "path": "backend/app/agent/middleware.py",
@@ -148,14 +148,14 @@
       "lane": "policy",
       "col": 4,
       "type": "security",
-      "label": "Stop condition?",
-      "sublabel": "done? budget?",
+      "label": "停止条件？",
+      "sublabel": "完成？预算？",
       "sources": [
         {
           "path": "backend/app/agent/runner.py",
           "line": 176,
           "end_line": 176,
-          "label": "termination and force submit"
+          "label": "终止与强制提交"
         }
       ]
     },
@@ -164,14 +164,14 @@
       "lane": "output",
       "col": 5,
       "type": "backend",
-      "label": "Output + trace",
-      "sublabel": "score + trace",
+      "label": "输出 + trace",
+      "sublabel": "评分 + trace",
       "sources": [
         {
           "path": "backend/app/agent/runner.py",
           "line": 176,
           "end_line": 176,
-          "label": "verifier and return"
+          "label": "verifier 与返回"
         }
       ]
     },
@@ -180,9 +180,9 @@
       "lane": "policy",
       "col": 5,
       "type": "security",
-      "label": "Budget exit",
-      "sublabel": "12 model / 24 tools / 150s",
-      "tag": "token budget: not implemented",
+      "label": "预算退出",
+      "sublabel": "12 次 model / 24 次 tools / 150s",
+      "tag": "token budget：未实现",
       "sources": [
         {
           "path": "backend/app/agent/middleware.py",
@@ -198,35 +198,35 @@
       "id": "start-plan",
       "from": "start_task",
       "to": "plan",
-      "label": "begin",
+      "label": "开始",
       "variant": "emphasis"
     },
     {
       "id": "plan-call",
       "from": "plan",
       "to": "call_tools",
-      "label": "next tool call",
+      "label": "下一次工具调用",
       "variant": "emphasis"
     },
     {
       "id": "call-observe",
       "from": "call_tools",
       "to": "observe",
-      "label": "ToolMessage / result",
+      "label": "ToolMessage / 结果",
       "variant": "default"
     },
     {
       "id": "observe-stop",
       "from": "observe",
       "to": "stop_check",
-      "label": "progress snapshot",
+      "label": "进度快照",
       "variant": "default"
     },
     {
       "id": "continue",
       "from": "stop_check",
       "to": "plan",
-      "label": "no: continue loop",
+      "label": "否：继续循环",
       "variant": "emphasis",
       "role": "branch"
     },
@@ -234,14 +234,14 @@
       "id": "done",
       "from": "stop_check",
       "to": "emit",
-      "label": "yes: all submitted",
+      "label": "是：全部已提交",
       "variant": "emphasis"
     },
     {
       "id": "budget",
       "from": "stop_check",
       "to": "budget_stop",
-      "label": "budget / timeout / recursion",
+      "label": "预算 / 超时 / recursion",
       "variant": "security",
       "role": "error"
     }
@@ -249,18 +249,18 @@
   "cards": [
     {
       "dot": "amber",
-      "title": "Limits from code",
+      "title": "代码中的限制",
       "items": [
-        "Main: 12 model calls, 24 tool calls, 3 steps per dimension, 150 seconds, recursion_limit 45",
-        "Specialists: evidence 6/24/90s, topic fit 3/12/45s, coherence 4/16/60s"
+        "主流程：12 次 model 调用、24 次工具调用、每个维度 3 步、150 秒、recursion_limit 45",
+        "专项 Agent：evidence 6/24/90s、topic fit 3/12/45s、coherence 4/16/60s"
       ]
     },
     {
       "dot": "rose",
       "title": "Token budget",
       "items": [
-        "No token count, output-token cap, or cost budget is implemented",
-        "The tag is intentionally an explicit unknown, not a fabricated numeric limit"
+        "代码未实现 token 计数、output-token 上限或成本预算",
+        "该标签明确表示代码未体现，未虚构数值限制"
       ]
     }
   ]

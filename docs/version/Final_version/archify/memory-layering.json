@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "dataflow",
   "meta": {
-    "title": "paper-review memory layering",
-    "subtitle": "Working state is process scoped; session records and chat history are durable; no rolling summary or semantic Agent memory is implemented",
+    "title": "paper-review 记忆分层",
+    "subtitle": "工作状态限定在进程内；会话记录和聊天历史持久化保存；代码未实现滚动摘要或语义 Agent 记忆",
     "locale": "zh-CN",
     "output": "memory-layering.html",
     "visual_preset": "blueprint",
@@ -34,7 +34,7 @@
       "id": "state",
       "type": "backend",
       "label": "ReviewState",
-      "sublabel": "run state",
+      "sublabel": "运行状态",
       "stage": 0,
       "row": 0,
       "sources": [
@@ -56,7 +56,7 @@
       "id": "checkpoint",
       "type": "backend",
       "label": "InMemorySaver",
-      "sublabel": "checkpoint; process",
+      "sublabel": "checkpoint；进程内",
       "stage": 0,
       "row": 1,
       "sources": [
@@ -64,7 +64,7 @@
           "path": "backend/app/graph/review_graph.py",
           "line": 500,
           "end_line": 550,
-          "label": "graph checkpoint wiring"
+          "label": "Graph checkpoint 配置"
         }
       ]
     },
@@ -72,7 +72,7 @@
       "id": "session",
       "type": "database",
       "label": "review_session",
-      "sublabel": "snapshot; no TTL",
+      "sublabel": "快照；无 TTL",
       "stage": 1,
       "row": 0,
       "sources": [
@@ -86,15 +86,15 @@
           "path": "backend/app/report/store.py",
           "line": 187,
           "end_line": 220,
-          "label": "save/load session"
+          "label": "保存 / 加载会话"
         }
       ]
     },
     {
       "id": "chat",
       "type": "database",
-      "label": "chat history",
-      "sublabel": "ordered; no TTL",
+      "label": "聊天历史",
+      "sublabel": "有序记录；无 TTL",
       "stage": 1,
       "row": 1,
       "sources": [
@@ -102,21 +102,21 @@
           "path": "backend/app/chat/models.py",
           "line": 20,
           "end_line": 62,
-          "label": "chat models"
+          "label": "聊天模型"
         },
         {
           "path": "backend/app/chat/store.py",
           "line": 46,
           "end_line": 80,
-          "label": "chat persistence"
+          "label": "聊天持久化"
         }
       ]
     },
     {
       "id": "review",
       "type": "database",
-      "label": "review records",
-      "sublabel": "final + dimensions",
+      "label": "评审记录",
+      "sublabel": "最终结果 + 维度",
       "stage": 2,
       "row": 0,
       "sources": [
@@ -124,15 +124,15 @@
           "path": "backend/app/report/models.py",
           "line": 33,
           "end_line": 82,
-          "label": "report records"
+          "label": "报告记录"
         }
       ]
     },
     {
       "id": "trace",
       "type": "database",
-      "label": "AgentStep logs",
-      "sublabel": "events; retention ext",
+      "label": "AgentStep 日志",
+      "sublabel": "事件；保留策略由外部配置",
       "stage": 2,
       "row": 1,
       "sources": [
@@ -146,15 +146,15 @@
           "path": "backend/app/observability/logging.py",
           "line": 185,
           "end_line": 247,
-          "label": "structured logging"
+          "label": "结构化日志"
         }
       ]
     },
     {
       "id": "readback",
       "type": "backend",
-      "label": "load / resume",
-      "sublabel": "read session/chat",
+      "label": "加载 / 恢复",
+      "sublabel": "读取会话 / 聊天",
       "stage": 3,
       "row": 0,
       "sources": [
@@ -162,21 +162,21 @@
           "path": "backend/app/report/store.py",
           "line": 187,
           "end_line": 220,
-          "label": "session readback"
+          "label": "会话回读"
         },
         {
           "path": "backend/app/chat/store.py",
           "line": 46,
           "end_line": 80,
-          "label": "chat readback"
+          "label": "聊天回读"
         }
       ]
     },
     {
       "id": "delete",
       "type": "security",
-      "label": "delete entry",
-      "sublabel": "chat delete; purge absent",
+      "label": "删除入口",
+      "sublabel": "删除聊天；未实现清理",
       "stage": 3,
       "row": 1,
       "sources": [
@@ -184,7 +184,7 @@
           "path": "backend/app/chat/store.py",
           "line": 70,
           "end_line": 80,
-          "label": "chat deletion"
+          "label": "聊天删除"
         }
       ]
     }
@@ -193,50 +193,50 @@
     {
       "from": "state",
       "to": "session",
-      "label": "persist",
+      "label": "持久化",
       "variant": "emphasis"
     },
     {
       "from": "session",
       "to": "review",
-      "label": "save",
+      "label": "保存",
       "variant": "default"
     },
     {
       "from": "review",
       "to": "readback",
-      "label": "load",
+      "label": "加载",
       "variant": "default"
     },
     {
       "from": "readback",
       "to": "delete",
-      "label": "delete",
+      "label": "删除",
       "variant": "security"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Implemented layers",
+      "title": "已实现的层",
       "items": [
-        "ReviewState and ToolContext carry the current trajectory",
-        "MySQL-backed review and chat tables persist business/session records"
+        "ReviewState 和 ToolContext 携带当前轨迹",
+        "MySQL 中的评审表和聊天表持久化业务 / 会话记录"
       ]
     },
     {
       "dot": "amber",
-      "title": "No hidden memory",
+      "title": "没有隐藏记忆",
       "items": [
-        "Code does not show rolling summaries, TTL jobs, or a separate long-term semantic Agent memory",
-        "Chroma stores retrieval documents, not conversational memory"
+        "代码未体现滚动摘要、TTL 任务或独立的长期语义 Agent 记忆",
+        "Chroma 存储检索文档，不存储对话记忆"
       ]
     },
     {
       "dot": "rose",
-      "title": "Deletion boundary",
+      "title": "删除边界",
       "items": [
-        "Chat session deletion is explicit; a general memory purge API is not shown in the current code"
+        "聊天会话删除入口明确；当前代码未体现通用记忆清理 API"
       ]
     }
   ]

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="archify 3.1.0">
   <meta name="archify-reader-contract" content="declared-wide-v1">
-  <title>paper-review agent loop control</title>
+  <title>paper-review Agent 循环控制</title>
   <script>
     // Resolve the theme before first paint so light-preference users don't
     // see a dark flash. The toolbar script below re-applies with UI state.
@@ -5150,19 +5150,19 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
            data-preset-badge-blueprint="蓝图 / 修订 01"
            data-preset-badge-editorial="编辑风格 / 现场笔记">
         <div class="pulse-dot"></div>
-        <h1>paper-review agent loop control</h1>
+        <h1>paper-review Agent 循环控制</h1>
       </div>
-      <p class="subtitle">Actual limits: main 12 model / 24 tools / 150s / 45 recursion; no token budget field</p>
+      <p class="subtitle">代码中的实际上限：主流程 12 次 model / 24 次 tools / 150s / 45 次 recursion；没有 token budget 字段</p>
     </div>
 
-    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/aaGlaming/paper-review","revision":"327faeff8c7097045e809cfaaf7cf858e2039f34","shortRevision":"327faef","label":"aaGlaming/paper-review","linkMode":"local-only"},"referenceCount":7,"nodes":{"start_task":[{"path":"backend/app/agent/runner.py","line":120,"endLine":176,"label":"runner context"}],"plan":[{"path":"backend/app/agent/prompt.py","line":4,"endLine":23,"label":"prompt rules"}],"call_tools":[{"path":"backend/app/agent/middleware.py","line":21,"endLine":72,"label":"BudgetMiddleware"}],"observe":[{"path":"backend/app/agent/middleware.py","line":73,"endLine":103,"label":"_update_progress"}],"stop_check":[{"path":"backend/app/agent/runner.py","line":176,"endLine":176,"label":"termination and force submit"}],"emit":[{"path":"backend/app/agent/runner.py","line":176,"endLine":176,"label":"verifier and return"}],"budget_stop":[{"path":"backend/app/agent/middleware.py","line":13,"endLine":41,"label":"BudgetExceeded"}]}}</script>
+    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/aaGlaming/paper-review","revision":"327faeff8c7097045e809cfaaf7cf858e2039f34","shortRevision":"327faef","label":"aaGlaming/paper-review","linkMode":"local-only"},"referenceCount":7,"nodes":{"start_task":[{"path":"backend/app/agent/runner.py","line":120,"endLine":176,"label":"runner 上下文"}],"plan":[{"path":"backend/app/agent/prompt.py","line":4,"endLine":23,"label":"Prompt 规则"}],"call_tools":[{"path":"backend/app/agent/middleware.py","line":21,"endLine":72,"label":"BudgetMiddleware"}],"observe":[{"path":"backend/app/agent/middleware.py","line":73,"endLine":103,"label":"_update_progress"}],"stop_check":[{"path":"backend/app/agent/runner.py","line":176,"endLine":176,"label":"终止与强制提交"}],"emit":[{"path":"backend/app/agent/runner.py","line":176,"endLine":176,"label":"verifier 与返回"}],"budget_stop":[{"path":"backend/app/agent/middleware.py","line":13,"endLine":41,"label":"BudgetExceeded"}]}}</script>
     <script id="archify-i18n-data" type="application/json">{"locale":"zh-CN","messages":{"viewer.kind.frontend":"前端","viewer.kind.backend":"后端","viewer.kind.database":"数据库","viewer.kind.cloud":"云服务","viewer.kind.security":"安全","viewer.kind.messagebus":"消息总线","viewer.kind.external":"外部系统","viewer.kind.neutral":"中性","viewer.kind.node":"节点","viewer.kind.start":"开始","viewer.kind.active":"活动","viewer.kind.waiting":"等待","viewer.kind.decision":"决策","viewer.kind.success":"成功","viewer.kind.failure":"失败","viewer.toolbar.actions":"图表操作","viewer.theme.toggle.title":"切换主题（T）","viewer.theme.toggle":"切换颜色主题","viewer.theme.dark":"深色","viewer.theme.light":"浅色","viewer.preset.choose.title":"选择视觉风格（S 循环切换）","viewer.preset.choose":"选择视觉风格","viewer.preset.style":"风格","viewer.preset.menu":"视觉风格","viewer.preset.identity":"视觉表达","viewer.preset.cycles":"循环切换","viewer.preset.classic":"经典","viewer.preset.classic.short":"经典","viewer.preset.classic.hint":"稳定的技术默认风格","viewer.preset.flow":"信号流","viewer.preset.flow.short":"流动","viewer.preset.flow.hint":"突出动态流向","viewer.preset.blueprint":"蓝图","viewer.preset.blueprint.hint":"工程评审","viewer.preset.editorial":"编辑风格","viewer.preset.editorial.hint":"适合发布与上线说明","viewer.preset.badge.signalFlow":"信号流","viewer.preset.badge.blueprint":"蓝图 / 修订 01","viewer.preset.badge.editorial":"编辑风格 / 现场笔记","viewer.preset.badge.editorialPlate":"ARCHIFY / 图版 04","viewer.preset.current":"当前视觉风格：{style}。选择视觉风格","viewer.motion.live":"动态","viewer.motion.still":"静态","viewer.motion.pause":"暂停动效","viewer.motion.resume":"恢复动效","viewer.motion.reduced":"已根据减少动态效果偏好暂停动效","viewer.motion.hidden":"页面不可见时已暂停动效","viewer.motion.yielding":"暂停动效；当前让位于{owner}","viewer.motion.yielding.title":"动态预览已启用 · 正在让位于{owner}","viewer.owner.route":"路径探测","viewer.owner.lens":"语义透镜","viewer.owner.relationship":"关系预览","viewer.owner.intent":"意图追踪","viewer.owner.focus":"语义聚焦","viewer.owner.legend":"图例预览","viewer.owner.reader":"读者交互","viewer.present.enter":"进入演示模式","viewer.present.enter.title":"演示模式（F）","viewer.present.exit":"退出演示模式","viewer.present.exit.title":"退出演示模式（F 或 Escape）","viewer.present.present":"演示","viewer.present.exit.label":"退出","viewer.export.button":"导出","viewer.export.button.title":"导出图表（E）","viewer.export.diagram":"导出图表","viewer.export.menu":"导出","viewer.export.subtitle":"便携、整洁的输出","viewer.export.share":"分享","viewer.export.shareCard":"分享卡片","viewer.export.routeShareCard":"路径分享卡片","viewer.export.reachShareCard":"可达范围分享卡片","viewer.export.copyDiagram":"复制图表","viewer.export.clipboardPng":"复制 PNG 到剪贴板","viewer.export.raster":"位图","viewer.export.image":"图像","viewer.export.lossless":"无损图像","viewer.export.compact":"紧凑图像","viewer.export.modern":"现代图像格式","viewer.export.vectorMotion":"矢量与动效","viewer.export.vectorMotion.heading":"矢量与动效","viewer.export.editable":"可编辑矢量图","viewer.export.svg.auto":"SVG · 自动","viewer.export.svg.auto.hint":"匹配宿主主题","viewer.export.svg.light":"SVG · 浅色","viewer.export.svg.light.hint":"始终浅色","viewer.export.svg.dark":"SVG · 深色","viewer.export.svg.dark.hint":"始终深色","viewer.export.motion6s":"6 秒动效","viewer.export.unsupported":"当前浏览器不支持","viewer.export.clipboardUnsupported":"当前浏览器不支持写入图片剪贴板","viewer.export.clipboardUnsupported.short":"此浏览器不支持写入图片剪贴板。","viewer.export.motionUnavailable":"当前浏览器无法录制动效","viewer.export.webmUnavailable":"当前浏览器不支持 WebM","viewer.export.failed":"导出失败：{message}","viewer.export.unknownVariant":"未知的分享卡片类型：{variant}","viewer.export.routeRequired":"请先追踪路径，再导出路径分享卡片","viewer.export.reachRequired":"请先追踪编写可达范围，再导出可达范围分享卡片","viewer.export.unknown":"未知错误","viewer.export.routeFailed":"路径分享卡片导出失败：{message}","viewer.export.reachFailed":"可达范围分享卡片导出失败：{message}","viewer.export.copyFailed":"复制失败：{message}","viewer.export.copiedPng":"已将 PNG 复制到剪贴板","viewer.export.downloadedRoute":"已下载路径分享卡片","viewer.export.downloadedReach":"已下载可达范围分享卡片","viewer.export.downloadedWebm":"已下载 WebM","viewer.export.recording":"正在录制 6 秒动效…","viewer.export.card.routeSummary.one":"路径：{source} → {target} · {count} 步","viewer.export.card.routeSummary.other":"路径：{source} → {target} · {count} 步","viewer.export.card.reachSummary":"从{origin}开始的编写{direction} · {nodes} · {links} · 最深 {hops}","viewer.export.card.node.one":"{count} 个节点","viewer.export.card.node.other":"{count} 个节点","viewer.export.card.link.one":"{count} 条连接","viewer.export.card.link.other":"{count} 条连接","viewer.export.card.hop.one":"{count} 跳","viewer.export.card.hop.other":"{count} 跳","viewer.export.card.routeBadge":"ARCHIFY · 路径 · {hops}","viewer.export.card.reachBadge":"ARCHIFY · {direction}可达范围","viewer.export.direction.upstream":"上游","viewer.export.direction.downstream":"下游","viewer.export.error.canvasUnavailable":"无法为{label}使用画布","viewer.export.error.contextUnavailable":"无法为{label}创建二维画布上下文","viewer.export.error.toBlobUnavailable":"{label}无法使用 canvas.toBlob","viewer.export.error.toBlobNull":"{label}的 canvas.toBlob 未返回数据","viewer.export.error.variantsCombined":"无法同时组合多种分享卡片类型","viewer.export.error.viewerState":"分享卡片导出无法移除临时 Viewer 状态","viewer.export.error.routeState":"路径卡片导出无法安全保留已解析路径","viewer.export.error.reachState":"可达范围卡片导出无法安全保留编写的可达范围","viewer.export.error.webmRequirements":"WebM 动效导出需要追踪动画及浏览器 MediaRecorder 支持","viewer.export.error.mediaRecorder":"MediaRecorder 录制失败","viewer.export.error.emptyWebm":"MediaRecorder 生成了空的 WebM","viewer.export.error.webmBackground":"无法为 WebM 导出加载 SVG 背景","viewer.guide.title":"探索此系统","viewer.focus.selectedNodes":"已选择 {count} 个节点","viewer.guide.eyebrow":"图表指南","viewer.guide.close":"关闭图表指南","viewer.guide.inspecting":"正在检查已编译语义","viewer.guide.actions":"图表探索操作","viewer.guide.find":"查找任意节点","viewer.guide.find.hint":"搜索标签、职责、类型和稳定 ID。","viewer.guide.route":"追踪路径","viewer.guide.route.aria":"追踪有向路径","viewer.guide.route.hint":"查看两个语义节点如何按编写方向连接。","viewer.guide.map":"查看完整系统","viewer.guide.map.hint":"打开带实时视口和稳定节点的语义雷达。","viewer.guide.lens":"比较语义类型","viewer.guide.lens.hint":"统计角色、显示流量并比较直接编写的连接。","viewer.guide.present":"进入演示模式","viewer.guide.present.hint":"让实时图表占满视口，同时不改变导出。","viewer.guide.shortcuts":"其他键盘快捷键","viewer.guide.shortcut.export":"导出","viewer.guide.shortcut.theme":"主题","viewer.guide.shortcut.style":"风格","viewer.guide.shortcut.reset":"重置","viewer.guide.shortcut.zoomIn":"放大","viewer.guide.shortcut.zoomOut":"缩小","viewer.guide.shortcut.close":"关闭","viewer.guide.credit":"觉得好用？在 GitHub 给 Archify 点个 Star","viewer.guide.star":"Star","viewer.guide.facts":"{nodes} · {relationships}","viewer.guide.fact.node.one":"{count} 个语义节点","viewer.guide.fact.node.other":"{count} 个语义节点","viewer.guide.fact.relationship.one":"{count} 条关系","viewer.guide.fact.relationship.other":"{count} 条关系","viewer.guide.open":"打开图表指南","viewer.finder.title":"查找节点","viewer.finder.close":"关闭节点查找器","viewer.finder.placeholder":"搜索标签或 ID","viewer.finder.search":"搜索图表节点","viewer.finder.results":"图表节点","viewer.finder.empty":"没有匹配的节点","viewer.finder.result.focus":"聚焦{label}","viewer.finder.result.routeStart":"选择{label}作为路径起点","viewer.finder.result.routeTarget":"选择{label}作为路径终点，{links}","viewer.finder.status.empty":"没有匹配的节点","viewer.finder.status.count.one":"{count} 个匹配节点","viewer.finder.status.count.other":"{count} 个匹配节点","viewer.finder.noun.nodes":"个节点","viewer.finder.link.one":"{count} 条连接","viewer.finder.link.other":"{count} 条连接","viewer.finder.result.focus.one":"聚焦{label}，{count} 条相关连接","viewer.finder.result.focus.other":"聚焦{label}，{count} 条相关连接","viewer.finder.status.filtered":"{visible}/{available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"语义护照","viewer.passport.metadata":"节点元数据","viewer.passport.evidence":"已验证的源代码证据","viewer.passport.verified":"已验证来源","viewer.passport.verificationScope":"已按固定修订版本验证本地 Git 证据，未检查远程访问权限。","viewer.passport.reach":"编写可达范围","viewer.passport.reach.trace":"追踪编写的可达性","viewer.passport.upstream":"上游","viewer.passport.downstream":"下游","viewer.passport.upstream.trace":"追踪上游编写可达性","viewer.passport.downstream.trace":"追踪下游编写可达性","viewer.passport.close":"关闭语义护照","viewer.passport.move":"移动语义护照。可拖动、使用方向键移动，或按 Home 恢复自动位置。","viewer.passport.copy":"复制链接","viewer.passport.copy.focus":"复制聚焦节点的链接","viewer.passport.relations":"关系","viewer.passport.relations.show":"显示关联关系","viewer.passport.relations.hide":"隐藏关联关系","viewer.passport.relations.list":"关联关系","viewer.passport.copyRelation":"复制关系","viewer.passport.copyNode":"复制节点","viewer.passport.copyPinned":"复制固定关系的链接","viewer.passport.copySource":"复制来源节点的链接","viewer.passport.copy.focused.success":"已复制聚焦节点链接","viewer.passport.copy.pinned.success":"已复制固定关系链接","viewer.passport.copy.focused.failed":"无法复制聚焦节点链接","viewer.passport.copy.pinned.failed":"无法复制固定关系链接","viewer.passport.relationship.none":"没有关联关系","viewer.passport.relationship.count.one":"{count} 条关系","viewer.passport.relationship.count.other":"{count} 条关系","viewer.passport.relationship.show.one":"显示 {count} 条关联关系","viewer.passport.relationship.show.other":"显示 {count} 条关联关系","viewer.passport.relationship.summary":"{out} 条出向 · {in} 条入向{loops}","viewer.passport.relationship.loops":" · {count} 条自环","viewer.passport.relationship.explorer":"直接关系浏览器","viewer.passport.relationship.help":"使用方向键浏览关系。按 Enter 或空格键固定详情；按 Escape 清除。","viewer.passport.relationship.loopsBack":"回环","viewer.passport.relationship.connectsTo":"连接到","viewer.passport.relationship.connectsFrom":"连接自","viewer.passport.relationship.pinned":"已固定关系 · {from} → {to} · {label}","viewer.passport.relationship.inspect":"检查第 {index}/{total} 条关系：{from} 到 {to}，{label}。按 Enter 查看详情。","viewer.passport.relationship.group.out":"出向","viewer.passport.relationship.group.in":"入向","viewer.passport.relationship.group.loop":"自环","viewer.passport.relationship.row":"{group}：{relationship}，{neighbor}","viewer.passport.relationship.direction.out":"出 →","viewer.passport.relationship.direction.in":"← 入","viewer.passport.relationship.direction.loop":"自环","viewer.passport.sourceCount.one":"{count} 个已验证来源引用","viewer.passport.sourceCount.other":"{count} 个已验证来源引用","viewer.passport.repository.open":"打开已验证的仓库修订版本 {revision}","viewer.passport.source.open":"打开修订版本 {revision} 中已验证的来源 {path}","viewer.passport.source.openLink":"打开 ↗","viewer.passport.reach.upstream.one":"追踪 {count} 个上游编写节点","viewer.passport.reach.upstream.other":"追踪 {count} 个上游编写节点","viewer.passport.reach.downstream.one":"追踪 {count} 个下游编写节点","viewer.passport.reach.downstream.other":"追踪 {count} 个下游编写节点","viewer.passport.reach.noUpstream":"没有上游编写节点","viewer.passport.reach.noDownstream":"没有下游编写节点","viewer.passport.reach.status":"{direction} · {nodes} 个节点 · {links} 条连接 · 最深 {hops} 跳","viewer.route.eyebrow":"路径","viewer.route.start":"点击路径的起点","viewer.route.start.find":"查找起点","viewer.route.start.find.aria":"查找路径起点","viewer.route.copy":"复制链接","viewer.route.copy.aria":"复制已追踪路径的链接","viewer.route.clear":"清除","viewer.route.clear.aria":"清除路径探测","viewer.route.traced":"路径","viewer.route.pickTwo":"在图上点两个节点","viewer.route.pickOne":"在图上点一个节点","viewer.route.controls":"路径旅程控制","viewer.route.previous":"上一个路径位置","viewer.route.play":"播放路径旅程","viewer.route.pause":"暂停路径旅程","viewer.route.replay":"重播路径旅程","viewer.route.next":"下一个路径位置","viewer.route.journey":"旅程","viewer.route.pause.label":"暂停","viewer.route.replay.label":"重播","viewer.route.overview":"总览","viewer.route.overview.aria":"显示完整路径总览","viewer.route.instructions":"先点起点，再点终点，沿箭头方向找路。","viewer.route.destination":"从{label}出发，走到哪里？","viewer.route.destination.find":"查找目标","viewer.route.destination.find.aria":"查找可达的路径目标","viewer.route.differentDestination":"选择其他目标","viewer.route.distinct":"请选两个不同的节点。","viewer.route.unreachable":"走不到{label}","viewer.route.unreachable.detail":"沿箭头方向，从{source}走不到{target}。请选一个高亮节点。","viewer.route.start.instructions":"接着选终点，能走到的节点会亮起。","viewer.route.copy.success":"已复制路径链接","viewer.route.copy.failed":"无法复制路径链接","viewer.route.position":"路径位置 {index}/{total}：{label}","viewer.route.step":"第 {index}/{total} 步 · {phase} · {label}","viewer.route.motionRequired":"自动旅程需要动态模式","viewer.route.trigger.clear":"清除已追踪路径","viewer.route.overview.status":"{nodes} · {hops} · 最短路径","viewer.route.overview.node.one":"{count} 个节点","viewer.route.overview.node.other":"{count} 个节点","viewer.route.overview.hop.one":"{count} 步","viewer.route.overview.hop.other":"{count} 步","viewer.route.phase.playing":"播放中","viewer.route.phase.complete":"已完成","viewer.route.phase.inspecting":"检查中","viewer.route.destination.count.one":"有 {count} 个能走到的节点已高亮，点一下。","viewer.route.destination.count.other":"有 {count} 个能走到的节点已高亮，点一个。","viewer.route.noOutgoing":"这个节点没有向外的箭头。清除后换一个起点。","viewer.route.result.title":"{source} 到 {target}","viewer.route.finder.source.title":"选择路径起点","viewer.route.finder.source.placeholder":"搜索路径来源","viewer.route.finder.source.empty":"没有匹配的路径来源","viewer.route.finder.source.results":"可作为路径起点的节点","viewer.route.finder.source.noun":"个路径来源","viewer.route.finder.source.badge":"起点","viewer.route.finder.target.title":"从{label}出发的目标","viewer.route.finder.target.placeholder":"搜索可达目标","viewer.route.finder.target.empty":"没有匹配的可达目标","viewer.route.finder.target.results":"可达路径目标","viewer.route.finder.target.noun":"个可达目标","viewer.route.hop.one":"{count} 跳","viewer.route.hop.other":"{count} 跳","viewer.lens.eyebrow":"语义透镜","viewer.lens.title":"比较系统角色","viewer.lens.close":"关闭语义透镜","viewer.lens.instruction":"最多选择两种语义类型。选择一种可显示其真实流量；选择两种只比较直接编写的关系。","viewer.lens.kinds":"语义类型","viewer.lens.choose":"选择一种类型以检查其节点和相连关系。","viewer.lens.copy":"复制语义透镜链接","viewer.lens.clear":"清除语义透镜","viewer.lens.open":"打开语义透镜","viewer.lens.openActive":"打开当前语义透镜","viewer.lens.legend":"语义图例","viewer.lens.legend.inspect.one":"检查{label}，{count} 个节点","viewer.lens.legend.inspect.other":"检查{label}，{count} 个节点","viewer.lens.kind.count.one":"{label}，{count} 个节点","viewer.lens.kind.count.other":"{label}，{count} 个节点","viewer.lens.compare.one":"{first} → {second}：{forward} · {second} → {first}：{reverse} · 共 {count} 条直接关系","viewer.lens.compare.other":"{first} → {second}：{forward} · {second} → {first}：{reverse} · 共 {count} 条直接关系","viewer.lens.single":"{nodes} · {relationships} · 已连接节点保持可见","viewer.lens.node.one":"{count} 个{label}节点","viewer.lens.node.other":"{count} 个{label}节点","viewer.lens.relationship.one":"{count} 条相连关系","viewer.lens.relationship.other":"{count} 条相连关系","viewer.radar.title":"语义雷达","viewer.radar.building":"正在构建总览","viewer.radar.openFull":"打开完整语义雷达","viewer.radar.open":"打开雷达","viewer.radar.close":"关闭语义雷达","viewer.radar.surface":"图表总览。点击节点进行聚焦，或使用方向键平移。","viewer.radar.click":"点击节点","viewer.radar.drag":"拖动平移","viewer.radar.space":"语义雷达需要更多地图可见空间。","viewer.radar.nodes":"语义图表雷达节点","viewer.radar.focus":"从语义雷达聚焦{label}","viewer.radar.status":"{count} 个节点 · {viewport}","viewer.radar.fullMap":"{count} 个节点 · 完整地图","viewer.radar.compacted":"已收紧雷达，避免遮挡语义护照或地图控件。","viewer.radar.cancelWaiting":"取消等待更多地图空间的语义雷达","viewer.radar.needsSpace":"语义雷达需要更多可见地图空间","viewer.radar.viewport.full":"完整地图","viewer.radar.viewport.width":"宽度 {percent}%","viewer.radar.viewport.scale":"视口 {percent}%","viewer.nav.controls":"图表视图控制","viewer.nav.route":"追踪有向路径","viewer.nav.route.title":"追踪路径（R）","viewer.nav.route.short":"路径","viewer.nav.radar":"打开语义雷达","viewer.nav.radar.title":"语义雷达（M）","viewer.nav.radar.short":"地图","viewer.nav.lens":"打开语义透镜","viewer.nav.lens.title":"语义透镜（L）","viewer.nav.lens.short":"透镜","viewer.nav.find":"查找节点","viewer.nav.find.title":"查找节点（/）","viewer.outline.title":"节点索引","viewer.rail.show":"要点与索引","viewer.rail.controls":"侧栏","viewer.rail.collapse":"收起侧栏","viewer.rail.bottom":"移到图下方","viewer.rail.right":"移到图右侧","viewer.nav.guide":"打开图表指南","viewer.nav.guide.title":"图表指南（?）","viewer.nav.zoomOut":"缩小","viewer.nav.zoomOut.title":"缩小（-）","viewer.nav.reset":"重置图表视图","viewer.nav.reset.title":"重置视图（0）","viewer.nav.read":"阅读","viewer.nav.zoomIn":"放大","viewer.nav.zoomIn.title":"放大（+）","viewer.nav.camera":"{hint}。重置图表视图","viewer.nav.camera.title":"{semantic}{hint} · 重置视图（0）","viewer.nav.camera.semantic":"语义相机已启用 · ","viewer.nav.level.map":"概览","viewer.nav.level.read":"阅读","viewer.nav.level.full":"完整","viewer.nav.level.auto":"自动","viewer.nav.detail.map":"放大以显示关系标签和节点上下文","viewer.nav.detail.read":"再次放大以显示标签和注释","viewer.nav.detail.full":"完整图表详情","viewer.intent.summary":"{label}。{out} 条出向，{in} 条入向{loops}。共 {total} 条连接。按 Enter 查看详情。","viewer.intent.loops":"，{count} 条自环","viewer.common.copied":"已复制","viewer.common.copyFailed":"复制失败","viewer.common.copyLink":"复制链接","viewer.common.clear":"清除","viewer.common.close":"关闭"}}</script>
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / 图版 04">
-      <svg viewBox="0 0 976 540" data-layout-contract="readable-v2" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase" data-node-ui="">
-        <title id="archify-diagram-title">paper-review agent loop control</title>
-        <desc id="archify-diagram-description">Actual limits: main 12 model / 24 tools / 150s / 45 recursion; no token budget field</desc>
+      <svg viewBox="0 0 1084 540" data-layout-contract="readable-v2" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase" data-node-ui="">
+        <title id="archify-diagram-title">paper-review Agent 循环控制</title>
+        <desc id="archify-diagram-description">代码中的实际上限：主流程 12 次 model / 24 次 tools / 150s / 45 次 recursion；没有 token budget 字段</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5207,151 +5207,151 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Swimlanes -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="920" height="106" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="54" y="74" class="t-muted" font-size="10" font-weight="600">01 / Agent runtime</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="1028" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="74" class="t-muted" font-size="10" font-weight="600">01 / Agent 运行时</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="920" height="112" rx="10" class="c-lane" stroke-width="1"/>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-1-exception" x="46" y="184" width="908" height="100" rx="8" class="c-security-group" stroke-width="1"/>
-        <text x="54" y="200" class="t-security" font-size="10" font-weight="600">EX / Budget and stop policy</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="1028" height="112" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-1-exception" x="46" y="184" width="1016" height="100" rx="8" class="c-security-group" stroke-width="1"/>
+        <text x="54" y="200" class="t-security" font-size="10" font-weight="600">EX / 预算与停止策略</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="310" width="920" height="106" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="54" y="332" class="t-muted" font-size="10" font-weight="600">03 / Result and trace</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="310" width="1028" height="106" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="332" class="t-muted" font-size="10" font-weight="600">03 / 结果与 trace</text>
 
         <!-- Phase headers -->
         <path d="M 56 35 H 132" class="a-default phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <rect x="72" y="27" width="44" height="16" rx="8" class="c-mask phase-chip"/>
-        <text x="94" y="38.5" class="t-muted" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Start</text>
-        <path d="M 190 35 H 769.2" class="a-emphasis phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <rect x="421.6" y="27" width="116" height="16" rx="8" class="c-mask phase-chip"/>
-        <text x="479.6" y="38.5" class="t-backend" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Plan → act → observe</text>
-        <path d="M 841.2 35 H 917.2" class="a-dashed phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
-        <rect x="840.4000000000001" y="27" width="77.6" height="16" rx="8" class="c-mask phase-chip"/>
-        <text x="879.2" y="38.5" class="t-messagebus" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">Stop / write</text>
+        <rect x="74" y="27" width="40" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="94" y="38.5" class="t-muted" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">开始</text>
+        <path d="M 186 35 H 755.5999999999999" class="a-emphasis phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
+        <rect x="417.59999999999997" y="27" width="106.39999999999999" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="470.79999999999995" y="38.5" class="t-backend" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">规划 → 执行 → 观察</text>
+        <path d="M 935.9999999999999 35 H 1011.9999999999999" class="a-dashed phase-rule" stroke-width="1" stroke-linecap="round" fill="none"/>
+        <rect x="937.5999999999999" y="27" width="72.8" height="16" rx="8" class="c-mask phase-chip"/>
+        <text x="973.9999999999999" y="38.5" class="t-messagebus" font-size="8" font-weight="600" text-anchor="middle" letter-spacing=".04em">停止 / 写入</text>
 
         <!-- Workflow groups -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-0" x="178" y="90" width="603.2" height="64" rx="9" class="c-lane" stroke-width="1"/>
-        <text x="188" y="88" class="t-backend" font-size="7" font-weight="600">Bounded iteration</text>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-1" x="561.2" y="216" width="390" height="70" rx="9" class="c-security-group" stroke-width="1"/>
-        <text x="571.2" y="214" class="t-security" font-size="7" font-weight="600">Budget gate</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-0" x="174" y="90" width="593.5999999999999" height="64" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="184" y="88" class="t-backend" font-size="7" font-weight="600">有界迭代</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-1" x="547.5999999999999" y="216" width="512.4000000000001" height="70" rx="9" class="c-security-group" stroke-width="1"/>
+        <text x="557.5999999999999" y="214" class="t-security" font-size="7" font-weight="600">预算门控</text>
 
         <!-- Edge paths -->
-        <path data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="budget / timeout / recursion" data-edge-key="0" data-edge-id="budget" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="731.2,277;731.2,306;879.2,306;879.2,285" d="M 731.2 277 L 731.2 298 Q 731.2 306 739.2 306 L 871.2 306 Q 879.2 306 879.2 298 L 879.2 285" class="a-security" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
-        <path data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / result" data-edge-key="1" data-edge-id="call-observe" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="451.2,120;565.2,120" d="M 451.2 120 L 565.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="stop_check" data-edge-to="plan" data-edge-label="no: continue loop" data-edge-key="2" data-edge-id="continue" data-composition-routing="workflow-v2-auto" data-edge-role="branch" data-composition-points="683.2,244;228,244;228,146" d="M 683.2 244 L 236 244 Q 228 244 228 236 L 228 146" class="a-emphasis" data-animate="edge" style="--step:8" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="stop_check" data-edge-to="emit" data-edge-label="yes: all submitted" data-edge-key="3" data-edge-id="done" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="707.2,277;707.2,378;833.2,378" d="M 707.2 277 L 707.2 370 Q 707.2 378 715.2 378 L 833.2 378" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="observe" data-edge-to="stop_check" data-edge-label="progress snapshot" data-edge-key="4" data-edge-id="observe-stop" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="611.2,146;611.2,168;731.2,168;731.2,225" d="M 611.2 146 L 611.2 160 Q 611.2 168 619.2 168 L 723.2 168 Q 731.2 168 731.2 176 L 731.2 225" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="plan" data-edge-to="call_tools" data-edge-label="next tool call" data-edge-key="5" data-edge-id="plan-call" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="274,120;359.2,120" d="M 274 120 L 359.2 120" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="start_task" data-edge-to="plan" data-edge-label="begin" data-edge-key="6" data-edge-id="start-plan" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="140,120;182,120" d="M 140 120 L 182 120" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="预算 / 超时 / recursion" data-edge-key="0" data-edge-id="budget" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="763.5999999999999,251;891.9999999999999,251" d="M 763.5999999999999 251 L 891.9999999999999 251" class="a-security" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / 结果" data-edge-key="1" data-edge-id="call-observe" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="447.2,120;551.5999999999999,120" d="M 447.2 120 L 551.5999999999999 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="stop_check" data-edge-to="plan" data-edge-label="否：继续循环" data-edge-key="2" data-edge-id="continue" data-composition-routing="workflow-v2-auto" data-edge-role="branch" data-composition-points="671.5999999999999,244;224,244;224,146" d="M 671.5999999999999 244 L 232 244 Q 224 244 224 236 L 224 146" class="a-emphasis" data-animate="edge" style="--step:8" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="stop_check" data-edge-to="emit" data-edge-label="是：全部已提交" data-edge-key="3" data-edge-id="done" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="717.5999999999999,277;717.5999999999999,378;927.9999999999999,378" d="M 717.5999999999999 277 L 717.5999999999999 370 Q 717.5999999999999 378 725.5999999999999 378 L 927.9999999999999 378" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="observe" data-edge-to="stop_check" data-edge-label="进度快照" data-edge-key="4" data-edge-id="observe-stop" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="643.5999999999999,120;717.5999999999999,120;717.5999999999999,225" d="M 643.5999999999999 120 L 709.5999999999999 120 Q 717.5999999999999 120 717.5999999999999 128 L 717.5999999999999 225" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="plan" data-edge-to="call_tools" data-edge-label="下一次工具调用" data-edge-key="5" data-edge-id="plan-call" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="270,120;355.2,120" d="M 270 120 L 355.2 120" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="start_task" data-edge-to="plan" data-edge-label="开始" data-edge-key="6" data-edge-id="start-plan" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="140,120;178,120" d="M 140 120 L 178 120" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
 
         <!-- Nodes -->
-        <g id="node-start_task" data-node-id="start_task" data-node-label="Task start" tabindex="0" role="button" aria-label="聚焦Task start，state, Agent runtime › Start" aria-pressed="false" data-node-kind="backend" data-node-sublabel="state" data-node-context="Agent runtime › Start">
-          <title>Task start · state · Agent runtime › Start</title>
+        <g id="node-start_task" data-node-id="start_task" data-node-label="任务开始" tabindex="0" role="button" aria-label="聚焦任务开始，状态, Agent 运行时 › 开始" aria-pressed="false" data-node-kind="backend" data-node-sublabel="状态" data-node-context="Agent 运行时 › 开始">
+          <title>任务开始 · 状态 · Agent 运行时 › 开始</title>
           <rect x="48" y="94" width="92" height="52" rx="8" class="c-mask"/>
           <rect x="48" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:0" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(54 100) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="94" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Task start</text>
-          <text data-detail="context" x="94" y="138.3" class="t-muted" font-size="8" text-anchor="middle">state</text>
+          <text data-node-label="" data-detail-anchor="" x="94" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">任务开始</text>
+          <text data-detail="context" x="94" y="138.3" class="t-muted" font-size="8" text-anchor="middle">状态</text>
         </g>
 
-        <g id="node-plan" data-node-id="plan" data-node-label="Plan" tabindex="0" role="button" aria-label="聚焦Plan，prompt + tool, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="prompt + tool" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
-          <title>Plan · prompt + tool · Agent runtime › Bounded iteration › Plan → act → observe</title>
-          <rect x="182" y="94" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="182" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(188 100) scale(0.6875)">
+        <g id="node-plan" data-node-id="plan" data-node-label="规划" tabindex="0" role="button" aria-label="聚焦规划，Prompt + 工具, Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Prompt + 工具" data-node-context="Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察">
+          <title>规划 · Prompt + 工具 · Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察</title>
+          <rect x="178" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="178" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(184 100) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="218.8" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Plan</text>
-          <text data-detail="context" x="228" y="132" class="t-muted" font-size="8" text-anchor="middle">prompt + tool</text>
+          <text data-node-label="" data-detail-anchor="" x="214.8" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">规划</text>
+          <text data-detail="context" x="224" y="132" class="t-muted" font-size="8" text-anchor="middle">Prompt + 工具</text>
         </g>
 
-        <g id="node-call_tools" data-node-id="call_tools" data-node-label="Call tools" tabindex="0" role="button" aria-label="聚焦Call tools，24 tools, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="24 tools" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
-          <title>Call tools · 24 tools · Agent runtime › Bounded iteration › Plan → act → observe</title>
-          <rect x="359.2" y="94" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="359.2" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(365.2 100) scale(0.6875)">
+        <g id="node-call_tools" data-node-id="call_tools" data-node-label="调用工具" tabindex="0" role="button" aria-label="聚焦调用工具，24 个工具, Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察" aria-pressed="false" data-node-kind="backend" data-node-sublabel="24 个工具" data-node-context="Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察">
+          <title>调用工具 · 24 个工具 · Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察</title>
+          <rect x="355.2" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="355.2" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(361.2 100) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="405.2" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Call tools</text>
-          <text data-detail="context" x="405.2" y="138.3" class="t-muted" font-size="8" text-anchor="middle">24 tools</text>
+          <text data-node-label="" data-detail-anchor="" x="401.2" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">调用工具</text>
+          <text data-detail="context" x="401.2" y="138.3" class="t-muted" font-size="8" text-anchor="middle">24 个工具</text>
         </g>
 
-        <g id="node-observe" data-node-id="observe" data-node-label="Observe result" tabindex="0" role="button" aria-label="聚焦Observe result，progress / error, Agent runtime › Bounded iteration › Plan → act → observe" aria-pressed="false" data-node-kind="backend" data-node-sublabel="progress / error" data-node-context="Agent runtime › Bounded iteration › Plan → act → observe">
-          <title>Observe result · progress / error · Agent runtime › Bounded iteration › Plan → act → observe</title>
-          <rect x="565.2" y="94" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="565.2" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(571.2 100) scale(0.6875)">
+        <g id="node-observe" data-node-id="observe" data-node-label="观察结果" tabindex="0" role="button" aria-label="聚焦观察结果，进度 / 错误, Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察" aria-pressed="false" data-node-kind="backend" data-node-sublabel="进度 / 错误" data-node-context="Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察">
+          <title>观察结果 · 进度 / 错误 · Agent 运行时 › 有界迭代 › 规划 → 执行 → 观察</title>
+          <rect x="551.5999999999999" y="94" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="551.5999999999999" y="94" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(557.5999999999999 100) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="611.2" y="127" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Observe result</text>
-          <text data-detail="context" x="611.2" y="141.6" class="t-muted" font-size="8" text-anchor="middle">progress / error</text>
+          <text data-node-label="" data-detail-anchor="" x="597.5999999999999" y="126" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">观察结果</text>
+          <text data-detail="context" x="597.5999999999999" y="138.3" class="t-muted" font-size="8" text-anchor="middle">进度 / 错误</text>
         </g>
 
-        <g id="node-stop_check" data-node-id="stop_check" data-node-label="Stop condition?" tabindex="0" role="button" aria-label="聚焦Stop condition?，done? budget?, Budget and stop policy › Budget gate › Plan → act → observe" aria-pressed="false" data-node-kind="security" data-node-sublabel="done? budget?" data-node-context="Budget and stop policy › Budget gate › Plan → act → observe">
-          <title>Stop condition? · done? budget? · Budget and stop policy › Budget gate › Plan → act → observe</title>
-          <rect x="683.2" y="225" width="96" height="52" rx="8" class="c-mask"/>
-          <rect x="683.2" y="225" width="96" height="52" rx="8" class="c-security" data-animate="node" style="--step:4" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(689.2 231) scale(0.6875)">
+        <g id="node-stop_check" data-node-id="stop_check" data-node-label="停止条件？" tabindex="0" role="button" aria-label="聚焦停止条件？，完成？预算？, 预算与停止策略 › 预算门控 › 规划 → 执行 → 观察" aria-pressed="false" data-node-kind="security" data-node-sublabel="完成？预算？" data-node-context="预算与停止策略 › 预算门控 › 规划 → 执行 → 观察">
+          <title>停止条件？ · 完成？预算？ · 预算与停止策略 › 预算门控 › 规划 → 执行 → 观察</title>
+          <rect x="671.5999999999999" y="225" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="671.5999999999999" y="225" width="92" height="52" rx="8" class="c-security" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(677.5999999999999 231) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="731.2" y="257.7" class="t-primary" font-size="9.7" font-weight="600" text-anchor="middle">Stop condition?</text>
-          <text data-detail="context" x="731.2" y="272.3" class="t-muted" font-size="8" text-anchor="middle">done? budget?</text>
+          <text data-node-label="" data-detail-anchor="" x="717.5999999999999" y="257" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">停止条件？</text>
+          <text data-detail="context" x="717.5999999999999" y="269.3" class="t-muted" font-size="8" text-anchor="middle">完成？预算？</text>
         </g>
 
-        <g id="node-budget_stop" data-node-id="budget_stop" data-node-label="Budget exit" tabindex="0" role="button" aria-label="聚焦Budget exit，12 model / 24 tools / 150s, Budget and stop policy › Budget gate › Stop / write" aria-pressed="false" data-node-kind="security" data-node-sublabel="12 model / 24 tools / 150s" data-node-tag="token budget: not implemented" data-node-context="Budget and stop policy › Budget gate › Stop / write">
-          <title>Budget exit · 12 model / 24 tools / 150s · Budget and stop policy › Budget gate › Stop / write · token budget: not implemented</title>
-          <rect x="811.2" y="217" width="136" height="68" rx="8" class="c-mask"/>
-          <rect x="811.2" y="217" width="136" height="68" rx="8" class="c-security" data-animate="node" style="--step:11" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(817.2 223) scale(0.6875)">
+        <g id="node-budget_stop" data-node-id="budget_stop" data-node-label="预算退出" tabindex="0" role="button" aria-label="聚焦预算退出，12 次 model / 24 次 tools / 150s, 预算与停止策略 › 预算门控 › 停止 / 写入" aria-pressed="false" data-node-kind="security" data-node-sublabel="12 次 model / 24 次 tools / 150s" data-node-tag="token budget：未实现" data-node-context="预算与停止策略 › 预算门控 › 停止 / 写入">
+          <title>预算退出 · 12 次 model / 24 次 tools / 150s · 预算与停止策略 › 预算门控 › 停止 / 写入 · token budget：未实现</title>
+          <rect x="891.9999999999999" y="217" width="164" height="68" rx="8" class="c-mask"/>
+          <rect x="891.9999999999999" y="217" width="164" height="68" rx="8" class="c-security" data-animate="node" style="--step:11" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(897.9999999999999 223) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="868.9000000000001" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Budget exit</text>
-          <text data-detail="context" x="879.2" y="255" class="t-muted" font-size="8" text-anchor="middle">12 model / 24 tools / 150s</text>
-        <text data-detail="fine" x="879.2" y="273" class="t-security" font-size="7" text-anchor="middle">token budget: not implemented</text>
+          <text data-node-label="" data-detail-anchor="" x="973.9999999999999" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">预算退出</text>
+          <text data-detail="context" x="973.9999999999999" y="255" class="t-muted" font-size="8" text-anchor="middle">12 次 model / 24 次 tools / 150s</text>
+        <text data-detail="fine" x="973.9999999999999" y="273" class="t-security" font-size="7" text-anchor="middle">token budget：未实现</text>
         </g>
 
-        <g id="node-emit" data-node-id="emit" data-node-label="Output + trace" tabindex="0" role="button" aria-label="聚焦Output + trace，score + trace, Result and trace › Stop / write" aria-pressed="false" data-node-kind="backend" data-node-sublabel="score + trace" data-node-context="Result and trace › Stop / write">
-          <title>Output + trace · score + trace · Result and trace › Stop / write</title>
-          <rect x="833.2" y="352" width="92" height="52" rx="8" class="c-mask"/>
-          <rect x="833.2" y="352" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(839.2 358) scale(0.6875)">
+        <g id="node-emit" data-node-id="emit" data-node-label="输出 + trace" tabindex="0" role="button" aria-label="聚焦输出 + trace，评分 + trace, 结果与 trace › 停止 / 写入" aria-pressed="false" data-node-kind="backend" data-node-sublabel="评分 + trace" data-node-context="结果与 trace › 停止 / 写入">
+          <title>输出 + trace · 评分 + trace · 结果与 trace › 停止 / 写入</title>
+          <rect x="927.9999999999999" y="352" width="92" height="52" rx="8" class="c-mask"/>
+          <rect x="927.9999999999999" y="352" width="92" height="52" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(933.9999999999999 358) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="879.2" y="385" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Output + trace</text>
-          <text data-detail="context" x="879.2" y="399.6" class="t-muted" font-size="8" text-anchor="middle">score + trace</text>
+          <text data-node-label="" data-detail-anchor="" x="973.9999999999999" y="384" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">输出 + trace</text>
+          <text data-detail="context" x="973.9999999999999" y="396.3" class="t-muted" font-size="8" text-anchor="middle">评分 + trace</text>
         </g>
 
         <!-- Edge labels -->
-        <g data-detail="context" data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="budget / timeout / recursion" data-edge-key="0" data-edge-id="budget">
-          <rect x="733" y="286" width="144.4" height="14" rx="3" class="c-mask"/>
-          <text x="805.2" y="296" class="t-edge-security" font-size="8" text-anchor="middle">budget / timeout / recursion</text>
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="budget_stop" data-edge-label="预算 / 超时 / recursion" data-edge-key="0" data-edge-id="budget">
+          <rect x="767.5999999999999" y="231" width="120.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="827.8" y="241" class="t-edge-security" font-size="8" text-anchor="middle">预算 / 超时 / recursion</text>
         </g>
-        <g data-detail="context" data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / result" data-edge-key="1" data-edge-id="call-observe">
-          <rect x="455.20000000000005" y="100" width="106" height="14" rx="3" class="c-mask"/>
-          <text x="508.20000000000005" y="110" class="t-muted" font-size="8" text-anchor="middle">ToolMessage / result</text>
+        <g data-detail="context" data-edge-from="call_tools" data-edge-to="observe" data-edge-label="ToolMessage / 结果" data-edge-key="1" data-edge-id="call-observe">
+          <rect x="451.2" y="100" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="499.4" y="110" class="t-muted" font-size="8" text-anchor="middle">ToolMessage / 结果</text>
         </g>
-        <g data-detail="context" data-edge-from="stop_check" data-edge-to="plan" data-edge-label="no: continue loop" data-edge-key="2" data-edge-id="continue">
-          <rect x="409.8" y="224" width="91.6" height="14" rx="3" class="c-mask"/>
-          <text x="455.6" y="234" class="t-edge-emphasis" font-size="8" text-anchor="middle">no: continue loop</text>
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="plan" data-edge-label="否：继续循环" data-edge-key="2" data-edge-id="continue">
+          <rect x="413.99999999999994" y="224" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="447.79999999999995" y="234" class="t-edge-emphasis" font-size="8" text-anchor="middle">否：继续循环</text>
         </g>
-        <g data-detail="context" data-edge-from="stop_check" data-edge-to="emit" data-edge-label="yes: all submitted" data-edge-key="3" data-edge-id="done">
-          <rect x="722" y="358" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="770.2" y="368" class="t-edge-emphasis" font-size="8" text-anchor="middle">yes: all submitted</text>
+        <g data-detail="context" data-edge-from="stop_check" data-edge-to="emit" data-edge-label="是：全部已提交" data-edge-key="3" data-edge-id="done">
+          <rect x="784.1999999999999" y="358" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="822.8" y="368" class="t-edge-emphasis" font-size="8" text-anchor="middle">是：全部已提交</text>
         </g>
-        <g data-detail="context" data-edge-from="observe" data-edge-to="stop_check" data-edge-label="progress snapshot" data-edge-key="4" data-edge-id="observe-stop">
-          <rect x="625.4000000000001" y="148" width="91.6" height="14" rx="3" class="c-mask"/>
-          <text x="671.2" y="158" class="t-muted" font-size="8" text-anchor="middle">progress snapshot</text>
+        <g data-detail="context" data-edge-from="observe" data-edge-to="stop_check" data-edge-label="进度快照" data-edge-key="4" data-edge-id="observe-stop">
+          <rect x="656.3999999999999" y="100" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="680.5999999999999" y="110" class="t-muted" font-size="8" text-anchor="middle">进度快照</text>
         </g>
-        <g data-detail="context" data-edge-from="plan" data-edge-to="call_tools" data-edge-label="next tool call" data-edge-key="5" data-edge-id="plan-call">
-          <rect x="278" y="100" width="77.2" height="14" rx="3" class="c-mask"/>
-          <text x="316.6" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">next tool call</text>
+        <g data-detail="context" data-edge-from="plan" data-edge-to="call_tools" data-edge-label="下一次工具调用" data-edge-key="5" data-edge-id="plan-call">
+          <rect x="274" y="100" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="312.6" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">下一次工具调用</text>
         </g>
-        <g data-detail="context" data-edge-from="start_task" data-edge-to="plan" data-edge-label="begin" data-edge-key="6" data-edge-id="start-plan">
-          <rect x="144" y="100" width="34" height="14" rx="3" class="c-mask"/>
-          <text x="161" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">begin</text>
+        <g data-detail="context" data-edge-from="start_task" data-edge-to="plan" data-edge-label="开始" data-edge-key="6" data-edge-id="start-plan">
+          <rect x="144" y="100" width="30" height="14" rx="3" class="c-mask"/>
+          <text x="159" y="110" class="t-edge-emphasis" font-size="8" text-anchor="middle">开始</text>
         </g>
 
         <!-- Legend -->
@@ -5546,11 +5546,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div class="card">
         <div class="card-header">
           <div class="card-dot amber"></div>
-          <h3>Limits from code</h3>
+          <h3>代码中的限制</h3>
         </div>
         <ul>
-          <li>Main: 12 model calls, 24 tool calls, 3 steps per dimension, 150 seconds, recursion_limit 45</li>
-          <li>Specialists: evidence 6/24/90s, topic fit 3/12/45s, coherence 4/16/60s</li>
+          <li>主流程：12 次 model 调用、24 次工具调用、每个维度 3 步、150 秒、recursion_limit 45</li>
+          <li>专项 Agent：evidence 6/24/90s、topic fit 3/12/45s、coherence 4/16/60s</li>
         </ul>
       </div>
 
@@ -5560,8 +5560,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>Token budget</h3>
         </div>
         <ul>
-          <li>No token count, output-token cap, or cost budget is implemented</li>
-          <li>The tag is intentionally an explicit unknown, not a fabricated numeric limit</li>
+          <li>代码未实现 token 计数、output-token 上限或成本预算</li>
+          <li>该标签明确表示代码未体现，未虚构数值限制</li>
         </ul>
       </div>
     </div>
