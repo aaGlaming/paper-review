@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Agent 评审循环与预算闸",
+    "locale": "zh-CN",
+    "output": "docs/diagrams/agent-review-loop.workflow.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "views": [
+      { "id": "loop", "label": "正常循环", "focus": ["resume", "agent", "model", "tools", "progress"], "note": "工具结果回到模型；每维提交后直到全部维度完成。" },
+      { "id": "limits", "label": "预算与终止", "focus": ["model_gate", "tool_gate", "stopped", "completed"], "note": "预算超限或连续无进展会终止 Agent。" }
+    ]
+  },
+  "lanes": [
+    { "id": "cycle", "label": "评审循环" },
+    { "id": "terminal", "label": "终止结果", "variant": "exception" }
+  ],
+  "mainPath": ["resume", "agent", "model_gate", "model", "tools", "progress"],
+  "nodes": [
+    { "id": "resume", "lane": "cycle", "col": 0, "type": "backend", "label": "resume_review", "sublabel": "已确认章节与量规输入", "sources": [{ "path": "backend/app/api/routes.py", "line": 635, "end_line": 685, "label": "恢复后选择 Agent 路径" }] },
+    { "id": "agent", "lane": "cycle", "col": 1, "type": "backend", "label": "review_agent", "sublabel": "create_agent + middleware", "sources": [{ "path": "backend/app/agent/graph.py", "line": 11, "end_line": 22, "label": "Agent 组装" }] },
+    { "id": "model_gate", "lane": "cycle", "col": 2, "type": "security", "label": "BudgetMiddleware", "sublabel": "模型 / 工具 / 单维 / 墙钟预算", "tag": "调用前检查", "sources": [{ "path": "backend/app/agent/middleware.py", "line": 20, "end_line": 59, "label": "预算阈值与检查点" }] },
+    { "id": "model", "lane": "cycle", "col": 3, "type": "cloud", "label": "LLM 决策", "sublabel": "选工具并检查提交进度", "sources": [{ "path": "backend/app/agent/prompt.py", "line": 4, "end_line": 20, "label": "Agent 提示与提交纪律" }] },
+    { "id": "tools", "lane": "cycle", "col": 4, "type": "messagebus", "label": "六个白名单工具", "sublabel": "工具注册见说明卡", "width": 250, "sources": [{ "path": "backend/app/agent/tools.py", "line": 305, "end_line": 330, "label": "build_tools 工具注册表" }] },
+    { "id": "progress", "lane": "cycle", "col": 5, "type": "database", "label": "工具结果与轨迹", "sublabel": "写 agent_step；更新父块与提交进度", "sources": [{ "path": "backend/app/agent/middleware.py", "line": 73, "end_line": 94, "label": "无进展检测" }, { "path": "backend/app/agent/trace.py", "line": 18, "end_line": 32, "label": "AgentStep 字段" }] },
+    { "id": "completed", "lane": "terminal", "col": 5, "type": "backend", "label": "完成", "sublabel": "全部维度已提交", "yOffset": -100, "sources": [{ "path": "backend/app/api/routes.py", "line": 687, "end_line": 749, "label": "结果保存与响应" }] },
+    { "id": "stopped", "lane": "terminal", "col": 5, "type": "security", "label": "BudgetExceeded", "sublabel": "预算超限 / 连续两次无进展", "yOffset": 100, "sources": [{ "path": "backend/app/agent/middleware.py", "line": 36, "end_line": 94, "label": "预算与 no_progress" }] }
+  ],
+  "edges": [
+    { "id": "start-agent", "from": "resume", "to": "agent", "label": "模型可用", "variant": "emphasis", "role": "main" },
+    { "id": "agent-gate", "from": "agent", "to": "model_gate", "label": "调用模型前", "role": "main" },
+    { "id": "gate-model", "from": "model_gate", "to": "model", "label": "预算内", "role": "main" },
+    { "id": "model-tools", "from": "model", "to": "tools", "label": "返回工具调用", "role": "main" },
+    { "id": "tools-progress", "from": "tools", "to": "progress", "label": "工具结果", "role": "main" },
+    { "id": "progress-loop", "from": "progress", "to": "model_gate", "label": "未完成：下一轮", "variant": "emphasis", "role": "return" },
+    { "id": "progress-done", "from": "progress", "to": "completed", "label": "全部维度已提交", "role": "main" },
+    { "id": "progress-stop", "from": "progress", "to": "stopped", "label": "预算超限或无进展", "variant": "security", "role": "error" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "四项预算", "items": ["模型调用最多 12 次。", "工具调用最多 24 次。", "每个维度最多 3 次带 dimension_code 的工具步骤。", "Agent 墙钟预算 150 秒；模型与工具前都会检查。"] },
+    { "dot": "amber", "title": "工具契约", "items": ["list_dimensions、search_evidence、read_parent、check_consistency、get_constraints、submit_dimension。", "只有 submit_dimension 记录最终档位；quote 必须来自已读父块。", "同一进度连续两次无变化会以 no_progress 终止。"] }
+  ]
+}

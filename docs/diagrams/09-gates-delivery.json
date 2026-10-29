@@ -1,0 +1,270 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "门禁与交付路径",
+    "locale": "zh-CN",
+    "subtitle": "代码质量、浏览器回归与静态证据门禁；Docker 镜像构建不在 P24 验收内。",
+    "output": "docs/diagrams/09-gates-delivery.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "animation": "trace",
+    "visual_preset": "signal-flow"
+  },
+  "lanes": [
+    {
+      "id": "source",
+      "label": "变更"
+    },
+    {
+      "id": "python",
+      "label": "后端门禁"
+    },
+    {
+      "id": "frontend",
+      "label": "前端门禁"
+    },
+    {
+      "id": "static",
+      "label": "静态门禁"
+    },
+    {
+      "id": "result",
+      "label": "留证"
+    }
+  ],
+  "mainPath": [
+    "change",
+    "pytest",
+    "build",
+    "vitest",
+    "e2e",
+    "deliver"
+  ],
+  "nodes": [
+    {
+      "id": "change",
+      "lane": "source",
+      "col": 0,
+      "type": "external",
+      "label": "代码 / 文档",
+      "sublabel": "工作区变更",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3873,
+          "end_line": 3926,
+          "label": "进度记录"
+        }
+      ]
+    },
+    {
+      "id": "pytest",
+      "lane": "python",
+      "col": 1,
+      "type": "backend",
+      "label": "pytest ×2",
+      "sublabel": "backend/tests",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3908,
+          "end_line": 3920,
+          "label": "pytest 门禁"
+        }
+      ]
+    },
+    {
+      "id": "build",
+      "lane": "frontend",
+      "col": 2,
+      "type": "backend",
+      "label": "npm run build",
+      "sublabel": "入口 bundle",
+      "sources": [
+        {
+          "path": "frontend/package.json",
+          "line": 1,
+          "end_line": 31,
+          "label": "build script"
+        }
+      ]
+    },
+    {
+      "id": "vitest",
+      "lane": "frontend",
+      "col": 3,
+      "type": "backend",
+      "label": "Vitest",
+      "sublabel": "unit tests",
+      "sources": [
+        {
+          "path": "frontend/package.json",
+          "line": 1,
+          "end_line": 31,
+          "label": "unit script"
+        }
+      ]
+    },
+    {
+      "id": "e2e",
+      "lane": "frontend",
+      "col": 4,
+      "type": "backend",
+      "label": "Playwright",
+      "sublabel": "页面链路",
+      "sources": [
+        {
+          "path": "frontend/playwright.config.ts",
+          "line": 1,
+          "end_line": 53,
+          "label": "E2E config"
+        }
+      ]
+    },
+    {
+      "id": "logs",
+      "lane": "static",
+      "col": 3,
+      "type": "security",
+      "label": "check_logs",
+      "sublabel": "窗口日志",
+      "sources": [
+        {
+          "path": "scripts/check_logs.py",
+          "line": 1,
+          "end_line": 136,
+          "label": "日志门禁"
+        }
+      ]
+    },
+    {
+      "id": "encoding",
+      "lane": "static",
+      "col": 4,
+      "type": "security",
+      "label": "check_docs_encoding",
+      "sublabel": "docs --strict",
+      "sources": [
+        {
+          "path": "scripts/check_docs_encoding.py",
+          "line": 1,
+          "end_line": 97,
+          "label": "编码门禁"
+        }
+      ]
+    },
+    {
+      "id": "skeleton",
+      "lane": "static",
+      "col": 5,
+      "type": "security",
+      "label": "check_container_skeleton",
+      "sublabel": "静态草案检查",
+      "sources": [
+        {
+          "path": "scripts/check_container_skeleton.py",
+          "line": 1,
+          "end_line": 79,
+          "label": "容器草案检查"
+        }
+      ]
+    },
+    {
+      "id": "deliver",
+      "lane": "result",
+      "col": 5,
+      "type": "database",
+      "label": "progress + reports",
+      "sublabel": "命令 / exit / 末行",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3873,
+          "end_line": 3926,
+          "label": "交付证据"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "change-pytest",
+      "from": "change",
+      "to": "pytest",
+      "label": "全量",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "pytest-build",
+      "from": "pytest",
+      "to": "build",
+      "label": "并行门禁",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "build-vitest",
+      "from": "build",
+      "to": "vitest",
+      "label": "前端单测",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "vitest-e2e",
+      "from": "vitest",
+      "to": "e2e",
+      "label": "浏览器回归",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "e2e-logs",
+      "from": "e2e",
+      "to": "logs",
+      "label": "结果",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "logs-encoding",
+      "from": "logs",
+      "to": "encoding",
+      "label": "静态检查",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "encoding-skeleton",
+      "from": "encoding",
+      "to": "skeleton",
+      "label": "静态检查",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "skeleton-deliver",
+      "from": "skeleton",
+      "to": "deliver",
+      "label": "记录",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "e2e-deliver",
+      "from": "e2e",
+      "to": "deliver",
+      "label": "collect gate results",
+      "role": "main",
+      "variant": "default"
+    }
+  ],
+  "cards": []
+}

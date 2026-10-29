@@ -1,0 +1,34 @@
+{
+  "category": "教研摘要导出",
+  "http_status": 200,
+  "request": {
+    "contest_id": "cumcm-2024-A",
+    "top": 5,
+    "session_id": "81cf371852ad4798bd1862debc30795f"
+  },
+  "response": {
+    "content": "结论：本次评审的主要问题是证据链不完整，其次是约束检验与表述记录不足；建议优先补齐“检验与题目约束、展示、求解”维度的证据，并核查孤儿评审。\n\n依据：106条评审对应2名学生，孤儿评审70条；五个维度“证据不足”合计95条，其中检验与题目约束28条、展示23条、求解22条、建模17条、假设5条。冲突发现共158条，含数字冲突122条、表述79条、证据不足83条、题目约束36条。缺口记录83条且均无引用，涉及多个评审的多维度“证据不足”。例如展示维度缺口见[review_id=d4883773e84f4931a9eda9afcb2ea1c4 dim=presentation]；检验与题目约束缺口见[review_id=92f96254784341f5bf15d98dc1c49de0 dim=constraint_check]；展示与约束两类缺口并见[review_id=dcc02cec6d22494aa5a0d488cf6203be dim=presentation]、[review_id=dcc02cec6d22494aa5a0d488cf6203be dim=constraint_check]。",
+    "refs": [
+      {
+        "review_id": "d4883773e84f4931a9eda9afcb2ea1c4",
+        "dimension_code": "presentation"
+      },
+      {
+        "review_id": "92f96254784341f5bf15d98dc1c49de0",
+        "dimension_code": "constraint_check"
+      },
+      {
+        "review_id": "dcc02cec6d22494aa5a0d488cf6203be",
+        "dimension_code": "presentation"
+      },
+      {
+        "review_id": "dcc02cec6d22494aa5a0d488cf6203be",
+        "dimension_code": "constraint_check"
+      }
+    ],
+    "model_name": "deepseek-flash",
+    "notes": {
+      "rejected": 0
+    }
+  }
+}

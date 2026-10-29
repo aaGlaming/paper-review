@@ -1,0 +1,128 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "量规版本生命周期",
+    "locale": "zh-CN",
+    "subtitle": "contest 可创建 draft rubric；发布后供评分使用；归档 contest 不等于自动删除历史量规。",
+    "output": "docs/diagrams/18-rubric-lifecycle.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "mainPath": [
+    "contest",
+    "draft",
+    "published"
+  ],
+  "states": [
+    {
+      "id": "contest",
+      "type": "start",
+      "label": "赛题 draft",
+      "sublabel": "目录未发布",
+      "step": "01",
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 26,
+          "end_line": 38,
+          "label": "Contest"
+        }
+      ]
+    },
+    {
+      "id": "draft",
+      "type": "active",
+      "label": "rubric draft",
+      "sublabel": "维度 / bands 可编辑",
+      "step": "02",
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 58,
+          "end_line": 85,
+          "label": "Rubric / Dimension"
+        }
+      ]
+    },
+    {
+      "id": "published",
+      "type": "success",
+      "label": "published",
+      "sublabel": "评分输入可用",
+      "step": "03",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 607,
+          "end_line": 650,
+          "label": "resume 门禁"
+        }
+      ]
+    },
+    {
+      "id": "next",
+      "type": "active",
+      "label": "新版本 draft",
+      "sublabel": "新版本独立建立",
+      "step": "04",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 1070,
+          "end_line": 1087,
+          "label": "创建量规"
+        }
+      ]
+    },
+    {
+      "id": "archived",
+      "type": "failure",
+      "label": "contest archived",
+      "sublabel": "归档目录状态",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 1055,
+          "end_line": 1070,
+          "label": "赛题归档"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "create",
+      "from": "contest",
+      "to": "draft",
+      "label": "创建 rubric",
+      "variant": "default"
+    },
+    {
+      "id": "publish",
+      "from": "draft",
+      "to": "published",
+      "label": "发布量规",
+      "variant": "default"
+    },
+    {
+      "id": "new-version",
+      "from": "published",
+      "to": "next",
+      "label": "创建下一版本",
+      "variant": "default"
+    },
+    {
+      "id": "archive",
+      "from": "published",
+      "to": "archived",
+      "label": "归档 contest",
+      "variant": "dashed"
+    }
+  ]
+}

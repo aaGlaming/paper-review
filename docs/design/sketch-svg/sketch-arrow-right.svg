@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 24" fill="none" aria-hidden="true" width="56" height="24">
+  <!-- 手绘右箭头：主线中段微沉，起笔略重收笔抬起；两翼各一笔，不追求对称 -->
+  <path d="M3 12.7 C13 11.3 25 13.4 37 12.2 C42.5 11.7 47 12 50.5 12.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M42.2 6.3 C45.6 8.2 48.4 10.1 50.6 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M43.4 18.4 C46.2 16.3 48.8 14.2 51 12.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "父子块数据流",
+    "locale": "zh-CN",
+    "subtitle": "切分时保留原文偏移；父块全文只在 MySQL，子块向量与检索元数据进入 Chroma。",
+    "output": "docs/diagrams/14-parent-child-dataflow.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "stages": [
+    {
+      "label": "论文正文"
+    },
+    {
+      "label": "切分与索引"
+    },
+    {
+      "label": "存储"
+    },
+    {
+      "label": "查询"
+    },
+    {
+      "label": "回读"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "paper",
+      "type": "database",
+      "label": "paper_text",
+      "sublabel": "ReviewSession 原文",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 61,
+          "end_line": 81,
+          "label": "paper_text"
+        }
+      ]
+    },
+    {
+      "id": "split",
+      "type": "backend",
+      "label": "split_into_chunks",
+      "sublabel": "表格分块 + offsets",
+      "stage": 1,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 100,
+          "end_line": 180,
+          "label": "切块"
+        }
+      ]
+    },
+    {
+      "id": "parent",
+      "type": "database",
+      "label": "paper_parent",
+      "sublabel": "全文 + char_span",
+      "stage": 2,
+      "row": 2,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/models.py",
+          "line": 15,
+          "end_line": 36,
+          "label": "父块"
+        }
+      ]
+    },
+    {
+      "id": "child",
+      "type": "backend",
+      "label": "ChildChunk",
+      "sublabel": "parent + offsets",
+      "stage": 2,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 48,
+          "end_line": 90,
+          "label": "子块"
+        }
+      ],
+      "width": 180
+    },
+    {
+      "id": "chroma",
+      "type": "database",
+      "label": "Chroma collection",
+      "sublabel": "vectors + metadata",
+      "stage": 2,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 24,
+          "end_line": 45,
+          "label": "Chroma"
+        }
+      ],
+      "width": 180
+    },
+    {
+      "id": "search",
+      "type": "backend",
+      "label": "retrieve",
+      "sublabel": "过滤 → 召回 → 取父块",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/parent_child.py",
+          "line": 250,
+          "end_line": 360,
+          "label": "检索"
+        }
+      ],
+      "width": 180
+    },
+    {
+      "id": "evidence",
+      "type": "backend",
+      "label": "ParentBlock",
+      "sublabel": "全文证据 + chunk_ids",
+      "stage": 4,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/retrieve/three_route.py",
+          "line": 55,
+          "end_line": 75,
+          "label": "证据结构"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "text-split",
+      "from": "paper",
+      "to": "split",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "split-parent",
+      "from": "split",
+      "to": "parent",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "split-child",
+      "from": "split",
+      "to": "child",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "child-chroma",
+      "from": "child",
+      "to": "chroma",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "search-chroma",
+      "from": "search",
+      "to": "chroma",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "chroma-parent",
+      "from": "chroma",
+      "to": "parent",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "parent-result",
+      "from": "parent",
+      "to": "evidence",
+      "label": "→",
+      "classification": "data",
+      "variant": "default"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+﻿{
+    "step":  "21-publish-fixture",
+    "at":  "2026-10-18T18:38:53.0213466+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/contests/fixture-extra/publish"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contest_id":  "fixture-extra",
+                          "status":  "published",
+                          "rubric_id":  "fixture-extra-v1",
+                          "rubric_version":  1
+                      },
+    "notes":  "Publish imported fixture-extra."
+}

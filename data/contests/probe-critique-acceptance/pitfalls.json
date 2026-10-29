@@ -1,0 +1,59 @@
+{
+  "contest_id": "probe-critique-acceptance",
+  "pitfalls": [
+    {
+      "pitfall_id": "probe-critique-acceptance-p1",
+      "contest_id": "probe-critique-acceptance",
+      "dimension_code": "constraint_check",
+      "phenomenon": "全文只做速度计算，没有回到题目条件检查相邻板凳是否会相撞",
+      "action": "补一段碰撞检验：按板凳宽度与把手间距逐时刻判断相邻板凳的最小距离",
+      "section_types": [
+        "检验",
+        "结果"
+      ]
+    },
+    {
+      "pitfall_id": "probe-critique-acceptance-p2",
+      "contest_id": "probe-critique-acceptance",
+      "dimension_code": "constraint_check",
+      "phenomenon": "未讨论调头路径由两段相切的圆弧组成、前一段半径是后一段的 2 倍",
+      "action": "在模型里写出两段圆弧的相切条件与半径倍数关系，并在检验一节核对",
+      "section_types": [
+        "模型",
+        "检验"
+      ]
+    },
+    {
+      "pitfall_id": "probe-critique-acceptance-p3",
+      "contest_id": "probe-critique-acceptance",
+      "dimension_code": "solution",
+      "phenomenon": "只给出盘入阶段的数值结果，盘出阶段缺失或只写结论",
+      "action": "补齐盘出阶段的求解结果，并说明与盘入阶段衔接处的处理方式",
+      "section_types": [
+        "求解",
+        "结果"
+      ]
+    },
+    {
+      "pitfall_id": "probe-critique-acceptance-p4",
+      "contest_id": "probe-critique-acceptance",
+      "dimension_code": "assumption",
+      "phenomenon": "假设里写「忽略板凳宽度」，正文却要判断板凳之间是否相撞",
+      "action": "删掉与题意冲突的假设，保留板凳宽度并用把手中心点近似处理连接关系",
+      "section_types": [
+        "假设"
+      ]
+    },
+    {
+      "pitfall_id": "probe-critique-acceptance-p5",
+      "contest_id": "probe-critique-acceptance",
+      "dimension_code": "presentation",
+      "phenomenon": "摘要给出的终止时刻与结果表里的数值不一致，表格缺单位",
+      "action": "统一两处数值口径，并在表格标题里补上时刻与速度单位",
+      "section_types": [
+        "结果",
+        "参考文献"
+      ]
+    }
+  ]
+}

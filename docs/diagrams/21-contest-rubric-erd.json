@@ -1,0 +1,385 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "赛题与量规 ERD",
+    "locale": "zh-CN",
+    "subtitle": "七张目录表：赛题拥有约束、量规版本、扣分点与范例；量规拥有维度。",
+    "output": "docs/diagrams/21-contest-rubric-erd.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": {
+    "mode": "grid",
+    "gapX": 65,
+    "gapY": 32,
+    "entityW": 250,
+    "rowH": 21,
+    "headerH": 34
+  },
+  "entities": [
+    {
+      "id": "contest",
+      "label": "contest",
+      "row": 0,
+      "col": 0,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 26,
+          "end_line": 38,
+          "label": "Contest"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "contest_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "year",
+          "type": "INTEGER"
+        },
+        {
+          "name": "problem_code",
+          "type": "VARCHAR(16)"
+        },
+        {
+          "name": "title",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "statement",
+          "type": "TEXT"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(16)"
+        }
+      ]
+    },
+    {
+      "id": "constraint",
+      "label": "constraint",
+      "row": 1,
+      "col": 0,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 40,
+          "end_line": 48,
+          "label": "Constraint"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "constraint_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "contest_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "contest.contest_id"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "check_type",
+          "type": "VARCHAR(32)"
+        },
+        {
+          "name": "params",
+          "type": "JSON"
+        },
+        {
+          "name": "section_types",
+          "type": "JSON"
+        }
+      ]
+    },
+    {
+      "id": "rubric_template",
+      "label": "rubric_template",
+      "row": 0,
+      "col": 1,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 50,
+          "end_line": 56,
+          "label": "RubricTemplate"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "template_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "version",
+          "type": "INTEGER"
+        }
+      ]
+    },
+    {
+      "id": "rubric",
+      "label": "rubric",
+      "row": 1,
+      "col": 1,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 58,
+          "end_line": 69,
+          "label": "Rubric"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "rubric_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "contest_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "contest.contest_id"
+        },
+        {
+          "name": "version",
+          "type": "INTEGER"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(16)"
+        },
+        {
+          "name": "source_template_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "rubric_template.template_id"
+        }
+      ],
+      "width": 280
+    },
+    {
+      "id": "dimension",
+      "label": "dimension",
+      "row": 2,
+      "col": 1,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 72,
+          "end_line": 85,
+          "label": "Dimension"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "dimension_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "rubric_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "rubric.rubric_id"
+        },
+        {
+          "name": "code",
+          "type": "VARCHAR(32)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(128)"
+        },
+        {
+          "name": "weight",
+          "type": "INTEGER"
+        },
+        {
+          "name": "evidence_prompts",
+          "type": "JSON"
+        },
+        {
+          "name": "section_types",
+          "type": "JSON"
+        },
+        {
+          "name": "bands",
+          "type": "JSON"
+        }
+      ]
+    },
+    {
+      "id": "pitfall",
+      "label": "pitfall",
+      "row": 2,
+      "col": 0,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 87,
+          "end_line": 98,
+          "label": "Pitfall"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "pitfall_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "contest_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "contest.contest_id"
+        },
+        {
+          "name": "dimension_code",
+          "type": "VARCHAR(32)"
+        },
+        {
+          "name": "phenomenon",
+          "type": "TEXT"
+        },
+        {
+          "name": "action",
+          "type": "TEXT"
+        },
+        {
+          "name": "section_types",
+          "type": "JSON"
+        }
+      ]
+    },
+    {
+      "id": "exemplar",
+      "label": "exemplar",
+      "row": 3,
+      "col": 0,
+      "sources": [
+        {
+          "path": "backend/app/importing/models.py",
+          "line": 100,
+          "end_line": 110,
+          "label": "Exemplar"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "exemplar_id",
+          "type": "VARCHAR(64)",
+          "key": "pk"
+        },
+        {
+          "name": "contest_id",
+          "type": "VARCHAR(64)",
+          "key": "fk",
+          "references": "contest.contest_id"
+        },
+        {
+          "name": "dimension_code",
+          "type": "VARCHAR(32)"
+        },
+        {
+          "name": "band",
+          "type": "VARCHAR(16)"
+        },
+        {
+          "name": "excerpt",
+          "type": "TEXT"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "constraint-contest",
+      "from": "constraint",
+      "to": "contest",
+      "label": "ON DELETE CASCADE",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    },
+    {
+      "id": "rubric-contest",
+      "from": "rubric",
+      "to": "contest",
+      "label": "赛题量规版本",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    },
+    {
+      "id": "rubric-template",
+      "from": "rubric",
+      "to": "rubric_template",
+      "label": "可选来源模板",
+      "fromCardinality": "many",
+      "toCardinality": "one",
+      "fromOptional": true,
+      "identifying": false
+    },
+    {
+      "id": "dimension-rubric",
+      "from": "dimension",
+      "to": "rubric",
+      "label": "ON DELETE CASCADE",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    },
+    {
+      "id": "pitfall-contest",
+      "from": "pitfall",
+      "to": "contest",
+      "label": "赛题提示",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    },
+    {
+      "id": "exemplar-contest",
+      "from": "exemplar",
+      "to": "contest",
+      "label": "档位范例",
+      "fromCardinality": "many",
+      "toCardinality": "one"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "量规关系",
+      "items": [
+        "dimension 唯一约束 (rubric_id, code)。",
+        "赛题可评要求 published rubric 与非空维度。"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "提示资料",
+      "items": [
+        "constraint、pitfall、exemplar 按 contest 归属。"
+      ]
+    }
+  ]
+}

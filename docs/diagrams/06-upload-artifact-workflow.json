@@ -1,0 +1,298 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "上传与产物抽取",
+    "locale": "zh-CN",
+    "subtitle": "仅 md/docx 运行时支持；上传拒绝在落盘前完成，抽取写 review_artifact。",
+    "output": "docs/diagrams/06-upload-artifact-workflow.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "animation": "trace",
+    "visual_preset": "signal-flow"
+  },
+  "lanes": [
+    {
+      "id": "source",
+      "label": "来源"
+    },
+    {
+      "id": "upload",
+      "label": "上传校验"
+    },
+    {
+      "id": "persist",
+      "label": "创建评审"
+    },
+    {
+      "id": "extract",
+      "label": "确认后抽取"
+    }
+  ],
+  "mainPath": [
+    "file",
+    "ext",
+    "bytes",
+    "decode",
+    "text",
+    "disk",
+    "review"
+  ],
+  "nodes": [
+    {
+      "id": "file",
+      "lane": "source",
+      "col": 0,
+      "type": "external",
+      "label": "multipart file",
+      "sublabel": "md / docx",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 484,
+          "end_line": 550,
+          "label": "上传入口"
+        }
+      ]
+    },
+    {
+      "id": "ext",
+      "lane": "upload",
+      "col": 1,
+      "type": "security",
+      "label": "扩展名",
+      "sublabel": "PDF/TXT 拒绝",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 500,
+          "end_line": 520,
+          "label": "扩展名"
+        }
+      ]
+    },
+    {
+      "id": "bytes",
+      "lane": "upload",
+      "col": 2,
+      "type": "security",
+      "label": "字节上限",
+      "sublabel": "20 MB",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 520,
+          "end_line": 540,
+          "label": "大小限制"
+        }
+      ]
+    },
+    {
+      "id": "decode",
+      "lane": "upload",
+      "col": 3,
+      "type": "backend",
+      "label": "解码 / 转换",
+      "sublabel": "UTF-8 → GB18030；DOCX → ATX",
+      "sources": [
+        {
+          "path": "backend/app/importing/docx_text.py",
+          "line": 1,
+          "end_line": 78,
+          "label": "DOCX 转换"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "lane": "upload",
+      "col": 4,
+      "type": "security",
+      "label": "空白 / 字符数",
+      "sublabel": "非空且 ≤200,000",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 540,
+          "end_line": 580,
+          "label": "正文校验"
+        }
+      ]
+    },
+    {
+      "id": "disk",
+      "lane": "persist",
+      "col": 4,
+      "type": "database",
+      "label": "原始字节落盘",
+      "sublabel": "失败清理文件",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 570,
+          "end_line": 625,
+          "label": "落盘与回滚"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "lane": "persist",
+      "col": 5,
+      "type": "backend",
+      "label": "review / session",
+      "sublabel": "paper_text 为 Markdown",
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 33,
+          "end_line": 95,
+          "label": "评审存储"
+        }
+      ]
+    },
+    {
+      "id": "confirmed",
+      "lane": "extract",
+      "col": 3,
+      "type": "frontend",
+      "label": "章节确认",
+      "sublabel": "section ranges",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 770,
+          "end_line": 830,
+          "label": "章节区间"
+        }
+      ]
+    },
+    {
+      "id": "extract",
+      "lane": "extract",
+      "col": 4,
+      "type": "backend",
+      "label": "extract_artifacts",
+      "sublabel": "claim / table / citation",
+      "sources": [
+        {
+          "path": "backend/app/importing/artifacts.py",
+          "line": 161,
+          "end_line": 209,
+          "label": "抽取器"
+        }
+      ]
+    },
+    {
+      "id": "artifact",
+      "lane": "extract",
+      "col": 5,
+      "type": "database",
+      "label": "事务替换",
+      "sublabel": "ordinal 稳定顺序",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 829,
+          "end_line": 890,
+          "label": "写入"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "f-ext",
+      "from": "file",
+      "to": "ext",
+      "label": "校验",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "ext-bytes",
+      "from": "ext",
+      "to": "bytes",
+      "label": "合法",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "bytes-decode",
+      "from": "bytes",
+      "to": "decode",
+      "label": "合法",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "decode-text",
+      "from": "decode",
+      "to": "text",
+      "label": "转换成功",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "text-disk",
+      "from": "text",
+      "to": "disk",
+      "label": "正文合规",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "disk-review",
+      "from": "disk",
+      "to": "review",
+      "label": "原始字节 + hash",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "review-confirm",
+      "from": "review",
+      "to": "confirmed",
+      "label": "用户确认",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "confirm-extract",
+      "from": "confirmed",
+      "to": "extract",
+      "label": "受控抽取",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "extract-save",
+      "from": "extract",
+      "to": "artifact",
+      "label": "delete + insert",
+      "role": "main",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "拒绝",
+      "items": [
+        "扩展名、字节、编码、空白、字符数、DOCX 解析失败都先于落盘。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "范围",
+      "items": [
+        "PDF 仅离线原始凭证；不运行时解析、不做 OCR。"
+      ]
+    }
+  ]
+}

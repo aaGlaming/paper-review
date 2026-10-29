@@ -1,0 +1,801 @@
+{
+  "step": "10-database-rubric-audit",
+  "at": "2026-10-18T18:42:41.840616+08:00",
+  "request": {
+    "method": "SQL SELECT",
+    "url": "MySQL backend session + Chroma collection count; read-only"
+  },
+  "response_status": 200,
+  "response_body": {
+    "published_contests": [
+      {
+        "contest_id": "cumcm-2024-A",
+        "status": "published"
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "status": "published"
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "status": "published"
+      }
+    ],
+    "contest_status_counts": {
+      "published": 3,
+      "draft": 0,
+      "archived": 1
+    },
+    "counts": {
+      "contest": 4,
+      "rubric": 5,
+      "dimension": 25,
+      "constraint": 16,
+      "paper_parent": 302,
+      "review": 270,
+      "review_dimension": 1340,
+      "review_session": 293,
+      "chroma_children": 338
+    },
+    "active_published_rubrics": [
+      "cumcm-2024-A-v2",
+      "cumcm-2024-C-v1",
+      "cumcm-2025-A-v1"
+    ],
+    "active_published_dimensions": [
+      {
+        "contest_id": "cumcm-2024-A",
+        "rubric_id": "cumcm-2024-A-v2",
+        "version": 2,
+        "dimension_code": "assumption",
+        "name": "假设的合理性",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否说明板凳宽度对判断碰撞的影响",
+          "是否交代把手的简化方式与适用范围",
+          "是否说明螺线盘入的初始位置与坐标系约定"
+        ],
+        "section_types": [
+          "假设",
+          "模型"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "假设逐条给出，说明板凳宽度、把手简化与初始条件，并交代每条假设的适用条件"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "主要假设已给出，个别假设缺少适用范围或与模型对应不紧"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "假设过于笼统，未说明对碰撞判定与盘入过程的影响"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到与假设有关的表述"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "rubric_id": "cumcm-2024-A-v2",
+        "version": 2,
+        "dimension_code": "constraint_check",
+        "name": "检验与题目约束",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否检验相邻板凳之间是否会相撞",
+          "是否检验各把手速度不超过 2 m/s",
+          "是否核对调头圆弧两段相切且半径 2 倍"
+        ],
+        "section_types": [
+          "检验",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "逐条对照碰撞、螺距、相切与速度上限，并给出校验依据"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "对照了部分硬性条件，遗漏其中一条或只作定性说明"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "几乎没有回到题目条件做检验"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到针对本题约束的检验"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "rubric_id": "cumcm-2024-A-v2",
+        "version": 2,
+        "dimension_code": "modeling",
+        "name": "建模是否针对本题",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否按 1.7 m 螺距写出盘入螺线的参数方程",
+          "是否把调头路径写成两段相切的圆弧并给出半径 2 倍关系",
+          "是否建立各节板凳把手位置的递推关系"
+        ],
+        "section_types": [
+          "模型",
+          "求解"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "模型按本题的螺距、调头空间与相切条件建立，递推关系完整"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "模型基本针对本题，个别条件（如相切或半径倍数）未写进模型"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "套用通用几何公式，未体现本题的螺距与调头约束"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到建模相关的推导"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "rubric_id": "cumcm-2024-A-v2",
+        "version": 2,
+        "dimension_code": "presentation",
+        "name": "表述与结构",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否按问题顺序组织结果",
+          "表格与图是否标注单位与时刻",
+          "引用与图表编号是否一致"
+        ],
+        "section_types": [
+          "结果",
+          "参考文献"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "结构清晰，图表与公式编号一致，单位与时刻标注完整"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "结构大致清楚，个别图表缺单位或说明"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "结果堆在一起，图表缺少标注，难以对应问题"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到可判断表述与结构的正文"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "rubric_id": "cumcm-2024-A-v2",
+        "version": 2,
+        "dimension_code": "solution",
+        "name": "求解与结果",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否给出各时刻各把手的位置与速度数值",
+          "是否说明迭代步长与收敛判据",
+          "是否给出龙头 1 m/s 条件下全过程的速度结果"
+        ],
+        "section_types": [
+          "求解",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "给出可复核的数值结果，说明求解方法与步长，覆盖盘入、调头与盘出"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "结果已给出，但步长、误差或某一阶段的数值不完整"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "只给结论性数值，缺少求解过程与可复核依据"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到求解过程或结果数值"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "rubric_id": "cumcm-2024-C-v1",
+        "version": 1,
+        "dimension_code": "assumption",
+        "name": "假设的合理性",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否说明地块差异与作物分类的处理方式",
+          "是否说明产量与价格数据的来源与简化",
+          "是否交代不确定因素的处理假设"
+        ],
+        "section_types": [
+          "假设",
+          "模型"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "假设逐条给出，覆盖地块、作物分类、产量价格与不确定因素，并说明适用条件"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "主要假设已给出，个别假设缺少依据或与模型脱节"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "假设笼统，未说明数据口径与替代性处理"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到与假设有关的表述"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "rubric_id": "cumcm-2024-C-v1",
+        "version": 1,
+        "dimension_code": "constraint_check",
+        "name": "检验与题目约束",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否逐块核对三年内至少一次豆类",
+          "是否核对没有连续重茬",
+          "是否核对滞销与 50% 降价两种情形都已给出"
+        ],
+        "section_types": [
+          "检验",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "逐条对照重茬、豆类与两种销售情形，并给出校验依据"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "对照了部分约束，遗漏豆类三年约束或某种销售情形"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "未回到题目条件做检验"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到针对本题约束的检验"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "rubric_id": "cumcm-2024-C-v1",
+        "version": 1,
+        "dimension_code": "modeling",
+        "name": "建模是否针对本题",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否把不能连续重茬写成约束",
+          "是否把三年内至少一次豆类写成约束",
+          "是否分别建立滞销与 50% 降价两种情形的目标函数"
+        ],
+        "section_types": [
+          "模型",
+          "求解"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "模型按本题的重茬、豆类与两种销售情形建立，约束与目标函数完整"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "模型基本针对本题，遗漏豆类或某种销售情形"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "只写通用线性规划形式，未体现本题约束"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到建模过程"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "rubric_id": "cumcm-2024-C-v1",
+        "version": 1,
+        "dimension_code": "presentation",
+        "name": "表述与结构",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否按问题顺序组织结果",
+          "种植方案表是否标明年份与地块编号",
+          "金额单位与引用是否一致"
+        ],
+        "section_types": [
+          "结果",
+          "参考文献"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "结构清晰，方案表标明年份与地块，金额单位统一"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "结构大致清楚，个别表格缺标注"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "结果堆砌，年份与单位混乱"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到可判断表述与结构的正文"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "rubric_id": "cumcm-2024-C-v1",
+        "version": 1,
+        "dimension_code": "solution",
+        "name": "求解与结果",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否给出 2024～2030 年各地块种植方案表",
+          "是否说明求解方法与最优性依据",
+          "是否区分两种销售情形分别给出结果"
+        ],
+        "section_types": [
+          "求解",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "给出逐年逐地块方案与可复核的目标值，两种情形分别求解"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "方案已给出，但某一年或某种情形缺失"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "只给总收益结论，缺少逐年方案"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到求解结果"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "rubric_id": "cumcm-2025-A-v1",
+        "version": 1,
+        "dimension_code": "assumption",
+        "name": "假设的合理性",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否说明云团下沉与遮蔽判据的处理方式",
+          "是否说明导弹与无人机的运动简化",
+          "是否交代起爆时刻与投放时刻的关系假设"
+        ],
+        "section_types": [
+          "假设",
+          "模型"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "假设逐条给出，云团下沉、遮蔽判据与双方运动简化都有依据"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "主要假设已给出，个别假设缺少依据，例如未说明云团形状"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "假设笼统，未说明遮蔽判据与运动简化"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到与假设有关的表述"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "rubric_id": "cumcm-2025-A-v1",
+        "version": 1,
+        "dimension_code": "constraint_check",
+        "name": "检验与题目约束",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否核对云团下沉速度取 3 m/s",
+          "是否核对无人机速度落在 70～140 m/s 内",
+          "是否按 10 m 与 20 s 判定有效遮蔽"
+        ],
+        "section_types": [
+          "检验",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "逐条对照下沉速度、速度范围与有效遮蔽判据，并给出校验依据"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "对照了部分条件，遗漏速度范围或遮蔽判据的校验"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "未回到题目条件做检验"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到针对本题约束的检验"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "rubric_id": "cumcm-2025-A-v1",
+        "version": 1,
+        "dimension_code": "modeling",
+        "name": "建模是否针对本题",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否把云团 3 m/s 下沉写进运动方程",
+          "是否按云团中心 10 m 与起爆后 20 s 建立有效遮蔽判据",
+          "是否把无人机速度限制在 70～140 m/s"
+        ],
+        "section_types": [
+          "模型",
+          "求解"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "模型给出云团、导弹、无人机的运动方程与遮蔽判据，速度约束写进可行域"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "模型基本针对本题，遗漏下沉速度或有效遮蔽判据"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "只写通用几何关系，未体现云团下沉与遮蔽判据"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到建模过程"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "rubric_id": "cumcm-2025-A-v1",
+        "version": 1,
+        "dimension_code": "presentation",
+        "name": "表述与结构",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否按问题顺序组织结果",
+          "遮蔽时长与速度是否标注单位",
+          "引用与图表编号是否一致"
+        ],
+        "section_types": [
+          "结果",
+          "参考文献"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "结构清晰，时长与速度单位统一，图表编号与正文一致"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "结构大致清楚，个别数值缺单位或口径不一致"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "结果堆砌，单位与口径混乱"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到可判断表述与结构的正文"
+          }
+        ]
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "rubric_id": "cumcm-2025-A-v1",
+        "version": 1,
+        "dimension_code": "solution",
+        "name": "求解与结果",
+        "weight": 20,
+        "evidence_prompts": [
+          "是否给出问题 1 的有效遮蔽时长",
+          "是否给出优化后的投放与起爆参数",
+          "是否说明求解方法与搜索范围"
+        ],
+        "section_types": [
+          "求解",
+          "结果"
+        ],
+        "bands": [
+          {
+            "band": "充分",
+            "score": 20,
+            "description": "给出可复核的遮蔽时长与优化参数，说明搜索方法与范围"
+          },
+          {
+            "band": "基本",
+            "score": 12,
+            "description": "结果已给出，但缺少优化过程的说明或部分情形"
+          },
+          {
+            "band": "不足",
+            "score": 5,
+            "description": "只给结论数值，无法复核"
+          },
+          {
+            "band": "证据不足",
+            "score": null,
+            "description": "检索到的切片里找不到求解结果"
+          }
+        ]
+      }
+    ],
+    "all_constraints": [
+      {
+        "contest_id": "cumcm-2024-A",
+        "constraint_id": "cumcm-2024-A-collision",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "碰撞",
+            "相撞",
+            "板凳宽度"
+          ]
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "constraint_id": "cumcm-2024-A-handle-speed",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 2,
+          "min": 0,
+          "unit": "m/s"
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "constraint_id": "cumcm-2024-A-head-speed",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 1,
+          "min": 1,
+          "unit": "m/s"
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "constraint_id": "cumcm-2024-A-pitch",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 1.7,
+          "min": 1.7,
+          "unit": "m"
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-A",
+        "constraint_id": "cumcm-2024-A-turn-arc",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "相切",
+            "2 倍",
+            "半径"
+          ]
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "constraint_id": "cumcm-2024-C-half-price",
+        "check_type": "required_case",
+        "params": {
+          "label": "50%降价",
+          "artifact": "result1_2"
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "constraint_id": "cumcm-2024-C-legume-three-years",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "豆类",
+            "三年内至少一次"
+          ]
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "constraint_id": "cumcm-2024-C-no-repeat-crop",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "重茬",
+            "连作",
+            "连续种植"
+          ]
+        }
+      },
+      {
+        "contest_id": "cumcm-2024-C",
+        "constraint_id": "cumcm-2024-C-unsold",
+        "check_type": "required_case",
+        "params": {
+          "label": "滞销",
+          "artifact": "result1_1"
+        }
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "constraint_id": "cumcm-2025-A-effective-range",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "10 m",
+            "20 s"
+          ]
+        }
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "constraint_id": "cumcm-2025-A-smoke-sink",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 3,
+          "min": 3,
+          "unit": "m/s"
+        }
+      },
+      {
+        "contest_id": "cumcm-2025-A",
+        "constraint_id": "cumcm-2025-A-uav-speed",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 140,
+          "min": 70,
+          "unit": "m/s"
+        }
+      },
+      {
+        "contest_id": "fixture-extra",
+        "constraint_id": "fixture-extra-case-a",
+        "check_type": "required_case",
+        "params": {
+          "label": "自建情形A",
+          "artifact": "result_fixture_a"
+        }
+      },
+      {
+        "contest_id": "fixture-extra",
+        "constraint_id": "fixture-extra-case-b",
+        "check_type": "required_case",
+        "params": {
+          "label": "自建情形B",
+          "artifact": "result_fixture_b"
+        }
+      },
+      {
+        "contest_id": "fixture-extra",
+        "constraint_id": "fixture-extra-count-range",
+        "check_type": "numeric_range",
+        "params": {
+          "max": 5,
+          "min": 1,
+          "unit": "次"
+        }
+      },
+      {
+        "contest_id": "fixture-extra",
+        "constraint_id": "fixture-extra-source-note",
+        "check_type": "mention",
+        "params": {
+          "keywords": [
+            "数据来源",
+            "计算口径"
+          ]
+        }
+      }
+    ]
+  },
+  "notes": "Final database/index counts after acceptance reviews; counts are cumulative and include previous smoke/E2E/test records. Credential-free evidence."
+}

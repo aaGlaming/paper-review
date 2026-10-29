@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "P20–P26 能力落点",
+    "locale": "zh-CN",
+    "subtitle": "按版本进度与实现文件归纳；不代替原始需求条款。",
+    "output": "docs/diagrams/04-phase3-capabilities.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "components": [
+    {
+      "id": "p20",
+      "type": "backend",
+      "label": "P20 数据大屏",
+      "sublabel": "SQL 聚合 + 8 模块",
+      "pos": [
+        20,
+        120
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/report/dashboard.py",
+          "line": 1,
+          "end_line": 216,
+          "label": "后端聚合"
+        },
+        {
+          "path": "frontend/src/views/数据大屏.vue",
+          "line": 1,
+          "end_line": 253,
+          "label": "大屏"
+        }
+      ]
+    },
+    {
+      "id": "p21",
+      "type": "backend",
+      "label": "P21 产物契约",
+      "sublabel": "md/docx + claim/table/citation",
+      "pos": [
+        310,
+        120
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/importing/artifacts.py",
+          "line": 1,
+          "end_line": 209,
+          "label": "确定性抽取"
+        }
+      ]
+    },
+    {
+      "id": "p22",
+      "type": "security",
+      "label": "P22 可评门禁",
+      "sublabel": "published rubric + dimensions",
+      "pos": [
+        600,
+        120
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/report/rubric.py",
+          "line": 35,
+          "end_line": 90,
+          "label": "量规输入"
+        }
+      ]
+    },
+    {
+      "id": "p23",
+      "type": "database",
+      "label": "P23 Gold 评测",
+      "sublabel": "12 gold + low_sample",
+      "pos": [
+        890,
+        120
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/report/evaluation.py",
+          "line": 30,
+          "end_line": 130,
+          "label": "评测指标"
+        }
+      ]
+    },
+    {
+      "id": "p24",
+      "type": "cloud",
+      "label": "P24 骨架与 CORS",
+      "sublabel": "静态草案；容器未验证",
+      "pos": [
+        20,
+        350
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "backend/app/api/app.py",
+          "line": 20,
+          "end_line": 50,
+          "label": "CORS"
+        },
+        {
+          "path": "scripts/check_container_skeleton.py",
+          "line": 1,
+          "end_line": 79,
+          "label": "静态检查"
+        }
+      ]
+    },
+    {
+      "id": "p25",
+      "type": "frontend",
+      "label": "P25 等待可见",
+      "sublabel": "elapsed + slow hint；不并行化",
+      "pos": [
+        390,
+        350
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/components/StageTracker.vue",
+          "line": 1,
+          "end_line": 180,
+          "label": "等待状态"
+        }
+      ]
+    },
+    {
+      "id": "p26",
+      "type": "backend",
+      "label": "P26 三期验收",
+      "sublabel": "替代口径 + 首期回归",
+      "pos": [
+        760,
+        350
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "docs/plan/acceptance/report-V4.md",
+          "line": 1,
+          "end_line": 98,
+          "label": "验收报告"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "p20-p21",
+      "from": "p20",
+      "to": "p21",
+      "label": "阶段",
+      "variant": "default"
+    },
+    {
+      "id": "p21-p22",
+      "from": "p21",
+      "to": "p22",
+      "label": "阶段",
+      "variant": "default"
+    },
+    {
+      "id": "p22-p23",
+      "from": "p22",
+      "to": "p23",
+      "label": "阶段",
+      "variant": "default"
+    },
+    {
+      "id": "p23-p24",
+      "from": "p23",
+      "to": "p24",
+      "label": "阶段",
+      "variant": "default"
+    },
+    {
+      "id": "p24-p25",
+      "from": "p24",
+      "to": "p25",
+      "label": "阶段",
+      "variant": "default"
+    },
+    {
+      "id": "p25-p26",
+      "from": "p25",
+      "to": "p26",
+      "label": "阶段",
+      "variant": "default"
+    }
+  ],
+  "cards": []
+}

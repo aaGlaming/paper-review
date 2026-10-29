@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "diagram_type": "timeline",
+  "meta": {
+    "title": "事故与修复史",
+    "locale": "zh-CN",
+    "subtitle": "按 findings/progress 日期排序；同日事件按进度记录顺序呈现。",
+    "output": "docs/diagrams/27-incident-fix-timeline.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "evidence": "observed",
+    "timezone": "America/Los_Angeles"
+  },
+  "lanes": [
+    {
+      "id": "issue",
+      "label": "问题暴露"
+    },
+    {
+      "id": "fix",
+      "label": "修复 / 裁决"
+    }
+  ],
+  "events": [
+    {
+      "id": "chroma",
+      "at": "2026-10-20T00:00:00-07:00",
+      "title": "Chroma 原生崩溃",
+      "detail": "P19 排查发现向量库崩溃与索引差额。",
+      "lane": "issue",
+      "kind": "alert",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 2514,
+          "end_line": 2722,
+          "label": "P19 Chroma 复核"
+        }
+      ]
+    },
+    {
+      "id": "logs",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "日志按日误报",
+      "detail": "无评审业务日导致必需 writer 无当日日志。",
+      "lane": "issue",
+      "kind": "alert",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3030,
+          "end_line": 3045,
+          "label": "日志窗口证据"
+        }
+      ]
+    },
+    {
+      "id": "pdf",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "撤回 PDF 在线解析",
+      "detail": "运行时限定 md/docx；PDF 只作离线凭证。",
+      "lane": "fix",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/findings.md",
+          "line": 548,
+          "end_line": 550,
+          "label": "PDF 口径撤回"
+        }
+      ]
+    },
+    {
+      "id": "sample",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "小分母误导百分比",
+      "detail": "low_sample 降级呈现但 rate 不变。",
+      "lane": "fix",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3617,
+          "end_line": 3643,
+          "label": "小样本修复"
+        }
+      ]
+    },
+    {
+      "id": "shadow",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "演示稿被回退遮蔽",
+      "detail": "样例来源改为并列，相关 E2E 恢复。",
+      "lane": "fix",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3831,
+          "end_line": 3871,
+          "label": "样例修复"
+        }
+      ]
+    },
+    {
+      "id": "contract",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "low_sample E2E 滞后",
+      "detail": "按 API 字段更新 E2E 呈现断言。",
+      "lane": "fix",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3873,
+          "end_line": 3923,
+          "label": "契约修复"
+        }
+      ]
+    }
+  ]
+}

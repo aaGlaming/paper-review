@@ -1,0 +1,32 @@
+﻿{
+    "step":  "06-create-planting",
+    "at":  "2026-10-18T18:31:21.5284384+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/reviews",
+                    "body":  {
+                                 "contest_id":  "cumcm-2024-C",
+                                 "sample_id":  "planting"
+                             }
+                },
+    "response_status":  422,
+    "response_body":  {
+                          "detail":  [
+                                         {
+                                             "type":  "json_invalid",
+                                             "loc":  [
+                                                         "body",
+                                                         1
+                                                     ],
+                                             "msg":  "JSON decode error",
+                                             "input":  {
+
+                                                       },
+                                             "ctx":  {
+                                                         "error":  "Expecting property name enclosed in double quotes"
+                                                     }
+                                         }
+                                     ]
+                      },
+    "notes":  "Real model acceptance sample: create review."
+}

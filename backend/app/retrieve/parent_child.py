@@ -4,7 +4,7 @@
 本版不实现重排（属 P4），但函数签名里留了 `rerank` 位置，并且会拒绝把候选之外的东西加回来。
 
 分工：
-- 子块（文本 + 元数据 + 向量）进 Chroma，`doc_type` 只有五个值；
+- 子块（文本 + 元数据 + 向量）进 Chroma，`doc_type` 由白名单约束；
 - 父块全文只留在 MySQL（`paper_parent`，见 models.py）；
 - 送入后续步骤的是父块全文，不是子块碎片。
 
@@ -26,8 +26,8 @@ from sqlalchemy.orm import Session
 
 from .models import PaperParent
 
-# Chroma 的 doc_type 白名单：只有这五个。实测写成 paper_parent 也能写进去，所以白名单必须自己拦。
-DOC_TYPES = ("paper_child", "band_text", "pitfall", "exemplar", "contest_statement")
+# Chroma 的 doc_type 白名单。实测写成 paper_parent 也能写进去，所以白名单必须自己拦。
+DOC_TYPES = ("paper_child", "band_text", "pitfall", "exemplar", "contest_statement", "review_record")
 CHILD_DOC_TYPE = "paper_child"
 
 COLLECTION_NAME = "paper_review"
@@ -53,7 +53,7 @@ _TABLE_RULE = re.compile(r"^[\s|:-]+$")
 
 
 class DocTypeError(ValueError):
-    """doc_type 超出五个白名单。让 Chroma 自己拦是不可靠的，实测非白名单也能写进去。"""
+    """doc_type 超出白名单。让 Chroma 自己拦是不可靠的，实测非白名单也能写进去。"""
 
 
 class ExplicitEmbeddingsOnly(EmbeddingFunction):
@@ -90,6 +90,9 @@ class ChildChunk:
     char_end: int
     doc_type: str = CHILD_DOC_TYPE
     embedding: tuple[float, ...] | None = None
+    # 检索必须能按本次论文隔离：同一赛题下多篇论文共用一个 collection，
+    # 少了这个键就会召回别的论文的父块，引用因此指向别人的论文。
+    review_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -181,11 +184,16 @@ def build_children(
     doc_type: str = CHILD_DOC_TYPE,
     max_chars: int = DEFAULT_MAX_CHARS,
     embeddings: Sequence[Sequence[float]] | None = None,
+    review_id: str = "",
 ) -> list[ChildChunk]:
-    """把父块全文切成子块并附上元数据。子块只带片段文本，父块全文不进 Chroma。"""
+    """把父块全文切成子块并附上元数据。子块只带片段文本，父块全文不进 Chroma。
+
+    `review_id` 缺省取父块自身的 review_id，保证检索能按本次论文隔离。
+    """
     _require_doc_type(doc_type)
     resolved_section = section_type or parent.section_type
     _require_single_value(resolved_section, parent.parent_id)
+    resolved_review = review_id or parent.review_id or ""
 
     children: list[ChildChunk] = []
     for index, chunk in enumerate(split_into_chunks(parent.content, max_chars=max_chars)):
@@ -203,6 +211,7 @@ def build_children(
                 char_end=chunk.char_end,
                 doc_type=doc_type,
                 embedding=vector,
+                review_id=str(resolved_review),
             )
         )
     return children
@@ -222,7 +231,7 @@ def _require_single_value(section_type: Any, where: str) -> None:
 
 
 def child_metadata(child: ChildChunk) -> dict[str, Any]:
-    """子块元数据：至少这八个键，全部是单值。"""
+    """子块元数据：至少这九个键，全部是单值。"""
     _require_doc_type(child.doc_type)
     _require_single_value(child.section_type, child.chunk_id)
     return {
@@ -234,6 +243,7 @@ def child_metadata(child: ChildChunk) -> dict[str, Any]:
         "section_type": str(child.section_type),
         "char_start": int(child.char_start),
         "char_end": int(child.char_end),
+        "review_id": str(child.review_id),
     }
 
 
@@ -257,6 +267,18 @@ def _resolve_embeddings(
 
 
 _CLIENT: Any = None
+
+
+def set_client_for_tests(client: Any) -> None:
+    """Replace the persistent client for isolated tests."""
+    global _CLIENT
+    _CLIENT = client
+
+
+def reset_client_for_tests() -> None:
+    """Drop the cached client so the next lookup uses the configured default."""
+    global _CLIENT
+    _CLIENT = None
 
 
 def default_client() -> Any:
@@ -402,12 +424,20 @@ def _where(
     rubric_id: str,
     section_types: Any = None,
     doc_types: Any = None,
+    review_id: str | None = None,
 ) -> dict[str, Any]:
-    """过滤条件全部交给向量库：先过滤，再谈排序与截断。section_type 走单值 $in。"""
-    clauses: list[dict[str, Any]] = [
-        {"contest_id": str(contest_id)},
-        {"rubric_id": str(rubric_id)},
-    ]
+    """过滤条件全部交给向量库：先过滤，再谈排序与截断。section_type 走单值 $in。
+
+    论文检索必须传 review_id，避免同赛题的其他论文进入候选；评审记录检索按 contest_id
+    隔离，不传 review_id，这是唯一合法例外。rubric_id 为空时不加过滤，以允许跨量规版本检索。
+    """
+    clauses: list[dict[str, Any]] = []
+    if str(contest_id).strip():
+        clauses.append({"contest_id": str(contest_id)})
+    if str(rubric_id).strip():
+        clauses.append({"rubric_id": str(rubric_id)})
+    if review_id:
+        clauses.append({"review_id": str(review_id)})
     if section_types:
         values = [section_types] if isinstance(section_types, str) else list(section_types)
         values = [str(value) for value in values if str(value).strip()]
@@ -426,6 +456,7 @@ def search_children_then_parents(
     *,
     contest_id: str,
     rubric_id: str,
+    review_id: str | None = None,
     section_types: Sequence[str] | str | None = None,
     limit: int = DEFAULT_LIMIT,
     client: Any = None,
@@ -436,7 +467,7 @@ def search_children_then_parents(
     candidate_factor: int = DEFAULT_CANDIDATE_FACTOR,
     doc_types: Sequence[str] | str | None = None,
 ) -> list[ParentBlock]:
-    """先按 contest_id、rubric_id、section_types 过滤子块，再按 parent_id 取回父块全文。
+    """先按 contest_id、rubric_id、review_id、section_types 过滤子块，再按 parent_id 取回父块全文。
 
     `rerank` 只能改变候选顺序，不能把被过滤掉的片段加回来；`doc_types` 用来分路
     （档位说明 / 论文子块 / 扣分点）。返回项含 parent_id、section_type、content（来自 MySQL）
@@ -448,7 +479,7 @@ def search_children_then_parents(
         raise ValueError("本版不调用嵌入模型：请显式传 query_embedding")
 
     collection = get_collection(client, embedding_function=embedding_function)
-    where = _where(contest_id, rubric_id, section_types, doc_types)
+    where = _where(contest_id, rubric_id, section_types, doc_types, review_id)
 
     available = collection.count()
     wanted = max(limit * max(int(candidate_factor), 1), limit)

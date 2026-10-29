@@ -13,6 +13,7 @@ import json
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
+from ..observability.logging import log_event
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -457,9 +458,22 @@ def _write_package(session: Session, data: dict[str, Any]) -> dict[str, Any]:
 
 def import_package(package_dir: str | Path, *, session: Session | None = None) -> dict[str, Any]:
     """读目录下五个 JSON，整包校验，通过才写库；失败时抛 PackageError 且不写库。"""
-    data = validate_package(package_dir)
+    try:
+        data = validate_package(package_dir)
+    except PackageError as exc:
+        log_event(
+            "importing", "import_rejected", level="WARNING",
+            filename=Path(str(exc.filename)).name, field=str(exc.field),
+            reason=str(exc).splitlines()[0][:500],
+        )
+        raise
     with _session(session) as work:
-        return _write_package(work, data)
+        result = _write_package(work, data)
+    log_event(
+        "importing", "import_finished", contest_id=result.get("contest_id"),
+        accepted=1, rejected=0, rejected_fields=[],
+    )
+    return result
 
 
 # --- 目录操作 ------------------------------------------------------------------

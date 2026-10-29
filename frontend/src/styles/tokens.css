@@ -1,0 +1,354 @@
+/*
+设计令牌：本文件是**唯一**允许出现颜色字面量的地方，其余 .css 与 .vue 一律走变量。
+方向是「校样稿（proof sheet）」——评审在论文上做批注的工作台，不是营销页，也不是后台管理模板。
+*/
+
+:root {
+  /* 底色：偏冷的近白。不用暖奶油色（近 #F4F1EA 那一类一律不用）。 */
+  --pr-paper: #f6f7f9;
+  --pr-surface: #ffffff;
+  --pr-surface-sunken: #eceff3;
+  --pr-rule: #d6dbe2;
+  --pr-rule-strong: #b3bcc6;
+
+  /* 墨色：深灰蓝黑，不用纯黑。 */
+  --pr-ink: #1b2430;
+  --pr-ink-muted: #4a5563;
+  --pr-ink-faint: #6d7885;
+  --pr-chart-1: #4a5563;
+  --pr-chart-2: #6d7885;
+  --pr-chart-3: #87909a;
+
+  /* 主色：只承载「可操作」，不做装饰性渐变。 */
+  --pr-primary: #2b5797;
+  --pr-primary-strong: #224679;
+  --pr-primary-soft: #e8edf5;
+
+  /* 三个语义色：证据不足 / 冲突 / 越界，各自可辨，不互相借用。 */
+  --pr-insufficient: #64707d;
+  --pr-insufficient-soft: #e9ecf0;
+  --pr-conflict: #a93b2b;
+  --pr-conflict-soft: #f6e6e3;
+  --pr-range: #7a5a12;
+  --pr-range-soft: #f4edda;
+
+  /* 字体：界面无衬线；论文原句引用用衬线（引文来自论文本身）；等宽只给真正的数据字段。 */
+  --pr-font-ui: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+  --pr-font-quote: Georgia, 'Songti SC', 'SimSun', serif;
+  --pr-font-data: 'Cascadia Mono', Consolas, 'Courier New', monospace;
+
+  /* 字号与行高：引文行高放宽，便于对照批注。 */
+  --pr-text-xs: 12px;
+  --pr-text-sm: 13px;
+  --pr-text-base: 14px;
+  --pr-text-lg: 16px;
+  --pr-text-title: 20px;
+  --pr-leading-tight: 1.4;
+  --pr-leading-base: 1.6;
+  --pr-leading-quote: 1.85;
+
+  /* 间距：单一 4px 基数，不逐级递增。 */
+  --pr-space-1: 4px;
+  --pr-space-2: 8px;
+  --pr-space-3: 12px;
+  --pr-space-4: 16px;
+  --pr-space-6: 24px;
+  --pr-space-8: 32px;
+
+  /* 形状：圆角统一一个小值；阴影只给浮层，普通卡片不加。 */
+  --pr-radius: 4px;
+  --pr-shadow-overlay: 0 10px 28px rgba(27, 36, 48, 0.16);
+  --pr-shadow-sheet: 0 2px 0 rgba(27, 36, 48, 0.06), 2px 4px 0 rgba(27, 36, 48, 0.04);
+  --pr-focus-ring: 0 0 0 2px rgba(43, 87, 151, 0.32);
+
+  /* 动效节奏：状态、路由与列表复用同一套时长，避免逐页各自发明节奏。 */
+  --pr-motion-confirm: 220ms cubic-bezier(0.2, 0, 0, 1);
+  --pr-motion-interaction: 140ms;
+  --pr-motion-page: 200ms;
+  --pr-motion-content: 220ms;
+  --pr-motion-list: 260ms;
+  --pr-motion-number: 420ms;
+  --pr-motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* 版心：校样稿是纵向长条，正文宽度收窄便于逐行比对。 */
+  --pr-measure: 1040px;
+
+  /* --- Element Plus 主题覆盖 ------------------------------------------------- */
+  /* 不覆盖的话，五个页面会长成标准后台模板，与上面的方向直接冲突。 */
+  --el-color-primary: var(--pr-primary);
+  --el-color-primary-dark-2: var(--pr-primary-strong);
+  --el-color-primary-light-3: #6b89b6;
+  --el-color-primary-light-5: #95abcb;
+  --el-color-primary-light-7: #bfcde0;
+  --el-color-primary-light-8: #d5ddea;
+  --el-color-primary-light-9: #eaeef5;
+
+  /* 语义色映射到本工作台的三个语义，不另引第四个强调色。 */
+  --el-color-danger: var(--pr-conflict);
+  --el-color-warning: var(--pr-range);
+  --el-color-info: var(--pr-insufficient);
+  /* 本工作台没有「成功」语义，成功色借用主色，避免多出一个装饰色。 */
+  --el-color-success: var(--pr-primary);
+
+  --el-border-radius-base: var(--pr-radius);
+  --el-border-radius-small: var(--pr-radius);
+  --el-border-radius-round: var(--pr-radius);
+  --el-font-family: var(--pr-font-ui);
+  --el-font-size-base: var(--pr-text-base);
+  --el-text-color-primary: var(--pr-ink);
+  --el-text-color-regular: var(--pr-ink-muted);
+  --el-text-color-secondary: var(--pr-ink-faint);
+  --el-border-color: var(--pr-rule);
+  --el-border-color-light: var(--pr-rule);
+  --el-border-color-lighter: var(--pr-rule);
+  --el-bg-color: var(--pr-surface);
+  --el-bg-color-page: var(--pr-paper);
+  --el-fill-color-blank: var(--pr-surface);
+  --el-box-shadow-light: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* 全局 border-box：width 含 padding，窄屏下带 padding 的满宽容器不再撑开页面。
+   此前 390px 视口五页统一溢出 16px，根因就是缺这一条。 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--pr-paper);
+  color: var(--pr-ink);
+  font-family: var(--pr-font-ui);
+  font-size: var(--pr-text-base);
+  line-height: var(--pr-leading-base);
+}
+
+/* 论文原句：引文用衬线，和界面本身区分开。 */
+.pr-quote {
+  margin: 0;
+  padding-left: var(--pr-space-3);
+  border-left: 2px solid var(--pr-rule-strong);
+  color: var(--pr-ink);
+  font-family: var(--pr-font-quote);
+  line-height: var(--pr-leading-quote);
+}
+
+/* 字符偏移、切片编号这类真正的数据字段才用等宽。 */
+.pr-data {
+  font-family: var(--pr-font-data);
+  font-size: var(--pr-text-sm);
+}
+
+/* 章节层级用缩进表达，不用装饰性编号。 */
+.pr-indent-1 {
+  padding-left: var(--pr-space-4);
+}
+
+.pr-indent-2 {
+  padding-left: var(--pr-space-8);
+}
+
+/* --- 阶段 2/6 追加：解析页的两栏骨架、章节树缩进与步骤徽标 --------------------
+   只追加，既有的令牌与值一行未动。新颜色仍然只出现在这个文件里。 */
+:root {
+  /* 章节树的层级缩进：每深一级加一份，量在这里而层级由行内 --pr-depth 给出 */
+  --pr-indent: 14px;
+  --pr-tree-width: 300px;
+  --pr-row-hover: #eef1f5;
+  --pr-row-selected: #e4eaf4;
+
+  /* 步骤徽标：未开始 / 处理中 / 已完成 / 停在 */
+  --pr-badge-idle-bg: #eceff3;
+  --pr-badge-idle-ink: #4a5563;
+  --pr-badge-running-bg: #f4edda;
+  --pr-badge-running-ink: #7a5a12;
+  --pr-badge-done-bg: #e8edf5;
+  --pr-badge-done-ink: #224679;
+  --pr-badge-stopped-bg: #f6e6e3;
+  --pr-badge-stopped-ink: #a93b2b;
+
+  /* 预留位（主张 / 表格 / 引用）与浅底区块 */
+  --pr-slot-bg: #f6f7f9;
+}
+
+/* --- 阶段 7/7 追加：手稿风格 -------------------------------------------------
+   只追加，既有的令牌与值一行未动。 */
+:root {
+  /* 纸影：按钮 / 重点卡的硬纸切影（offset-x 2px、offset-y 3px、无模糊），
+     替代通用阴影，营造"贴纸"感。 */
+  --pr-shadow-paper: 2px 3px 0 rgba(27, 36, 48, 0.08);
+}
+
+/* --- 阶段 8/8 追加：手稿风修复的统密度令牌 -----------------------------------
+   只追加，既有的令牌与值一行未动。五页的卡片共用这一组间距。 */
+:root {
+  /* 卡片内边距：五页统一 */
+  --pr-card-pad: var(--pr-space-4);
+  /* 卡片间距：五页统一 */
+  --pr-card-gap: var(--pr-space-6);
+  /* 卡片标题与正文间距：五页统一 */
+  --pr-card-title-gap: var(--pr-space-3);
+}
+
+/* --- 昼夜主题追加：sketch.md §2 语义 Token 的双主题取值 -------------------------
+   白天 = :root 缺省（上面既有的令牌一行未动）；黑夜 = [data-theme='dark'] 覆盖。
+   两套主题共享同一套语义命名，只换色值，不换结构、字体、边框与手绘风格。
+   黑夜不是黑白反色：纸底用深石墨、墨色用暖纸白，批注色降饱和、soft 底反转为深底。
+   新增的语义 Token（sketch-line / guide / annotation / shadow / grain、
+   primary-hover / active / subtle / border、link / focus、accent、status-subtle）
+   在白天侧用现有令牌回填，保证单套变量名在两主题下都可解析。 */
+:root {
+  /* 手绘线条三件套：白天直接复用墨与分隔线，不新增视觉 */
+  --pr-sketch-line: var(--pr-ink);
+  --pr-sketch-guide: var(--pr-rule);
+  --pr-sketch-annotation: var(--pr-conflict);
+  --pr-pencil-shadow: rgba(27, 36, 48, 0.08);
+  --pr-paper-grain: var(--pr-ink);
+
+  /* 主色交互态：白天由既有主色派生 */
+  --pr-primary-hover: var(--pr-primary-strong);
+  --pr-primary-active: var(--pr-primary-strong);
+  --pr-primary-subtle: var(--pr-primary-soft);
+  --pr-primary-border: var(--pr-primary);
+  --pr-link: var(--pr-primary);
+  --pr-focus: rgba(43, 87, 151, 0.32);
+
+  /* 辅助强调：低饱和赭石与青绿，只做批注与图表点缀 */
+  --pr-accent: var(--pr-range);
+  --pr-accent-secondary: var(--pr-insufficient);
+
+  /* 状态 subtle：白天沿用既有 soft 底 */
+  --pr-success-subtle: var(--pr-primary-soft);
+  --pr-info-subtle: var(--pr-insufficient-soft);
+
+  /* 语义正色：白天沿用既有三色 + 主色 */
+  --pr-success: var(--pr-primary);
+  --pr-warning: var(--pr-range);
+  --pr-danger: var(--pr-conflict);
+  --pr-info: var(--pr-insufficient);
+
+  /* --- Phase 2 全局背景令牌：只给透明度与网格尺寸，色值全部引用既有语义 ---
+     背景三层：纸纹（feTurbulence SVG）+ 构图网格（CSS 线性渐变）+ 页缘线稿（新 SVG）。
+     白天网格用分隔线色、线稿用墨色，透明度压到内容不可察觉的程度。
+     底图纱罩：盖在全局照片底图之上的主题色薄纱，保证正文可读，双主题各一版。 */
+  --pr-bg-grid-size: 28px;
+  --pr-bg-grid-opacity: 0.8;
+  --pr-bg-draft-opacity: 0.3;
+  --pr-bg-corner-opacity: 0.34;
+  --pr-photo-veil: rgba(246, 247, 249, 0.55);
+}
+
+/* 黑夜：石墨纸 + 暖纸墨，纸纹与硬纸影随之反转但保持克制。 */
+[data-theme='dark'] {
+  --pr-paper: #232a33;
+  --pr-surface: #2c343f;
+  --pr-surface-sunken: #1c222b;
+  --pr-rule: #46505e;
+  --pr-rule-strong: #68738a;
+
+  --pr-ink: #ece7db;
+  --pr-ink-muted: #bfb9aa;
+  --pr-ink-faint: #98917f;
+  --pr-chart-1: #bfb9aa;
+  --pr-chart-2: #98917f;
+  --pr-chart-3: #737b87;
+
+  --pr-primary: #9db6dd;
+  --pr-primary-strong: #c2d2ec;
+  --pr-primary-soft: #333e52;
+
+  --pr-insufficient: #a8adb5;
+  --pr-insufficient-soft: #33373e;
+  --pr-conflict: #d9907f;
+  --pr-conflict-soft: #45302c;
+  --pr-range: #cfa64e;
+  --pr-range-soft: #453b24;
+
+  --pr-row-hover: #343d4a;
+  --pr-row-selected: #39465c;
+
+  --pr-badge-idle-bg: #33373e;
+  --pr-badge-idle-ink: #a8adb5;
+  --pr-badge-running-bg: #453b24;
+  --pr-badge-running-ink: #cfa64e;
+  --pr-badge-done-bg: #333e52;
+  --pr-badge-done-ink: #c2d2ec;
+  --pr-badge-stopped-bg: #45302c;
+  --pr-badge-stopped-ink: #d9907f;
+
+  --pr-slot-bg: #1c222b;
+
+  --pr-shadow-paper: 2px 3px 0 rgba(0, 0, 0, 0.35);
+  --pr-shadow-sheet: 0 2px 0 rgba(0, 0, 0, 0.2), 2px 4px 0 rgba(0, 0, 0, 0.14);
+  --pr-shadow-overlay: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --pr-focus-ring: 0 0 0 2px rgba(157, 182, 221, 0.45);
+
+  --pr-sketch-line: var(--pr-ink);
+  --pr-sketch-guide: var(--pr-rule);
+  --pr-sketch-annotation: var(--pr-conflict);
+  --pr-pencil-shadow: rgba(0, 0, 0, 0.35);
+  --pr-paper-grain: var(--pr-ink);
+
+  --pr-primary-hover: var(--pr-primary-strong);
+  --pr-primary-active: var(--pr-primary-strong);
+  --pr-primary-subtle: var(--pr-primary-soft);
+  --pr-primary-border: var(--pr-primary);
+  --pr-link: var(--pr-primary);
+  --pr-focus: rgba(157, 182, 221, 0.45);
+
+  --pr-accent: var(--pr-range);
+  --pr-accent-secondary: var(--pr-insufficient);
+
+  --pr-success-subtle: var(--pr-primary-soft);
+  --pr-info-subtle: var(--pr-insufficient-soft);
+
+  --pr-success: var(--pr-primary);
+  --pr-warning: var(--pr-range);
+  --pr-danger: var(--pr-conflict);
+  --pr-info: var(--pr-insufficient);
+
+  /* Phase 2 黑夜背景：网格更疏、线稿更淡——深底上任何线条都比白天显眼，透明度反向压低。
+     不是把白天纹理反色：纸纹 SVG 共用（中性噪点），网格与线稿走深色语义。 */
+  --pr-bg-grid-size: 32px;
+  --pr-bg-grid-opacity: 0.55;
+  --pr-bg-draft-opacity: 0.22;
+  --pr-bg-corner-opacity: 0.26;
+  --pr-photo-veil: rgba(35, 42, 51, 0.5);
+
+  /* Element Plus 跟随黑夜：只映射已有语义，不另引色 */
+  --el-color-primary: var(--pr-primary);
+  --el-color-primary-dark-2: var(--pr-primary-strong);
+  --el-color-primary-light-3: #7d95ba;
+  --el-color-primary-light-5: #5d718f;
+  --el-color-primary-light-7: #475569;
+  --el-color-primary-light-8: #3a4657;
+  --el-color-primary-light-9: #333e52;
+  --el-color-danger: var(--pr-conflict);
+  --el-color-warning: var(--pr-range);
+  --el-color-info: var(--pr-insufficient);
+  --el-color-success: var(--pr-primary);
+  --el-text-color-primary: var(--pr-ink);
+  --el-text-color-regular: var(--pr-ink-muted);
+  --el-text-color-secondary: var(--pr-ink-faint);
+  --el-border-color: var(--pr-rule);
+  --el-border-color-light: var(--pr-rule);
+  --el-border-color-lighter: var(--pr-rule);
+  --el-bg-color: var(--pr-surface);
+  --el-bg-color-page: var(--pr-paper);
+  --el-fill-color-blank: var(--pr-surface);
+}

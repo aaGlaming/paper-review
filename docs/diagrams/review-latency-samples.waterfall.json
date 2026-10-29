@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "diagram_type": "waterfall",
+  "meta": {
+    "title": "P25 模型路径三次评审总耗时",
+    "locale": "zh-CN",
+    "subtitle": "三次独立完整 resume wall time；没有分阶段 trace，故不拆分 parse / retrieve / score。",
+    "output": "docs/diagrams/review-latency-samples.waterfall.html",
+    "evidence": "measured",
+    "unit": "ms",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": { "width": 1180 },
+  "spans": [
+    {
+      "id": "run_one",
+      "name": "完整评审样本 1 · 26,817 ms",
+      "service": "model path · resume",
+      "start": 0,
+      "duration": 26817,
+      "status": "ok",
+      "detail": "7 次 chat；17 条 llm_call 日志，含 5 embed 与 5 rerank。",
+      "sources": [{ "path": "docs/plan/acceptance/report-P25.md", "line": 11, "end_line": 19, "label": "P25 三次模型测量" }]
+    },
+    {
+      "id": "run_median",
+      "name": "完整评审样本 2 · 中位数 31,734 ms",
+      "service": "model path · resume",
+      "start": 0,
+      "duration": 31734,
+      "status": "ok",
+      "detail": "7 次 chat；21 条 llm_call 日志，含 7 embed 与 7 rerank。",
+      "sources": [{ "path": "docs/plan/acceptance/report-P25.md", "line": 11, "end_line": 19, "label": "P25 三次模型测量" }]
+    },
+    {
+      "id": "run_max",
+      "name": "完整评审样本 3 · 最大值 34,201 ms",
+      "service": "model path · resume",
+      "start": 0,
+      "duration": 34201,
+      "status": "ok",
+      "detail": "7 次 chat；17 条 llm_call 日志，含 5 embed 与 5 rerank。",
+      "sources": [{ "path": "docs/plan/acceptance/report-P25.md", "line": 11, "end_line": 19, "label": "P25 三次模型测量" }]
+    }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "统计口径", "items": ["三条 span 各是一整次独立评审请求，不是单请求内的子阶段。", "模型路径中位数 31,734 ms，最大 34,201 ms。", "历史确定性路径 7,284 ms 不与模型路径混算。"] },
+    { "dot": "amber", "title": "未测分解", "items": ["P25 记录的是点击确认到完整响应的 wall time。", "parse、retrieve、score 没有独立起止时间；阶段分解不在本图中伪造。"] }
+  ]
+}

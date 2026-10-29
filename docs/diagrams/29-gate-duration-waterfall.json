@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "diagram_type": "waterfall",
+  "meta": {
+    "title": "门禁耗时对照",
+    "locale": "zh-CN",
+    "subtitle": "独立门禁整段耗时并列，不是同一流程阶段拆分；Playwright 4.3 min 为约值。",
+    "output": "docs/diagrams/29-gate-duration-waterfall.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "evidence": "measured",
+    "unit": "ms"
+  },
+  "spans": [
+    {
+      "id": "pytest",
+      "name": "pytest backend/tests -q",
+      "start": 0,
+      "duration": 223970,
+      "service": "backend",
+      "detail": "一次完整门禁，progress 实测 223.97 s。",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3908,
+          "end_line": 3920,
+          "label": "pytest 门禁耗时"
+        }
+      ]
+    },
+    {
+      "id": "e2e",
+      "name": "Playwright E2E full suite",
+      "start": 0,
+      "duration": 258000,
+      "service": "frontend",
+      "detail": "记录 4.3 min 换算约 258,000 ms；此值为近似。",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3910,
+          "end_line": 3920,
+          "label": "E2E 门禁耗时"
+        }
+      ]
+    }
+  ]
+}

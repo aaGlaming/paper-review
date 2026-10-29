@@ -1,0 +1,61 @@
+{
+    "request":  {
+                    "method":  "POST",
+                    "path":  "/api/reviews/0a32931901c949428e47480569537fe9/resume",
+                    "body":  {
+                                 "sections":  [
+                                                  {
+                                                      "title":  "“板凳龙”闹元宵运动分析",
+                                                      "section_type":  "未分类",
+                                                      "level":  1,
+                                                      "content":  "\u003e 本文是本项目自建的**演示样例**，用于预审功能演示。它不是官方答案，不是真实参赛论文，\n\u003e 其中的数值均为验收构造，不能当成赛题标准答案。"
+                                                  },
+                                                  {
+                                                      "title":  "摘要",
+                                                      "section_type":  "未分类",
+                                                      "level":  2,
+                                                      "content":  "本文针对舞龙队沿螺线盘入与调头的过程建立运动学模型。以把手孔中心为节点，按板凳长度与连接\n关系写出位置递推式，并用迭代法逐段求解。结果表明，盘入终止时刻为 412 s，全过程各把手速度\n均不超过 2 m/s，符合题目要求。"
+                                                  },
+                                                  {
+                                                      "title":  "一、模型假设",
+                                                      "section_type":  "假设",
+                                                      "level":  2,
+                                                      "content":  "1. 为简化计算，本文忽略板凳宽度，把每节板凳视为刚体连杆，只保留两端把手孔中心的位置关系；\n2. 板凳连接处无相对滑动，相邻把手之间的距离恒等于板凳长度；\n3. 龙头沿给定曲线匀速前进，速度大小恒定；\n4. 忽略空气阻力与地面摩擦，运动只在水平面内进行。"
+                                                  },
+                                                  {
+                                                      "title":  "二、模型的建立",
+                                                      "section_type":  "模型",
+                                                      "level":  2,
+                                                      "content":  "以螺线中心为原点建立平面直角坐标系。舞龙队沿等距螺线盘入，盘入螺距为 1.7 m，螺线参数方程\n可写为极坐标形式。设龙头位置为已知，第 k 节板凳的两个把手满足距离约束，据此写出位置递推式。\n调头空间是直径为 9 m 的圆形区域，龙头进入该区域后沿给定的调头路径前进。\n\n龙头速度恒为 1 m/s，把手速度由位置对时间求导得到，其大小随位置变化而变化。"
+                                                  },
+                                                  {
+                                                      "title":  "三、模型求解",
+                                                      "section_type":  "求解",
+                                                      "level":  2,
+                                                      "content":  "采用固定步长的迭代法：给定龙头在 t 时刻的位置，先求该时刻的方向角，再依次求各把手位置。\n步长取 0.01 s，收敛判据取相邻两次迭代位置差小于 1e-6 m。迭代至所有板凳离开盘入区域为止。"
+                                                  },
+                                                  {
+                                                      "title":  "四、结果分析",
+                                                      "section_type":  "结果",
+                                                      "level":  2,
+                                                      "content":  "| 指标 | 数值 |\n| --- | --- |\n| 盘入终止时刻 | 386 s |\n| 最大把手速度 | 1.98 m/s |\n| 迭代步长 | 0.01 s |\n\n表 1 给出主要结果。最大把手速度出现在调头段起始处。"
+                                                  },
+                                                  {
+                                                      "title":  "五、模型检验",
+                                                      "section_type":  "检验",
+                                                      "level":  2,
+                                                      "content":  "把各时刻的把手速度与题目给定上限对照，全过程均不超过 2 m/s；把相邻板凳的最小间距与板凳\n宽度对照，未出现相互穿模的情况。数值实验表明模型在步长减半后结果变化小于 0.5%。"
+                                                  },
+                                                  {
+                                                      "title":  "参考文献",
+                                                      "section_type":  "参考文献",
+                                                      "level":  2,
+                                                      "content":  "[1] 自建演示样例用参考条目一。\n[2] 自建演示样例用参考条目二。\n[3] 自建演示样例用参考条目三。"
+                                                  }
+                                              ]
+                             }
+                },
+    "response_status":  200,
+    "response_body":  "{\"review_id\":\"0a32931901c949428e47480569537fe9\",\"status\":\"完成\",\"contest_id\":\"cumcm-2024-A\",\"rubric_id\":\"cumcm-2024-A-v2\",\"rubric_version\":2,\"model_name\":\"deepseek-flash\",\"source\":\"model\",\"dimensions\":[{\"dimension_code\":\"assumption\",\"band\":\"不足\",\"chunk_ids\":[\"0a32931901c949428e47480569537fe9-0002-00\"],\"quote\":\"为简化计算，本文忽略板凳宽度，把每节板凳视为刚体连杆，只保留两端把手孔中心的位置关系；\",\"status\":\"不足\",\"chat_calls\":1,\"guard\":{\"band\":\"不足\",\"downgraded\":false,\"reasons\":[],\"checked\":0,\"skipped\":[]}},{\"dimension_code\":\"constraint_check\",\"band\":\"不足\",\"chunk_ids\":[\"0a32931901c949428e47480569537fe9-0006-00\"],\"quote\":\"把各时刻的把手速度与题目给定上限对照，全过程均不超过 2 m/s；把相邻板凳的最小间距与板凳\\n宽度对照，未出现相互穿模的情况。\",\"status\":\"不足\",\"chat_calls\":1,\"guard\":{\"band\":\"不足\",\"downgraded\":false,\"reasons\":[],\"checked\":0,\"skipped\":[]}},{\"dimension_code\":\"modeling\",\"band\":\"不足\",\"chunk_ids\":[\"9b6669611e07493e8d107849de869c6a-0003-00\"],\"quote\":\"舞龙队沿等距螺线盘入，盘入螺距为 1.7 m，螺线参数方程\\n可写为极坐标形式。设龙头位置为已知，第 k 节板凳的两个把手满足距离约束，据此写出位置递推式。\\n调头空间是直径为 9 m 的圆形区域，龙头进入该区域后沿给定的调头路径前进。\",\"status\":\"不足\",\"chat_calls\":1,\"guard\":{\"band\":\"不足\",\"downgraded\":false,\"reasons\":[],\"checked\":0,\"skipped\":[]}},{\"dimension_code\":\"presentation\",\"band\":\"证据不足\",\"chunk_ids\":[],\"quote\":null,\"status\":\"证据不足\",\"chat_calls\":1,\"reason\":\"模型在给定证据里没有找到可引用的原句\"},{\"dimension_code\":\"solution\",\"band\":\"不足\",\"chunk_ids\":[\"daadb67acbb0443cbaaa356d8f9713e0-0004-00\"],\"quote\":\"步长取 0.01 s，收敛判据取相邻两次迭代位置差小于 1e-6 m。\",\"status\":\"不足\",\"chat_calls\":1,\"guard\":{\"band\":\"不足\",\"downgraded\":false,\"reasons\":[],\"checked\":0,\"skipped\":[]}}],\"score\":{\"total\":80,\"weight_sum\":80,\"rubric_weight_sum\":100,\"weighted\":[{\"dimension_code\":\"assumption\",\"band\":\"不足\",\"status\":\"不足\",\"weight\":20,\"contribution\":20},{\"dimension_code\":\"constraint_check\",\"band\":\"不足\",\"status\":\"不足\",\"weight\":20,\"contribution\":20},{\"dimension_code\":\"modeling\",\"band\":\"不足\",\"status\":\"不足\",\"weight\":20,\"contribution\":20},{\"dimension_code\":\"solution\",\"band\":\"不足\",\"status\":\"不足\",\"weight\":20,\"contribution\":20}],\"excluded\":[{\"dimension_code\":\"presentation\",\"band\":\"证据不足\",\"status\":\"证据不足\",\"weight\":20,\"contribution\":0,\"reason\":\"证据不足不参与加权\"}]},\"change_list\":[{\"section\":\"题目约束与数字冲突\",\"kind\":\"数字冲突\",\"finding_kind\":\"数字冲突\",\"upstream_id\":\"finding:数字冲突:盘入终止时刻\",\"target\":\"盘入终止时刻\",\"evidence\":[{\"char_start\":175,\"char_end\":180,\"text\":\"412 s\"},{\"char_start\":699,\"char_end\":704,\"text\":\"386 s\"}],\"action\":\"把两处数值改成同一口径，并在正文说明取值来源\"},{\"section\":\"题目约束与数字冲突\",\"kind\":\"题目约束\",\"finding_kind\":\"未提到条件\",\"upstream_id\":\"finding:未提到条件:cumcm-2024-A-turn-arc\",\"target\":\"调头圆弧两段相切且半径 2 倍\",\"evidence\":[],\"action\":\"在假设或模型一节补上这条题目条件\"},{\"section\":\"证据不足\",\"kind\":\"证据不足\",\"upstream_id\":\"dimension:presentation\",\"dimension_code\":\"presentation\",\"target\":\"表述与结构\",\"evidence\":[{\"text\":\"\",\"band\":\"证据不足\",\"status\":\"证据不足\",\"chunk_ids\":[]}],\"action\":\"在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位\"}],\"change_list_note\":null,\"note\":\"source=model：各维档位来自模型选档，引用已校验为父块原句\"}",
+    "notes":  "v1.9.3 F1 真实 bench-dragon 复验；原始响应保留用于与 V1 对照。"
+}

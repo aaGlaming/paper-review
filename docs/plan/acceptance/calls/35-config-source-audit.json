@@ -1,0 +1,32 @@
+{
+  "step": "35-config-source-audit",
+  "at": "2026-10-18T18:41:10.569710+08:00",
+  "request": {
+    "method": "SOURCE+CONFIG AUDIT",
+    "url": "client source, backend/ and .env.example; env values redacted"
+  },
+  "response_status": 200,
+  "response_body": {
+    "configuration_keys_present": {
+      "LLM_BASE_URL": true,
+      "LLM_API_KEY": true,
+      "LLM_MODEL": true,
+      "EMBEDDING_BASE_URL": true,
+      "EMBEDDING_API_KEY": true,
+      "EMBEDDING_MODEL": true,
+      "RERANK_BASE_URL": true,
+      "RERANK_API_KEY": true,
+      "RERANK_MODEL": true
+    },
+    "chat_base_https": true,
+    "embedding_base_https": true,
+    "client_paths": {
+      "chat_completions": true,
+      "embeddings": true,
+      "cohere_rerank": true
+    },
+    "local_runtime_match_count": 0,
+    "local_runtime_match_files": []
+  },
+  "notes": "Only boolean configuration status and URL scheme are persisted; no values or credentials."
+}

@@ -1,0 +1,37 @@
+﻿{
+    "step":  "16-eval-model",
+    "at":  "2026-10-18T18:32:56.7101054+08:00",
+    "request":  {
+                    "method":  "GET",
+                    "url":  "http://127.0.0.1:8077/api/eval/summary?force=model"
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "corpus_papers":  15,
+                          "gradable_papers":  12,
+                          "gradable_dimensions":  60,
+                          "source":  "model",
+                          "band_agreement":  {
+                                                 "matched":  13,
+                                                 "total":  60,
+                                                 "rate":  0.21666666666666667,
+                                                 "caliber":  "档位一致率 = 系统档位与 gold 档位一致的维度数 / 有 gold 的维度总数"
+                                             },
+                          "quote_exact_match":  {
+                                                    "matched":  27,
+                                                    "total":  27,
+                                                    "rate":  1.0,
+                                                    "caliber":  "引用精确匹配率 = 原句逐字出现在所引父块里的维度数 / 给出原句的维度数"
+                                                },
+                          "insufficient_evidence_hit":  {
+                                                            "matched":  2,
+                                                            "total":  2,
+                                                            "rate":  1.0,
+                                                            "caliber":  "证据不足命中情况 = gold 为证据不足且系统也判证据不足的维度数 / gold 为证据不足的维度数"
+                                                        },
+                          "no_samples":  false,
+                          "note":  "分子分母都按有 gold 的可算样本计算；三篇演示稿没有 gold，不计入分母。source=deterministic 时这些数字是确定性结构回退的脚本自检，不是模型准确率。",
+                          "demo_papers_without_gold":  3
+                      },
+    "notes":  "Single explicit real model evaluation run. Full response saved immediately; do not repeat."
+}

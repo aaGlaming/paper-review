@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "前端分层",
+    "locale": "zh-CN",
+    "subtitle": "Vue Router 管页面入口；views 组合组件与 composables，通过 api/index.ts 调后端。",
+    "output": "docs/diagrams/03-frontend-layers.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "components": [
+    {
+      "id": "router",
+      "type": "frontend",
+      "label": "router",
+      "sublabel": "权限守卫 + lazy routes",
+      "pos": [
+        20,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/router/index.ts",
+          "line": 1,
+          "end_line": 110,
+          "label": "路由"
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "type": "frontend",
+      "label": "views",
+      "sublabel": "parse / records / chat / dashboard",
+      "pos": [
+        250,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/views/论文解析.vue",
+          "line": 1,
+          "end_line": 340,
+          "label": "评审页"
+        }
+      ]
+    },
+    {
+      "id": "components",
+      "type": "frontend",
+      "label": "components",
+      "sublabel": "Reader / Card / Panel",
+      "pos": [
+        515,
+        130
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/components/SectionReader.vue",
+          "line": 1,
+          "end_line": 184,
+          "label": "组件"
+        }
+      ]
+    },
+    {
+      "id": "composables",
+      "type": "frontend",
+      "label": "composables",
+      "sublabel": "状态、定位与请求辅助",
+      "pos": [
+        515,
+        410
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/composables/useOffsetLocator.ts",
+          "line": 1,
+          "end_line": 95,
+          "label": "偏移定位"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "frontend",
+      "label": "api",
+      "sublabel": "index.ts + types.ts",
+      "pos": [
+        790,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/src/api/index.ts",
+          "line": 1,
+          "end_line": 260,
+          "label": "HTTP 封装"
+        },
+        {
+          "path": "frontend/src/api/types.ts",
+          "line": 1,
+          "end_line": 220,
+          "label": "响应类型"
+        }
+      ]
+    },
+    {
+      "id": "vite",
+      "type": "cloud",
+      "label": "Vite proxy",
+      "sublabel": "开发环境 /api → 127.0.0.1:8077",
+      "pos": [
+        1050,
+        270
+      ],
+      "size": [
+        150,
+        70
+      ],
+      "sources": [
+        {
+          "path": "frontend/vite.config.ts",
+          "line": 1,
+          "end_line": 22,
+          "label": "代理"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "router-view",
+      "from": "router",
+      "to": "views",
+      "label": "lazy import",
+      "variant": "default"
+    },
+    {
+      "id": "view-components",
+      "from": "views",
+      "to": "components",
+      "label": "组合 UI",
+      "variant": "default"
+    },
+    {
+      "id": "view-composables",
+      "from": "views",
+      "to": "composables",
+      "label": "复用交互",
+      "variant": "default"
+    },
+    {
+      "id": "view-api",
+      "from": "views",
+      "to": "api",
+      "label": "类型化请求",
+      "variant": "default"
+    },
+    {
+      "id": "api-vite",
+      "from": "api",
+      "to": "vite",
+      "label": "fetch /api",
+      "variant": "default"
+    }
+  ],
+  "cards": []
+}

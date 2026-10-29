@@ -1,0 +1,187 @@
+{
+  "contest_id": "probe-critique-acceptance",
+  "version": 1,
+  "status": "draft",
+  "dimensions": [
+    {
+      "code": "assumption",
+      "name": "假设的合理性",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否说明板凳宽度对判断碰撞的影响",
+        "是否交代把手的简化方式与适用范围",
+        "是否说明螺线盘入的初始位置与坐标系约定"
+      ],
+      "section_types": [
+        "假设",
+        "模型"
+      ],
+      "bands": [
+        {
+          "band": "充分",
+          "score": 20,
+          "description": "假设逐条给出，说明板凳宽度、把手简化与初始条件，并交代每条假设的适用条件"
+        },
+        {
+          "band": "基本",
+          "score": 12,
+          "description": "主要假设已给出，个别假设缺少适用范围或与模型对应不紧"
+        },
+        {
+          "band": "不足",
+          "score": 5,
+          "description": "假设过于笼统，未说明对碰撞判定与盘入过程的影响"
+        },
+        {
+          "band": "证据不足",
+          "score": null,
+          "description": "检索到的切片里找不到与假设有关的表述"
+        }
+      ]
+    },
+    {
+      "code": "modeling",
+      "name": "建模是否针对本题",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否按 1.7 m 螺距写出盘入螺线的参数方程",
+        "是否把调头路径写成两段相切的圆弧并给出半径 2 倍关系",
+        "是否建立各节板凳把手位置的递推关系"
+      ],
+      "section_types": [
+        "模型",
+        "求解"
+      ],
+      "bands": [
+        {
+          "band": "充分",
+          "score": 20,
+          "description": "模型按本题的螺距、调头空间与相切条件建立，递推关系完整"
+        },
+        {
+          "band": "基本",
+          "score": 12,
+          "description": "模型基本针对本题，个别条件（如相切或半径倍数）未写进模型"
+        },
+        {
+          "band": "不足",
+          "score": 5,
+          "description": "套用通用几何公式，未体现本题的螺距与调头约束"
+        },
+        {
+          "band": "证据不足",
+          "score": null,
+          "description": "检索到的切片里找不到建模相关的推导"
+        }
+      ]
+    },
+    {
+      "code": "solution",
+      "name": "求解与结果",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否给出各时刻各把手的位置与速度数值",
+        "是否说明迭代步长与收敛判据",
+        "是否给出龙头 1 m/s 条件下全过程的速度结果"
+      ],
+      "section_types": [
+        "求解",
+        "结果"
+      ],
+      "bands": [
+        {
+          "band": "充分",
+          "score": 20,
+          "description": "给出可复核的数值结果，说明求解方法与步长，覆盖盘入、调头与盘出"
+        },
+        {
+          "band": "基本",
+          "score": 12,
+          "description": "结果已给出，但步长、误差或某一阶段的数值不完整"
+        },
+        {
+          "band": "不足",
+          "score": 5,
+          "description": "只给结论性数值，缺少求解过程与可复核依据"
+        },
+        {
+          "band": "证据不足",
+          "score": null,
+          "description": "检索到的切片里找不到求解过程或结果数值"
+        }
+      ]
+    },
+    {
+      "code": "constraint_check",
+      "name": "检验与题目约束",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否检验相邻板凳之间是否会相撞",
+        "是否检验各把手速度不超过 2 m/s",
+        "是否核对调头圆弧两段相切且半径 2 倍"
+      ],
+      "section_types": [
+        "检验",
+        "结果"
+      ],
+      "bands": [
+        {
+          "band": "充分",
+          "score": 20,
+          "description": "逐条对照碰撞、螺距、相切与速度上限，并给出校验依据"
+        },
+        {
+          "band": "基本",
+          "score": 12,
+          "description": "对照了部分硬性条件，遗漏其中一条或只作定性说明"
+        },
+        {
+          "band": "不足",
+          "score": 5,
+          "description": "几乎没有回到题目条件做检验"
+        },
+        {
+          "band": "证据不足",
+          "score": null,
+          "description": "检索到的切片里找不到针对本题约束的检验"
+        }
+      ]
+    },
+    {
+      "code": "presentation",
+      "name": "表述与结构",
+      "weight": 20,
+      "evidence_prompts": [
+        "是否按问题顺序组织结果",
+        "表格与图是否标注单位与时刻",
+        "引用与图表编号是否一致"
+      ],
+      "section_types": [
+        "结果",
+        "参考文献"
+      ],
+      "bands": [
+        {
+          "band": "充分",
+          "score": 20,
+          "description": "结构清晰，图表与公式编号一致，单位与时刻标注完整"
+        },
+        {
+          "band": "基本",
+          "score": 12,
+          "description": "结构大致清楚，个别图表缺单位或说明"
+        },
+        {
+          "band": "不足",
+          "score": 5,
+          "description": "结果堆在一起，图表缺少标注，难以对应问题"
+        },
+        {
+          "band": "证据不足",
+          "score": null,
+          "description": "检索到的切片里找不到可判断表述与结构的正文"
+        }
+      ]
+    }
+  ]
+}

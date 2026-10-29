@@ -11,3 +11,44 @@ chroma_data/
 chroma/
 # WorkBuddy 工作区数据（记忆日志、临时探针脚本），本地专用，不进仓库
 .workbuddy/
+# Playwright 报告与失败产物（本机生成，不入库）
+playwright-report/
+test-results/
+# E2E 登录态（含真实 token，绝不能提交）
+frontend/tests/e2e/.auth/
+# pytest 临时根（PYTEST_DEBUG_TEMPROOT 指向的项目内目录，本机生成，不入库）
+.pytest_tmp/
+# 数据库与文档的本地备份（清理数据前的人工留证，本机专用，不进仓库）
+.bak_db/
+.bak_encoding/
+# 临时输出文件
+.pytest_out.txt
+*.lock
+# 原始素材 PDF（46 MB，多为 CUMCM 官方扫描件且有版权，不进仓库）。
+# data/samples/ 下由 scripts/pdf_to_md.py 转出的 Markdown 已入库，
+# 复现方式见 data/README.md 与 docs/push_version/push_V5.md。
+data/papers/
+data/uploads/
+# 面试自用材料（数字基于 Phase-1 时期、已随 Agent 化过时，不进公开仓库）
+docs/interview/
+logs/
+
+# 向量库重建/备份目录（v3.3.6 事故处置产物，含二进制索引，不入库）
+chroma_data.bak-*/
+chroma_data.broken-*/
+chroma_data.failed-*/
+.pytest_tmp/
+# 一次性排查脚本（临时取证用，不入库）
+.tmp_*
+# archify 生成副产物（*.delivery.json / *.browser-check.json / *.finalize*.json），
+# 是渲染器的过程记录而非产物；只提交图本身（NN-*.json + NN-*.html）
+docs/diagrams/*.delivery.json
+docs/diagrams/*.browser-check.json
+docs/diagrams/*.finalize.json
+docs/diagrams/*.finalize-summary.json
+docs/diagrams/**/*.delivery.json
+docs/diagrams/**/*.browser-check.json
+docs/diagrams/**/*.finalize.json
+docs/diagrams/**/*.finalize-summary.json
+# 权限恢复工具的日志（本机故障处置产物，不入库）
+.acl-recovery/

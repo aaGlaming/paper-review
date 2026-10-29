@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "大屏聚合数据流",
+    "locale": "zh-CN",
+    "subtitle": "summary 与 trend 由 SQL 聚合；rubric_id 非空的已评分记录才进入提交统计。",
+    "output": "docs/diagrams/15-dashboard-aggregation.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "stages": [
+    {
+      "label": "MySQL 事实表"
+    },
+    {
+      "label": "SQL 聚合"
+    },
+    {
+      "label": "API payload"
+    },
+    {
+      "label": "大屏模块"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "reviews",
+      "type": "database",
+      "label": "review",
+      "sublabel": "review fields",
+      "stage": 0,
+      "row": 0,
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 33,
+          "end_line": 45,
+          "label": "Review"
+        }
+      ]
+    },
+    {
+      "id": "dims",
+      "type": "database",
+      "label": "review_dimension",
+      "sublabel": "档位与引用",
+      "stage": 0,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 48,
+          "end_line": 58,
+          "label": "ReviewDimension"
+        }
+      ]
+    },
+    {
+      "id": "artifacts",
+      "type": "database",
+      "label": "review_artifact",
+      "sublabel": "产物行",
+      "stage": 0,
+      "row": 2,
+      "sources": [
+        {
+          "path": "backend/app/report/artifact_models.py",
+          "line": 18,
+          "end_line": 40,
+          "label": "ReviewArtifact"
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "backend",
+      "label": "dashboard.py",
+      "sublabel": "GROUP BY + 率值归一",
+      "stage": 1,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/report/dashboard.py",
+          "line": 1,
+          "end_line": 216,
+          "label": "聚合"
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "type": "backend",
+      "label": "GET /summary",
+      "sublabel": "cards / charts / gold",
+      "stage": 2,
+      "row": 1,
+      "sources": [
+        {
+          "path": "backend/app/api/dashboard_routes.py",
+          "line": 18,
+          "end_line": 30,
+          "label": "summary"
+        }
+      ]
+    },
+    {
+      "id": "trend",
+      "type": "backend",
+      "label": "GET /trend",
+      "sublabel": "days → date series",
+      "stage": 2,
+      "row": 2,
+      "sources": [
+        {
+          "path": "backend/app/api/dashboard_routes.py",
+          "line": 26,
+          "end_line": 33,
+          "label": "trend"
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "数据大屏",
+      "sublabel": "指标卡 + 图表",
+      "stage": 3,
+      "row": 1,
+      "sources": [
+        {
+          "path": "frontend/src/views/数据大屏.vue",
+          "line": 1,
+          "end_line": 253,
+          "label": "大屏"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "reviews-sql",
+      "from": "reviews",
+      "to": "sql",
+      "label": "scored review filter",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "dims-sql",
+      "from": "dims",
+      "to": "sql",
+      "classification": "data",
+      "variant": "default",
+      "label": "dimensions",
+      "labelDy": 65
+    },
+    {
+      "id": "artifacts-sql",
+      "from": "artifacts",
+      "to": "sql",
+      "label": "冲突统计",
+      "classification": "data",
+      "variant": "default",
+      "labelDy": -55
+    },
+    {
+      "id": "sql-summary",
+      "from": "sql",
+      "to": "summary",
+      "label": "聚合字段",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "sql-trend",
+      "from": "sql",
+      "to": "trend",
+      "label": "按日汇总",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "summary-ui",
+      "from": "summary",
+      "to": "ui",
+      "label": "并行请求",
+      "classification": "data",
+      "variant": "default"
+    },
+    {
+      "id": "trend-ui",
+      "from": "trend",
+      "to": "ui",
+      "label": "折线序列",
+      "classification": "data",
+      "variant": "default"
+    }
+  ]
+}

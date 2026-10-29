@@ -1,0 +1,67 @@
+{
+  "判据1_控制流由模型决定": {
+    "评审数": 10,
+    "不同动作序列数": 10,
+    "样例": {
+      "1b88e909ff52": "list_dimensions > list_dimensions > get_constraints > search_evidence > search_evidence > search_evidence > se",
+      "2b6b9925145f": "list_dimensions > list_dimensions > get_constraints > search_evidence > search_evidence > search_evidence > se",
+      "716092001f85": "list_dimensions > list_dimensions > get_constraints > search_evidence > search_evidence > search_evidence > se"
+    },
+    "通过": true
+  },
+  "判据2_工具与参数校验": {
+    "出现过的错误码": {
+      "quote_not_substring": 10
+    },
+    "工具清单": [
+      "check_consistency",
+      "final",
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "通过": true
+  },
+  "判据3_循环与终止": {
+    "终止原因": {
+      "budget_exhausted": 1,
+      "all_submitted": 4,
+      "no_progress": 5
+    },
+    "通过": true
+  },
+  "判据4_轨迹可回放": {
+    "轨迹总行数": 270,
+    "孤儿行": 0,
+    "通过": true
+  },
+  "判据5_自我修正": {
+    "critique轨迹": {},
+    "全库档位分布": {
+      "基本": 35,
+      "不足": 7,
+      "充分": 6,
+      "证据不足": 2
+    },
+    "通过": false
+  },
+  "引用可回溯": {
+    "有引用的维度数": 48,
+    "档位分布": {
+      "基本": 35,
+      "不足": 7,
+      "充分": 6
+    },
+    "通过": true
+  },
+  "逐字引用核对": {
+    "原句命中": 48,
+    "非原句": 0,
+    "空引用": 2,
+    "通过": true
+  }
+}

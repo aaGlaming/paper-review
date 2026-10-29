@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="500" viewBox="0 0 860 500" fill="none" aria-hidden="true">
+  <style>
+    .paper-back { fill: var(--pr-surface-sunken, #eceff3); stroke: var(--pr-rule-strong, #b3bcc6); }
+    .paper-front { fill: var(--pr-surface, #fff); stroke: var(--pr-rule, #d6dbe2); }
+    .ink { stroke: var(--pr-ink, #1b2430); }
+    .guide { stroke: var(--pr-rule, #d6dbe2); }
+    .annotation { stroke: var(--pr-primary, #2b5797); }
+    .pencil { fill: var(--pr-range, #7a5a12); stroke: var(--pr-ink, #1b2430); }
+    .sheet { transform-box: fill-box; transform-origin: center; animation: settle 720ms cubic-bezier(.2, .8, .2, 1) both; }
+    .row { opacity: 0; animation: appear 360ms ease-out forwards; }
+    .row-1 { animation-delay: 340ms; }
+    .row-2 { animation-delay: 500ms; }
+    .row-3 { animation-delay: 660ms; }
+    .row-4 { animation-delay: 820ms; }
+    .row-5 { animation-delay: 980ms; }
+    .margin-mark { opacity: 0; animation: appear 260ms ease-out 1.12s forwards; }
+    .mark-line { stroke-dasharray: 160; stroke-dashoffset: 160; animation: draw 760ms ease-out 1.25s forwards; }
+    .mark-circle { stroke-dasharray: 120; stroke-dashoffset: 120; animation: draw 640ms ease-out 1.65s forwards; }
+    .pencil { transform-box: fill-box; transform-origin: center; animation: pencil-arrive 550ms ease-out 1.12s both; }
+    .ready { opacity: 0; animation: appear 320ms ease-out 2.05s forwards; }
+    @keyframes settle { from { opacity: 0; transform: translateY(18px) rotate(-1.8deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+    @keyframes appear { to { opacity: 1; } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes pencil-arrive { from { opacity: 0; transform: translate(22px, -12px) rotate(8deg); } to { opacity: 1; transform: translate(0, 0) rotate(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .row, .margin-mark, .ready { opacity: 1; }
+      .mark-line, .mark-circle { stroke-dashoffset: 0; }
+    }
+  </style>
+  <g class="sheet">
+    <rect class="paper-back" x="182" y="76" width="494" height="338" rx="3" stroke-width="1.5" transform="rotate(1.2 182 76)"/>
+    <rect class="paper-front" x="166" y="58" width="494" height="338" rx="3" stroke-width="1.5"/>
+    <path class="guide" d="M218 112H608" stroke-width="1.2" stroke-linecap="round"/>
+    <path class="ink row row-1" d="M222 145H420" stroke-width="5" stroke-linecap="round"/>
+    <path class="guide row row-1" d="M222 166H566" stroke-width="2" stroke-linecap="round"/>
+    <path class="guide row row-2" d="M222 194H584M222 211H546" stroke-width="2" stroke-linecap="round"/>
+    <path class="guide row row-3" d="M222 242H573M222 259H516" stroke-width="2" stroke-linecap="round"/>
+    <path class="guide row row-4" d="M222 290H575M222 307H538" stroke-width="2" stroke-linecap="round"/>
+    <path class="guide row row-5" d="M222 338H482" stroke-width="2" stroke-linecap="round"/>
+    <path class="guide" d="M194 128V362" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 7"/>
+    <g class="margin-mark">
+      <path class="annotation mark-line" d="M205 190C216 184 222 185 232 190" stroke-width="2.2" stroke-linecap="round"/>
+      <path class="annotation mark-circle" d="M234 232C246 222 265 224 272 235C279 247 268 260 253 260C238 260 228 246 234 232Z" stroke-width="2" stroke-linecap="round"/>
+      <path class="annotation" d="M239 241L247 248L261 233" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g class="pencil">
+      <path d="M613 119L706 213L681 238L588 144L613 119Z" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M588 144L579 174L609 165L588 144Z" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M602 130L626 106" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M604 160L671 227" stroke="var(--pr-surface, #fff)" stroke-width="1.2" stroke-linecap="round" opacity=".85"/>
+    </g>
+    <g class="ready">
+      <path class="annotation" d="M509 356C536 349 567 350 592 357" stroke-width="2" stroke-linecap="round"/>
+      <path class="annotation" d="M520 364C545 359 570 360 588 365" stroke-width="1.2" stroke-linecap="round" opacity=".65"/>
+    </g>
+  </g>
+</svg>

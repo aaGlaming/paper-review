@@ -1,0 +1,312 @@
+/**
+ * 已冻结接口的封装：十一条 REST 路径各一个函数。
+ *
+ * 两条纪律写在这里，页面不再各写一遍：
+ * - **URL 一律相对路径**（`/api/...`），不拼 host。后端没有 CORS 中间件，直连 8077 会被浏览器挡掉；
+ *   相对路径交给 Vite 开发服务器代理。写死 host 会让单页能跑、部署全崩。
+ * - 非 2xx 一律抛 `ApiError`，消息里带上响应体的 `detail`（坏包还带 `filename` 与 `field`，
+ *   参数校验失败时 `detail` 是数组）。页面用消息显示错误，用字段名指出改哪个文件的哪个字段。
+ */
+
+import type {
+  ContestArchiveResult,
+  ContestListResponse,
+  ContestPublishResult,
+  CreateReviewPayload,
+  EvalSummary,
+  EvalPaperResult,
+  ImportSummary,
+  PaperSection,
+  ReviewArchive,
+  ReviewArtifact,
+  ReviewCreated,
+  ReviewReport,
+  PublishedRubricText,
+  RubricCopyResult,
+  RubricPublishResult,
+  SampleListResponse,
+  AgentStepsResponse,
+  AuthUser,
+  ReviewListResponse,
+  ChatSessionListResponse, ChatSessionItem, ChatMessageListResponse, ChatAnswerResponse,
+  AnalyticsKind, AnalyticsResponse, SummaryResponse,
+  DashboardSummary, DashboardTrend,
+} from './types'
+
+let authToken: string | null = null
+
+export function setAuthToken(token: string | null): void {
+  authToken = token
+}
+
+export class ApiError extends Error {
+  readonly status: number
+  readonly detail: unknown
+  readonly filename?: string
+  readonly field?: string
+
+  constructor(
+    status: number,
+    message: string,
+    options: { detail?: unknown; filename?: string; field?: string } = {},
+  ) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.detail = options.detail
+    this.filename = options.filename
+    this.field = options.field
+  }
+}
+
+function optionalText(source: Record<string, unknown>, key: string): string | undefined {
+  const value = source[key]
+  return typeof value === 'string' && value.trim() ? value : undefined
+}
+
+function describeFailure(
+  status: number,
+  body: unknown,
+): { message: string; detail: unknown; filename?: string; field?: string } {
+  if (body && typeof body === 'object' && !Array.isArray(body)) {
+    const record = body as Record<string, unknown>
+    const detail = record.detail
+    if (typeof detail === 'string' && detail.trim()) {
+      return {
+        message: detail,
+        detail,
+        filename: optionalText(record, 'filename'),
+        field: optionalText(record, 'field'),
+      }
+    }
+    if (Array.isArray(detail)) {
+      return { message: `参数校验失败（HTTP ${status}）：${JSON.stringify(detail)}`, detail }
+    }
+  }
+  if (typeof body === 'string' && body.trim()) {
+    return { message: `请求失败（HTTP ${status}）：${body}`, detail: body }
+  }
+  return { message: `请求失败（HTTP ${status}）`, detail: body }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers)
+  headers.set('Content-Type', 'application/json')
+  if (authToken) headers.set('Authorization', `Bearer ${authToken}`)
+  const response = await fetch(path, {
+    headers,
+    ...init,
+  })
+
+  const text = await response.text()
+  let body: unknown = null
+  if (text) {
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = text
+    }
+  }
+
+  if (!response.ok) {
+    const failure = describeFailure(response.status, body)
+    throw new ApiError(response.status, failure.message, failure)
+  }
+  return body as T
+}
+
+export function getDashboardSummary(): Promise<DashboardSummary> {
+  return request<DashboardSummary>('/api/dashboard/summary')
+}
+
+export function getDashboardTrend(days = 30): Promise<DashboardTrend> {
+  return request<DashboardTrend>(`/api/dashboard/trend?days=${encodeURIComponent(String(days))}`)
+}
+
+export function authRegister(payload: { username: string; email: string; password: string; display_name: string }): Promise<AuthUser> {
+  return request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function authLogin(payload: { username: string; password: string }): Promise<{ token: string; user_id: string; role: string; permissions: string[] }> {
+  return request('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function authMe(): Promise<AuthUser> {
+  return request<AuthUser>('/api/auth/me')
+}
+
+export async function authLogout(): Promise<void> {
+  await request<void>('/api/auth/logout', { method: 'POST' })
+}
+
+function asQuery(query: URLSearchParams): string {
+  const text = query.toString()
+  return text ? `?${text}` : ''
+}
+
+/** 赛题列表。默认只返回已发布；草稿与归档要显式要求。 */
+export function listContests(
+  includeArchived = false,
+  includeDrafts = false,
+): Promise<ContestListResponse> {
+  const query = new URLSearchParams()
+  if (includeArchived) {
+    query.set('include_archived', 'true')
+  }
+  if (includeDrafts) {
+    query.set('include_drafts', 'true')
+  }
+  return request<ContestListResponse>(`/api/contests${asQuery(query)}`)
+}
+
+/** 读取赛题当前已发布量规条文。 */
+export function getContestRubric(contestId: string): Promise<PublishedRubricText> {
+  return request<PublishedRubricText>(`/api/contests/${encodeURIComponent(contestId)}/rubric`)
+}
+
+/** 创建评审：解析章节树后停在确认节点，响应里没有档位字段。 */
+export function createReview(payload: CreateReviewPayload): Promise<ReviewCreated> {
+  return request<ReviewCreated>('/api/reviews', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/** 确认章节树后继续到终态，返回完整报告。 */
+export function resumeReview(reviewId: string, sections: PaperSection[]): Promise<ReviewReport> {
+  return request<ReviewReport>(`/api/reviews/${encodeURIComponent(reviewId)}/resume`, {
+    method: 'POST',
+    body: JSON.stringify({ sections }),
+  })
+}
+
+/** 读取一条评审：已落档返回报告，只有会话快照时返回章节树。 */
+export function getReview(reviewId: string): Promise<ReviewArchive> {
+  return request<ReviewArchive>(`/api/reviews/${encodeURIComponent(reviewId)}`)
+}
+
+export function getReviewArtifacts(reviewId: string): Promise<ReviewArtifact[]> {
+  return request<ReviewArtifact[]>(`/api/reviews/${encodeURIComponent(reviewId)}/artifacts`)
+}
+
+export function extractReviewArtifacts(reviewId: string): Promise<{
+  count: number
+  by_type: Record<ReviewArtifact['artifact_type'], number>
+  replaced: number
+}> {
+  return request(`/api/reviews/${encodeURIComponent(reviewId)}/artifacts/extract`, { method: 'POST' })
+}
+
+export function listReviews(params: {
+  contestId?: string
+  userId?: string
+  owner?: 'owned' | 'orphan'
+  page?: number
+  pageSize?: number
+} = {}): Promise<ReviewListResponse> {
+  const query = new URLSearchParams()
+  if (params.contestId !== undefined) query.set('contest_id', params.contestId)
+  if (params.userId !== undefined) query.set('user_id', params.userId)
+  if (params.owner !== undefined) query.set('owner', params.owner)
+  if (params.page !== undefined) query.set('page', String(params.page))
+  if (params.pageSize !== undefined) query.set('page_size', String(params.pageSize))
+  return request<ReviewListResponse>(`/api/reviews${asQuery(query)}`)
+}
+
+export function fetchAgentSteps(reviewId: string): Promise<AgentStepsResponse> {
+  return request<AgentStepsResponse>(`/api/reviews/${encodeURIComponent(reviewId)}/agent-steps`)
+}
+
+/** 样例列表。`isDemo` 给布尔值时才带查询参数。 */
+export function listSamples(isDemo?: boolean): Promise<SampleListResponse> {
+  const query = new URLSearchParams()
+  if (typeof isDemo === 'boolean') {
+    query.set('is_demo', isDemo ? 'true' : 'false')
+  }
+  return request<SampleListResponse>(`/api/samples${asQuery(query)}`)
+}
+
+/** 三项评测指标。 */
+export function getEvalSummary(): Promise<EvalSummary> {
+  return request<EvalSummary>('/api/eval/summary')
+}
+
+/** 读取单篇 gold 与当前 deterministic 系统档位的逐维差异。 */
+export function getEvalPaper(paperId: string): Promise<EvalPaperResult> {
+  return request<EvalPaperResult>(`/api/eval/papers/${encodeURIComponent(paperId)}`)
+}
+
+/** 导入赛题数据包。相对路径按项目根目录解析。 */
+export function importPackage(packageDir: string): Promise<ImportSummary> {
+  return request<ImportSummary>('/api/imports', {
+    method: 'POST',
+    body: JSON.stringify({ package_dir: packageDir }),
+  })
+}
+
+/** 发布赛题，并把它当前那一版量规设为可预审。 */
+export function publishContest(contestId: string): Promise<ContestPublishResult> {
+  return request<ContestPublishResult>(
+    `/api/contests/${encodeURIComponent(contestId)}/publish`,
+    { method: 'POST' },
+  )
+}
+
+/** 归档赛题，默认列表里不再出现。 */
+export function archiveContest(contestId: string): Promise<ContestArchiveResult> {
+  return request<ContestArchiveResult>(
+    `/api/contests/${encodeURIComponent(contestId)}/archive`,
+    { method: 'POST' },
+  )
+}
+
+/** 从当前已发布量规复制出 version + 1 的草稿。 */
+export function copyRubricAsDraft(contestId: string): Promise<RubricCopyResult> {
+  return request<RubricCopyResult>(`/api/contests/${encodeURIComponent(contestId)}/rubrics`, {
+    method: 'POST',
+  })
+}
+
+/** 发布某一版量规，同一赛题同时只留一条已发布。 */
+export function publishRubric(rubricId: string): Promise<RubricPublishResult> {
+  return request<RubricPublishResult>(`/api/rubrics/${encodeURIComponent(rubricId)}/publish`, {
+    method: 'POST',
+  })
+}
+
+export function listChatSessions(): Promise<ChatSessionListResponse> {
+  return request('/api/chat/sessions')
+}
+export async function createChatSession(title?: string): Promise<ChatSessionItem> {
+  const created = await request<{ session_id: string; title: string; created_at: string }>('/api/chat/sessions', {
+    method: 'POST', body: JSON.stringify(title ? { title } : {}),
+  })
+  return { ...created, updated_at: created.created_at, message_count: 0 }
+}
+export async function deleteChatSession(id: string): Promise<void> {
+  await request<void>(`/api/chat/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+export function listChatMessages(sessionId: string): Promise<ChatMessageListResponse> {
+  return request(`/api/chat/sessions/${encodeURIComponent(sessionId)}/messages`)
+}
+export function askQuestion(sessionId: string, input: { question: string; contestId: string }): Promise<ChatAnswerResponse> {
+  return request(`/api/chat/sessions/${encodeURIComponent(sessionId)}/messages`, {
+    method: 'POST', body: JSON.stringify({ question: input.question, contest_id: input.contestId }),
+  })
+}
+export function runAnalytics(input: { contestId: string; kind: AnalyticsKind; dimensionCode?: string }): Promise<AnalyticsResponse> {
+  return request('/api/chat/analytics', {
+    method: 'POST', body: JSON.stringify({
+      contest_id: input.contestId, kind: input.kind,
+      ...(input.dimensionCode ? { dimension_code: input.dimensionCode } : {}),
+    }),
+  })
+}
+export function generateSummary(input: { contestId: string; top?: number; sessionId?: string }): Promise<SummaryResponse> {
+  return request('/api/chat/summary', {
+    method: 'POST', body: JSON.stringify({
+      contest_id: input.contestId, ...(input.top !== undefined ? { top: input.top } : {}),
+      ...(input.sessionId ? { session_id: input.sessionId } : {}),
+    }),
+  })
+}

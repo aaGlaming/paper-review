@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "diagram_type": "class",
+  "meta": {
+    "title": "Agent 工具契约类图",
+    "locale": "zh-CN",
+    "subtitle": "强类型参数约束工具调用；submit_dimension 验证档位与 quote；共享 ToolContext。",
+    "output": "docs/diagrams/24-agent-tool-contract.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "types": [
+    {
+      "id": "ctx",
+      "label": "ToolContext",
+      "kind": "class",
+      "sublabel": "review / contest / rubric context",
+      "row": 0,
+      "col": 0,
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 25,
+          "end_line": 65,
+          "label": "工具上下文"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "review_id",
+          "type": "str",
+          "visibility": "public"
+        },
+        {
+          "name": "contest_id",
+          "type": "str",
+          "visibility": "public"
+        },
+        {
+          "name": "dimension_codes",
+          "type": "tuple[str, ...]",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "band",
+      "label": "Band",
+      "kind": "enum",
+      "sublabel": "固定四档",
+      "row": 0,
+      "col": 1,
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 15,
+          "end_line": 25,
+          "label": "Band"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "充分",
+          "type": "Literal",
+          "visibility": "public"
+        },
+        {
+          "name": "基本",
+          "type": "Literal",
+          "visibility": "public"
+        },
+        {
+          "name": "不足",
+          "type": "Literal",
+          "visibility": "public"
+        },
+        {
+          "name": "证据不足",
+          "type": "Literal",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "args",
+      "label": "Args models",
+      "kind": "record",
+      "sublabel": "Pydantic 输入形状",
+      "row": 0,
+      "col": 2,
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 65,
+          "end_line": 130,
+          "label": "工具参数"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "_EmptyArgs",
+          "type": "空对象",
+          "visibility": "public"
+        },
+        {
+          "name": "_SearchArgs",
+          "type": "query + dimension",
+          "visibility": "public"
+        },
+        {
+          "name": "_ParentArgs",
+          "type": "parent_id",
+          "visibility": "public"
+        },
+        {
+          "name": "_ConsistencyArgs",
+          "type": "texts",
+          "visibility": "public"
+        },
+        {
+          "name": "_SubmitArgs",
+          "type": "dimension + band + quote",
+          "visibility": "public"
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "tools",
+      "label": "Tool builders",
+      "kind": "class",
+      "sublabel": "注册 6 个白名单工具",
+      "row": 1,
+      "col": 1,
+      "sources": [
+        {
+          "path": "backend/app/agent/tools.py",
+          "line": 300,
+          "end_line": 331,
+          "label": "build_tools"
+        }
+      ],
+      "attributes": [],
+      "methods": [
+        {
+          "name": "list_dimensions",
+          "parameters": "{}",
+          "returns": "dimensions",
+          "visibility": "public"
+        },
+        {
+          "name": "search_evidence",
+          "parameters": "query, dimension_code",
+          "returns": "matches",
+          "visibility": "public"
+        },
+        {
+          "name": "read_parent",
+          "parameters": "parent_id",
+          "returns": "parent",
+          "visibility": "public"
+        },
+        {
+          "name": "check_consistency",
+          "parameters": "texts",
+          "returns": "findings",
+          "visibility": "public"
+        },
+        {
+          "name": "get_constraints",
+          "parameters": "{}",
+          "returns": "constraints",
+          "visibility": "public"
+        },
+        {
+          "name": "submit_dimension",
+          "parameters": "dimension_code, band, quote",
+          "returns": "saved result",
+          "visibility": "public"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "tool-context",
+      "from": "tools",
+      "to": "ctx",
+      "kind": "dependency",
+      "label": "uses"
+    },
+    {
+      "id": "tool-args",
+      "from": "tools",
+      "to": "args",
+      "kind": "dependency",
+      "label": "validates"
+    },
+    {
+      "id": "tool-band",
+      "from": "tools",
+      "to": "band",
+      "kind": "dependency",
+      "label": "enum"
+    }
+  ]
+}

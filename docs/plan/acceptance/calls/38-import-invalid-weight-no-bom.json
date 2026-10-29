@@ -1,0 +1,18 @@
+﻿{
+    "step":  "38-import-invalid-weight-no-bom",
+    "at":  "2026-10-18T18:45:31.8163021+08:00",
+    "request":  {
+                    "body":  {
+                                 "package_dir":  "D:\\WinTemp\\fixture-extra-invalid-weight-e4f1b4b7e7c34f8eb8123ab1920c3f6a"
+                             },
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/imports"
+                },
+    "response_status":  400,
+    "response_body":  {
+                          "filename":  "rubric.json",
+                          "field":  "dimensions.weight",
+                          "detail":  "rubric.json 的 dimensions.weight：五个维度权重合计为 99，必须为 100"
+                      },
+    "notes":  "Corrected temporary fixture: UTF-8 without BOM, one rubric weight changed from 20 to 19; this run exercises weight-sum validation. Earlier 25 was a BOM parse failure."
+}

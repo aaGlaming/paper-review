@@ -1,0 +1,68 @@
+{
+  "step": "36-playwright-ui-validation",
+  "at": "2026-10-18T10:41:41.888Z",
+  "request": {
+    "method": "PLAYWRIGHT",
+    "url": "http://127.0.0.1:5173 routes /parse, /scoring, /consistency, /suggestions, /eval"
+  },
+  "response_status": 200,
+  "response_body": {
+    "route_observations": {
+      "parse": {
+        "http": 200,
+        "phase": "done",
+        "doneSteps": 6
+      },
+      "consistency": {
+        "evidenceHits": 2,
+        "located": [
+          {
+            "text": "412 s",
+            "located": "true",
+            "mark": "412 s",
+            "x": 681.390625,
+            "y": 916.046875
+          },
+          {
+            "text": "386 s",
+            "located": "true",
+            "mark": "386 s",
+            "x": 334.640625,
+            "y": 1126.40625
+          }
+        ]
+      },
+      "scoring": {
+        "cards": 5,
+        "excludedRows": 1,
+        "clickableQuotes": 5,
+        "locatedQuote": "1. 各地块面积与土壤条件已知，同一地块内种植均匀；",
+        "rubricTextMissing": true,
+        "rubricClauseDisplayed": false
+      },
+      "suggestions": {
+        "items": 4,
+        "upstreamIds": 4
+      },
+      "eval": {
+        "source": "deterministic"
+      },
+      "singlePaperPlaceholder": true
+    },
+    "six_term_matches_by_page": {
+      "parse": 0,
+      "scoring": 0,
+      "consistency": 0,
+      "suggestions": 0,
+      "eval": 0
+    },
+    "screenshots": [
+      "screenshots/01-parse-completed.png",
+      "screenshots/02-consistency-located.png",
+      "screenshots/03-scoring-real-report.png",
+      "screenshots/04-suggestions.png",
+      "screenshots/05-eval-default.png"
+    ]
+  },
+  "notes": "Actual API responses from saved real reviews were loaded into the browser session; page navigation and evidence clicks are read-only. No review API was triggered. Scoring card explicitly shows the rubric-content-unavailable placeholder."
+}

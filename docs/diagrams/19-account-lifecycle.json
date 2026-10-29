@@ -1,0 +1,148 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "账号状态生命周期",
+    "locale": "zh-CN",
+    "subtitle": "注册默认 active student；teacher role/permission 来自受控授权，不把未见的自助升级端点画成产品路径。",
+    "output": "docs/diagrams/19-account-lifecycle.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    }
+  },
+  "mainPath": [
+    "register",
+    "student"
+  ],
+  "states": [
+    {
+      "id": "register",
+      "type": "start",
+      "label": "注册",
+      "sublabel": "默认 student + active",
+      "step": "01",
+      "sources": [
+        {
+          "path": "backend/app/api/auth_routes.py",
+          "line": 48,
+          "end_line": 75,
+          "label": "注册"
+        }
+      ]
+    },
+    {
+      "id": "student",
+      "type": "active",
+      "label": "student",
+      "sublabel": "默认 3 permissions",
+      "step": "02",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 15,
+          "end_line": 28,
+          "label": "学生权限"
+        }
+      ]
+    },
+    {
+      "id": "teacher",
+      "type": "active",
+      "label": "teacher",
+      "sublabel": "管理员或受控授权",
+      "step": "03",
+      "sources": [
+        {
+          "path": "backend/app/auth/permissions.py",
+          "line": 15,
+          "end_line": 28,
+          "label": "教师权限"
+        }
+      ]
+    },
+    {
+      "id": "inactive",
+      "type": "failure",
+      "label": "非 active",
+      "sublabel": "登录校验失败",
+      "sources": [
+        {
+          "path": "backend/app/api/auth_routes.py",
+          "line": 75,
+          "end_line": 110,
+          "label": "登录"
+        }
+      ]
+    },
+    {
+      "id": "logout",
+      "type": "waiting",
+      "label": "已 logout",
+      "sublabel": "客户端清理 token",
+      "sources": [
+        {
+          "path": "backend/app/api/auth_routes.py",
+          "line": 100,
+          "end_line": 123,
+          "label": "登出"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "register-student",
+      "from": "register",
+      "to": "student",
+      "label": "创建默认身份",
+      "variant": "default"
+    },
+    {
+      "id": "grant-teacher",
+      "from": "student",
+      "to": "teacher",
+      "label": "授权角色 / 权限",
+      "variant": "security",
+      "note": "没有自助升级接口证据"
+    },
+    {
+      "id": "disable",
+      "from": "student",
+      "to": "inactive",
+      "label": "status 非 active",
+      "variant": "security"
+    },
+    {
+      "id": "disable-teacher",
+      "from": "teacher",
+      "to": "inactive",
+      "label": "status 非 active",
+      "variant": "security"
+    },
+    {
+      "id": "restore",
+      "from": "inactive",
+      "to": "student",
+      "label": "管理员恢复 active",
+      "variant": "default"
+    },
+    {
+      "id": "logout-student",
+      "from": "student",
+      "to": "logout",
+      "label": "token 清除",
+      "variant": "default"
+    },
+    {
+      "id": "logout-teacher",
+      "from": "teacher",
+      "to": "logout",
+      "label": "token 清除",
+      "variant": "default"
+    }
+  ]
+}

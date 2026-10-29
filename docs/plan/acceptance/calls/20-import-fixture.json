@@ -1,0 +1,22 @@
+﻿{
+    "step":  "20-import-fixture",
+    "at":  "2026-10-18T18:38:52.8702935+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/imports",
+                    "body":  {
+                                 "package_dir":  "data/contests/fixture-extra"
+                             }
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "contest_id":  "fixture-extra",
+                          "rubric_id":  "fixture-extra-v1",
+                          "version":  1,
+                          "dimensions":  5,
+                          "constraints":  4,
+                          "pitfalls":  2,
+                          "exemplars":  2
+                      },
+    "notes":  "Import the existing self-built fourth-contest package."
+}

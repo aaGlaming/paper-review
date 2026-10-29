@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "diagram_type": "timeline",
+  "meta": {
+    "title": "P16–P26 里程碑",
+    "locale": "zh-CN",
+    "subtitle": "按 progress 版本段顺序；时间精度为记录日期，不代表具体执行时刻。",
+    "output": "docs/diagrams/26-phase3-milestones.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "evidence": "observed",
+    "timezone": "America/Los_Angeles"
+  },
+  "lanes": [
+    {
+      "id": "base",
+      "label": "基础能力"
+    },
+    {
+      "id": "business",
+      "label": "业务能力"
+    },
+    {
+      "id": "close",
+      "label": "收口与验收"
+    }
+  ],
+  "events": [
+    {
+      "id": "p16",
+      "at": "2026-10-20T00:00:00-07:00",
+      "title": "P16 可观测性",
+      "detail": "v3.0.x：日志、指标与检查。",
+      "lane": "base",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 1994,
+          "end_line": 2145,
+          "label": "P16 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p17",
+      "at": "2026-10-20T00:00:00-07:00",
+      "title": "P17 账号鉴权",
+      "detail": "v3.1.x：账号、权限与前端守卫。",
+      "lane": "base",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 2147,
+          "end_line": 2310,
+          "label": "P17 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p18",
+      "at": "2026-10-20T00:00:00-07:00",
+      "title": "P18 记录总览",
+      "detail": "v3.2.x：记录检索与详情。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 2311,
+          "end_line": 2422,
+          "label": "P18 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p19",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P19 AI 问询",
+      "detail": "v3.3.x：问询链路与工程收口。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 2423,
+          "end_line": 2920,
+          "label": "P19 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p20",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P20 数据大屏",
+      "detail": "v3.4.x：SQL 聚合、大屏与日志窗口门禁。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 2922,
+          "end_line": 3080,
+          "label": "P20 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p21",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P21 上传与产物",
+      "detail": "v3.5.x：Markdown/DOCX 与三类产物定位。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3093,
+          "end_line": 3425,
+          "label": "P21 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p22",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P22 可评门禁",
+      "detail": "v3.6.x：创建与 resume 量规校验。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3427,
+          "end_line": 3524,
+          "label": "P22 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p23",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P23 Gold 评测",
+      "detail": "v3.7.x：样本校验与 low_sample。",
+      "lane": "business",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3526,
+          "end_line": 3657,
+          "label": "P23 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p24",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P24 容器骨架",
+      "detail": "v3.8.0：静态草案与 CORS；非验收。",
+      "lane": "close",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3660,
+          "end_line": 3702,
+          "label": "P24 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p25",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P25 等待可见",
+      "detail": "v3.9.0：等待计时与性能测量，不并行化。",
+      "lane": "close",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3704,
+          "end_line": 3774,
+          "label": "P25 版本段"
+        }
+      ]
+    },
+    {
+      "id": "p26",
+      "at": "2026-10-21T00:00:00-07:00",
+      "title": "P26 三期验收",
+      "detail": "v3.10.x：替代口径与首期回归收口。",
+      "lane": "close",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/plan/progress.md",
+          "line": 3776,
+          "end_line": 3926,
+          "label": "P26 版本段"
+        }
+      ]
+    }
+  ]
+}

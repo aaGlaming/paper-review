@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, delete, text
+from sqlalchemy import create_engine, delete, inspect, text
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
@@ -275,6 +275,49 @@ def test_insufficient_evidence_hit_counts_gold_insufficient():
     assert outcome["quote_exact_match"]["matched"] == 1
 
 
+def test_eval_metrics_mark_small_denominator_without_changing_rates():
+    small_gold = [
+        {"dimension_code": f"small-{index}", "band": "证据不足"}
+        for index in range(2)
+    ]
+    small_system = [
+        {"dimension_code": f"small-{index}", "band": "不足", "quote": None}
+        for index in range(2)
+    ]
+    small = summarize_eval([(small_gold, small_system, {})])
+
+    assert small["insufficient_evidence_hit"]["total"] == 2
+    assert small["insufficient_evidence_hit"]["rate"] == 0.0
+    assert small["insufficient_evidence_hit"]["low_sample"] is True
+
+    large_gold = [
+        {"dimension_code": f"dimension-{index}", "band": "充分"}
+        for index in range(60)
+    ]
+    large_system = [
+        {
+            "dimension_code": f"dimension-{index}",
+            "band": "充分" if index < 26 else "不足",
+            "quote": None,
+        }
+        for index in range(60)
+    ]
+    large = summarize_eval([(large_gold, large_system, {})])
+
+    assert large["band_agreement"]["matched"] == 26
+    assert large["band_agreement"]["total"] == 60
+    assert large["band_agreement"]["rate"] == pytest.approx(26 / 60)
+    assert large["band_agreement"]["low_sample"] is False
+
+
+def test_empty_eval_metric_is_not_low_sample():
+    empty = summarize_eval([])
+
+    assert empty["band_agreement"]["total"] == 0
+    assert empty["band_agreement"]["rate"] is None
+    assert empty["band_agreement"]["low_sample"] is False
+
+
 # --- 用例 9-10：评审记录持久化 --------------------------------------------------
 
 
@@ -318,6 +361,52 @@ def test_new_rubric_version_does_not_rewrite_old_reviews(session):
     assert reloaded["rubric_version"] == 1
     assert reloaded["dimensions"][0]["quote"] == "旧记录的原句"
     assert reloaded["dimensions"][0]["chunk_ids"] == ["c-old"]
+
+
+def test_new_review_round_trips_change_list_and_old_review_is_explained(session):
+    change_list = [{"section": "证据不足", "kind": "证据不足", "upstream_id": "dimension:assumption", "evidence": [], "action": "补充依据"}]
+    saved = store.save_review(
+        "review-with-change-list",
+        contest_id="contest-a",
+        dimensions=_dimension_results(),
+        change_list=change_list,
+        session=session,
+    )
+    loaded = store.load_review("review-with-change-list", session=session)
+
+    assert saved["change_list"] == change_list
+    assert loaded["change_list"] == change_list
+    assert loaded.get("change_list_note") is None
+
+    session.add(models.Review(review_id="review-old-without-list", change_list=None))
+    session.flush()
+    old = store.load_review("review-old-without-list", session=session)
+    assert old["change_list"] == []
+    assert old["change_list_note"] == "该记录为旧数据，未保存审查清单"
+
+
+def test_report_schema_adds_nullable_change_list_column_to_existing_review_table():
+    legacy_engine = create_engine("sqlite+pysqlite:///:memory:")
+    with legacy_engine.begin() as connection:
+        connection.execute(text(
+            "CREATE TABLE review (review_id VARCHAR(64) PRIMARY KEY, contest_id VARCHAR(64) NOT NULL, "
+            "rubric_id VARCHAR(64) NOT NULL, rubric_version INTEGER NOT NULL, model_name VARCHAR(128) NOT NULL, "
+            "created_at DATETIME NOT NULL)"
+        ))
+
+    models.create_report_schema(legacy_engine)
+    models.create_report_schema(legacy_engine)
+    model_columns = {column["name"] for column in inspect(legacy_engine).get_columns("review")}
+    with legacy_engine.begin() as connection:
+        connection.execute(text(
+            "INSERT INTO review (review_id, contest_id, rubric_id, rubric_version, model_name, created_at) "
+            "VALUES ('legacy', '', '', 1, '', CURRENT_TIMESTAMP)"
+        ))
+        stored_value = connection.execute(text("SELECT change_list FROM review WHERE review_id='legacy'")).scalar_one()
+
+    assert "change_list" in model_columns
+    assert stored_value is None
+    legacy_engine.dispose()
 
 
 def test_loading_old_review_keeps_contest_version_and_quotes(session, client):
@@ -378,7 +467,11 @@ def test_new_endpoints_return_200(client):
 
     demos_only = client.get("/api/samples", params={"is_demo": "true"}).json()["samples"]
     assert demos_only and all(item["is_demo"] for item in demos_only)
-    assert len(demos_only) == 3
+    # 真实论文与三篇演示稿并列返回，避免目录加载变化时互相遮蔽。
+    assert len(demos_only) >= 1
+    demo_ids = {item["sample_id"] for item in demos_only}
+    assert {"bench-dragon", "planting", "smoke"} <= demo_ids
+    assert any(sample_id.startswith("cumcm-") for sample_id in demo_ids)
 
     summary = client.get("/api/eval/summary")
     assert summary.status_code == 200
@@ -386,6 +479,7 @@ def test_new_endpoints_return_200(client):
     assert body["corpus_papers"] == 15
     assert body["gradable_papers"] == 12
     assert body["gradable_dimensions"] == 60
+    assert body["source"] == "deterministic"
     assert body["insufficient_evidence_hit"]["total"] == 2
 
 

@@ -1,0 +1,1295 @@
+[
+  {
+    "sample_id": "cumcm-2024-A-a016",
+    "contest_id": "cumcm-2024-A",
+    "chars": 35570,
+    "error": null,
+    "review_id": "dfdb217d9a894bb4a8b0f58c6d951998",
+    "status_after_create": "待确认",
+    "sections": 44,
+    "elapsed_sec": 18.0,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "modeling": "基本",
+      "constraint_check": "基本",
+      "solution": "基本",
+      "presentation": "基本"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "modeling": "原句",
+      "constraint_check": "原句",
+      "solution": "原句",
+      "presentation": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 46,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 45,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 41,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 44,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 21,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 27,
+    "actions": [
+      "final",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [],
+    "forced_count": 0,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-A-a053",
+    "contest_id": "cumcm-2024-A",
+    "chars": 47144,
+    "error": null,
+    "review_id": "716092001f8546e4a81e9fd39eef99a0",
+    "status_after_create": "待确认",
+    "sections": 57,
+    "elapsed_sec": 29.1,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "基本",
+      "presentation": "基本",
+      "solution": "基本",
+      "modeling": "基本"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "presentation": "原句",
+      "solution": "原句",
+      "modeling": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 23,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 59,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 51,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 55,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 39,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 30,
+    "actions": [
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [
+      "补交 1 条"
+    ],
+    "forced_count": 1,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-A-a163",
+    "contest_id": "cumcm-2024-A",
+    "chars": 35211,
+    "error": null,
+    "review_id": "a8688939349b458a9047bf9210855a7d",
+    "status_after_create": "待确认",
+    "sections": 25,
+    "elapsed_sec": 17.7,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "基本",
+      "modeling": "基本",
+      "presentation": "基本",
+      "solution": "基本"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 82,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 54,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 25,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 69,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 26,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 27,
+    "actions": [
+      "final",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [],
+    "forced_count": 0,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-A-a178",
+    "contest_id": "cumcm-2024-A",
+    "chars": 37627,
+    "error": null,
+    "review_id": "2b6b9925145f49918b0f0f8033d89b9c",
+    "status_after_create": "待确认",
+    "sections": 48,
+    "elapsed_sec": 30.8,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "modeling": "基本",
+      "solution": "基本",
+      "constraint_check": "基本",
+      "presentation": "不足"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "modeling": "原句",
+      "solution": "原句",
+      "constraint_check": "原句",
+      "presentation": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 24,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 36,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 62,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 34,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 76,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 33,
+    "actions": [
+      "check_consistency",
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [
+      "补交 1 条"
+    ],
+    "forced_count": 1,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-A-a242",
+    "contest_id": "cumcm-2024-A",
+    "chars": 43013,
+    "error": null,
+    "review_id": "c7ae81c4a9fc4e64a75255482976da7e",
+    "status_after_create": "待确认",
+    "sections": 39,
+    "elapsed_sec": 36.6,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "budget_exhausted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "充分",
+      "modeling": "充分",
+      "presentation": "证据不足",
+      "solution": "充分"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "modeling": "原句",
+      "presentation": "空",
+      "solution": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 53,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 78,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 36,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "证据不足",
+        "chat_calls": null,
+        "quote_len": 0,
+        "quote_is_substring": null
+      },
+      {
+        "dimension_code": "solution",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 58,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 1,
+    "agent_step_rows": 33,
+    "actions": [
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 3,
+    "force_submit": [
+      "补交 4 条"
+    ],
+    "forced_count": 4,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "证据不足",
+        "status": "证据不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-C-c038",
+    "contest_id": "cumcm-2024-C",
+    "chars": 52648,
+    "error": null,
+    "review_id": "1b88e909ff524f60a3ca12ba0d4aa325",
+    "status_after_create": "待确认",
+    "sections": 38,
+    "elapsed_sec": 19.4,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "不足",
+      "modeling": "基本",
+      "presentation": "基本",
+      "solution": "基本"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 27,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 47,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 55,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 63,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 109,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 26,
+    "actions": [
+      "final",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [],
+    "forced_count": 0,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-C-c063",
+    "contest_id": "cumcm-2024-C",
+    "chars": 36172,
+    "error": null,
+    "review_id": "a195d55299e74744904b7578244a0662",
+    "status_after_create": "待确认",
+    "sections": 30,
+    "elapsed_sec": 21.0,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "modeling": "基本",
+      "presentation": "基本",
+      "solution": "基本",
+      "constraint_check": "不足"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句",
+      "constraint_check": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 35,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 56,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 71,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 60,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 32,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 21,
+    "actions": [
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "terminated"
+    ],
+    "submit_ok": 0,
+    "force_submit": [
+      "补交 4 条",
+      "补交 1 条"
+    ],
+    "forced_count": 5,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-C-c094",
+    "contest_id": "cumcm-2024-C",
+    "chars": 56185,
+    "error": null,
+    "review_id": "92e0e5d8f6924941bcfa06f11c87cfcc",
+    "status_after_create": "待确认",
+    "sections": 33,
+    "elapsed_sec": 19.2,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "不足",
+      "modeling": "充分",
+      "presentation": "不足",
+      "solution": "不足"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 66,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 65,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 90,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 28,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 21,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 26,
+    "actions": [
+      "final",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [],
+    "forced_count": 0,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2024-C-c234",
+    "contest_id": "cumcm-2024-C",
+    "chars": 36526,
+    "error": null,
+    "review_id": "ced60cfac27d4f7097ffc91fa571ce33",
+    "status_after_create": "待确认",
+    "sections": 23,
+    "elapsed_sec": 16.2,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "budget_exhausted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "modeling": "充分",
+      "presentation": "不足",
+      "solution": "充分",
+      "constraint_check": "证据不足"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句",
+      "constraint_check": "空"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 14,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 36,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "不足",
+        "chat_calls": null,
+        "quote_len": 116,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "充分",
+        "chat_calls": null,
+        "quote_len": 54,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "证据不足",
+        "chat_calls": null,
+        "quote_len": 0,
+        "quote_is_substring": null
+      }
+    ],
+    "insufficient": 1,
+    "agent_step_rows": 16,
+    "actions": [
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "terminated"
+    ],
+    "submit_ok": 0,
+    "force_submit": [
+      "补交 4 条",
+      "补交 0 条"
+    ],
+    "forced_count": 4,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "不足",
+        "status": "不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "充分",
+        "status": "充分",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "证据不足",
+        "status": "证据不足",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  },
+  {
+    "sample_id": "cumcm-2025-A-a196",
+    "contest_id": "cumcm-2025-A",
+    "chars": 26502,
+    "error": null,
+    "review_id": "f79cb220cf5a4c55a91300fbd0813377",
+    "status_after_create": "待确认",
+    "sections": 45,
+    "elapsed_sec": 25.6,
+    "status": "完成",
+    "source": "model",
+    "terminated_by": "all_submitted",
+    "dimension_count": 5,
+    "bands": {
+      "assumption": "基本",
+      "constraint_check": "基本",
+      "modeling": "基本",
+      "presentation": "基本",
+      "solution": "基本"
+    },
+    "quote_checks": {
+      "assumption": "原句",
+      "constraint_check": "原句",
+      "modeling": "原句",
+      "presentation": "原句",
+      "solution": "原句"
+    },
+    "dimensions_detail": [
+      {
+        "dimension_code": "assumption",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 54,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "constraint_check",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 48,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "modeling",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 44,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "presentation",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 38,
+        "quote_is_substring": true
+      },
+      {
+        "dimension_code": "solution",
+        "band": "基本",
+        "chat_calls": null,
+        "quote_len": 56,
+        "quote_is_substring": true
+      }
+    ],
+    "insufficient": 0,
+    "agent_step_rows": 31,
+    "actions": [
+      "force_submit",
+      "get_constraints",
+      "list_dimensions",
+      "read_parent",
+      "search_evidence",
+      "submit_dimension",
+      "terminated"
+    ],
+    "submit_ok": 6,
+    "force_submit": [
+      "补交 1 条"
+    ],
+    "forced_count": 1,
+    "critique_rows": 0,
+    "nodes": [
+      "model",
+      "runner",
+      "tools"
+    ],
+    "score_total": 0,
+    "score_excluded": [
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      },
+      {
+        "dimension_code": "",
+        "band": "基本",
+        "status": "基本",
+        "weight": 0,
+        "contribution": 0,
+        "reason": "量规里没有这一维，权重按 0 计"
+      }
+    ]
+  }
+]

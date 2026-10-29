@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" fill="none" aria-hidden="true" width="420" height="320">
+  <!-- 评分面背景：五维档位框 + 大放大镜 + 首框对勾 -->
+  <rect x="36" y="60" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.6"/>
+  <path d="M48 74 L56 82 L72 64" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="104" y="52" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+  <path d="M114 72 C130 70 146 71 154 72" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+  <rect x="172" y="60" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+  <path d="M182 80 C198 78 214 79 222 80" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+  <rect x="96" y="112" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+  <rect x="164" y="118" width="58" height="40" rx="2" stroke="currentColor" stroke-width="1.2" stroke-dasharray="6 5" opacity="0.8"/>
+  <path d="M60 200 C120 196 200 197 270 198" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <circle cx="312" cy="208" r="34" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="312" cy="208" r="40" stroke="currentColor" stroke-width="0.9" opacity="0.45"/>
+  <path d="M336 232 C346 242 358 254 370 266" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M300 208 L308 216 L322 200" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M240 170 C260 180 280 190 296 200" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.6"/>
+</svg>

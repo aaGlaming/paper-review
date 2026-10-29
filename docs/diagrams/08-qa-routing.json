@@ -1,0 +1,225 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AI 问询分流",
+    "locale": "zh-CN",
+    "subtitle": "answer_question 先尝试提取 review_id；定点记录使用自身块，普通问询走向量检索。",
+    "output": "docs/diagrams/08-qa-routing.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "animation": "trace",
+    "visual_preset": "signal-flow"
+  },
+  "lanes": [
+    {
+      "id": "question",
+      "label": "问询"
+    },
+    {
+      "id": "route",
+      "label": "分流"
+    },
+    {
+      "id": "evidence",
+      "label": "证据来源"
+    },
+    {
+      "id": "answer",
+      "label": "回答与引用"
+    }
+  ],
+  "mainPath": [
+    "ask",
+    "detect",
+    "prompt",
+    "model",
+    "validate"
+  ],
+  "nodes": [
+    {
+      "id": "ask",
+      "lane": "question",
+      "col": 0,
+      "type": "external",
+      "label": "教师提问",
+      "sublabel": "问题 + contest scope",
+      "sources": [
+        {
+          "path": "backend/app/api/chat_routes.py",
+          "line": 144,
+          "end_line": 200,
+          "label": "消息入口"
+        }
+      ]
+    },
+    {
+      "id": "detect",
+      "lane": "route",
+      "col": 1,
+      "type": "backend",
+      "label": "extract_review_id",
+      "sublabel": "命中为定点模式",
+      "sources": [
+        {
+          "path": "backend/app/chat/retrieval.py",
+          "line": 1,
+          "end_line": 52,
+          "label": "ID 提取"
+        }
+      ]
+    },
+    {
+      "id": "direct",
+      "lane": "evidence",
+      "col": 2,
+      "type": "database",
+      "label": "load_record_blocks",
+      "sublabel": "只读目标 review",
+      "sources": [
+        {
+          "path": "backend/app/chat/records.py",
+          "line": 1,
+          "end_line": 120,
+          "label": "定点记录"
+        }
+      ]
+    },
+    {
+      "id": "vector",
+      "lane": "evidence",
+      "col": 3,
+      "type": "backend",
+      "label": "search_records",
+      "sublabel": "常规检索 limit=8",
+      "sources": [
+        {
+          "path": "backend/app/chat/records.py",
+          "line": 120,
+          "end_line": 224,
+          "label": "向量检索"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "lane": "route",
+      "col": 4,
+      "type": "backend",
+      "label": "构造上下文",
+      "sublabel": "最多 8 段",
+      "sources": [
+        {
+          "path": "backend/app/chat/answering.py",
+          "line": 80,
+          "end_line": 164,
+          "label": "上下文"
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "lane": "route",
+      "col": 5,
+      "type": "cloud",
+      "label": "chat retry",
+      "sublabel": "失败最多重试一次",
+      "sources": [
+        {
+          "path": "backend/app/chat/answering.py",
+          "line": 55,
+          "end_line": 85,
+          "label": "重试"
+        }
+      ]
+    },
+    {
+      "id": "validate",
+      "lane": "answer",
+      "col": 5,
+      "type": "security",
+      "label": "校验 refs",
+      "sublabel": "只保留候选内引用",
+      "sources": [
+        {
+          "path": "backend/app/chat/answering.py",
+          "line": 35,
+          "end_line": 55,
+          "label": "引用校验"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "ask-detect",
+      "from": "ask",
+      "to": "detect",
+      "label": "请求",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "detect-direct",
+      "from": "detect",
+      "to": "direct",
+      "label": "有 review_id",
+      "role": "branch",
+      "variant": "emphasis"
+    },
+    {
+      "id": "detect-vector",
+      "from": "detect",
+      "to": "vector",
+      "label": "无 review_id",
+      "role": "branch",
+      "variant": "default"
+    },
+    {
+      "id": "direct-prompt",
+      "from": "direct",
+      "to": "prompt",
+      "label": "限定目标记录",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "vector-prompt",
+      "from": "vector",
+      "to": "prompt",
+      "label": "赛题过滤",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "prompt-model",
+      "from": "prompt",
+      "to": "model",
+      "label": "messages",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "model-check",
+      "from": "model",
+      "to": "validate",
+      "label": "过滤无效引用",
+      "role": "main",
+      "variant": "default"
+    },
+    {
+      "id": "detect-prompt",
+      "from": "detect",
+      "to": "prompt",
+      "label": "select evidence mode",
+      "role": "main",
+      "variant": "default"
+    }
+  ],
+  "cards": []
+}

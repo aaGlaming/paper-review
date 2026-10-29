@@ -14,6 +14,7 @@ v0.7.0 的两条误报防线：
 
 from __future__ import annotations
 
+from collections import Counter
 import re
 from collections.abc import Iterable, Mapping
 
@@ -401,7 +402,8 @@ REGISTERED_CHECKS = {
 
 
 def check_numbers_citations_ranges(
-    text: str, constraints: Iterable[Mapping[str, object]] | None = None
+    text: str, constraints: Iterable[Mapping[str, object]] | None = None,
+    *, review_id: str | None = None,
 ) -> list[dict[str, object]]:
     """一次跑完数字冲突、引用缺失与三类已注册检查。"""
     findings: list[dict[str, object]] = []
@@ -414,4 +416,18 @@ def check_numbers_citations_ranges(
         if checker is None:
             continue
         findings.extend(checker(text, constraint))
+    kinds = Counter(str(item.get("kind", "")) for item in findings)
+    ids = []
+    for item in findings:
+        value = item.get("constraint_id")
+        if value and str(value) not in ids:
+            ids.append(str(value))
+        if len(ids) >= 5:
+            break
+    log_event(
+        "review", "findings_built", review_id=review_id,
+        findings_total=len(findings), kinds=dict(kinds), constraint_ids=ids,
+        distinct_constraints=len({str(item.get("constraint_id")) for item in findings if item.get("constraint_id")}),
+    )
     return findings
+from ..observability.logging import log_event

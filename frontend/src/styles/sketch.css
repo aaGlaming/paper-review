@@ -1,0 +1,289 @@
+/*
+手稿风格（Sketch / Hand-drawn）——本文件只做三件事：
+1) 引入纸张颗粒做全局极淡底纹（opacity ≤ 0.035）；
+2) 定义 .sk-underline / .sk-card-frame / .sk-tape 三个复用类；
+3) 声明手绘元素的三条绘制约定。
+新颜色一律走 tokens.css，本文件不写任何十六进制色值、不加任何动效。
+*/
+
+/* 1. 纸张颗粒：全局极淡底纹，叠在纸底之上（pointer-events 穿透、不挡交互、不产生滚动） */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  background-image: url('../../../docs/design/sketch-svg/sketch-paper-grain.svg');
+  background-repeat: repeat;
+  opacity: 0.035;
+}
+
+/* 2. 复用类 */
+
+/* 手绘下划线：横跨元素底部（元素需 position: relative，本类已声明） */
+.sk-underline {
+  position: relative;
+}
+
+.sk-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 12px;
+  background-image: url('../../../docs/design/sketch-svg/sketch-underline.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 手绘卡片边框：用 ::before 覆盖整张卡（元素需 position: relative，本类已声明）。
+   用 border-image + round（边段重复、四角固定），**不横向/纵向拉伸**——
+   preserveAspectRatio="none" 的整幅拉伸会在异高卡片上把双线拉变形，round 不会。
+   SVG 是透明填充 + 边缘描边，叠加在卡面之上不影响正文可读。 */
+.sk-card-frame {
+  position: relative;
+}
+
+.sk-card-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 12px solid transparent;
+  border-image: url('../../../docs/design/sketch-svg/sketch-card-border.svg') 12 round;
+}
+
+/* 胶带：贴在卡片顶部中央（作为卡内子元素使用，卡需 position: relative） */
+.sk-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 72px;
+  height: 26px;
+  margin-left: -36px;
+  background-image: url('../../../docs/design/sketch-svg/sketch-tape.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 3. 手绘元素的绘制约定（新增 SVG 时遵守）：
+   ① 线条 stroke="currentColor"、stroke-width 1.2–1.8、stroke-linecap/linejoin="round"、fill="none"；
+   ② 路径一律微弯不取直；
+   ③ 重点形状描两遍，第二遍 opacity 0.45–0.55 且略偏移。 */
+
+/* 4. 编辑式排版基座（Phase 1）：只给构图工具类，不给定具体页面。
+   - .ed-head： oversized 编号 + 大标题 + 副标题的页眉，三件各自独立权重；
+   - .ed-lede：副标题/导语，比正文宽、比标题轻，是页面的第二视觉层；
+   - .ed-rule：细线分隔，段与段之间的呼吸；
+   - .ed-split：非对称双栏（左宽右窄 7:5），平板以下自动单列；
+   - .ed-focus：主内容区的轻微错位手绘边框（sk-card-frame 的轻量版，只描一边重点）；
+   - .ed-kicker：栏目标签（小字 + 字母间距），给次级模块定调；
+   - 全部只用主题变量；断点只收列数与间距，不改信息顺序。 */
+.ed-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--pr-space-4);
+  align-items: end;
+  margin: 0 0 var(--pr-space-2);
+}
+
+.ed-head__num {
+  grid-row: span 2;
+  font-family: var(--pr-font-data);
+  font-size: 44px;
+  line-height: 1;
+  color: var(--pr-ink-faint);
+  letter-spacing: 0.02em;
+  transform: rotate(-2deg);
+}
+
+.ed-head__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+}
+
+.ed-head__kicker {
+  margin: 0;
+  color: var(--pr-ink-faint);
+  font-size: var(--pr-text-xs);
+  letter-spacing: 0.14em;
+}
+
+.ed-lede {
+  max-width: 62ch;
+  margin: 0 0 var(--pr-space-6);
+  color: var(--pr-ink-muted);
+  font-size: var(--pr-text-lg);
+  line-height: var(--pr-leading-base);
+}
+
+.ed-rule {
+  margin: var(--pr-space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--pr-rule);
+}
+
+.ed-split {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--pr-space-6);
+  align-items: start;
+}
+
+.ed-split--flip {
+  grid-template-columns: 5fr 7fr;
+}
+
+.ed-kicker {
+  margin: 0 0 var(--pr-space-2);
+  color: var(--pr-ink-faint);
+  font-size: var(--pr-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.ed-focus {
+  position: relative;
+}
+
+.ed-focus::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 12px solid transparent;
+  border-image: url('../../../docs/design/sketch-svg/sketch-card-border.svg') 12 round;
+  opacity: 0.9;
+  transform: rotate(-0.3deg);
+}
+
+@media (max-width: 900px) {
+  .ed-split,
+  .ed-split--flip {
+    grid-template-columns: 1fr;
+  }
+
+  .ed-head__num {
+    font-size: 34px;
+  }
+
+  .ed-head__title {
+    font-size: 24px;
+  }
+}
+
+/* 5. 全局背景系统（Phase 2）：三层叠在纸底上，全部穿透、不占布局、不产滚动。
+   - L1 纸纹：body::before（既有，opacity ≤ 0.035）；
+   - L2 构图网格：body::after，CSS 线性渐变画细线，低对比、整屏重复；
+   - L3 页缘线稿 + 四角标：.shell 背景层，纵向贴边 + 四角各一枚，页面间不重复图案；
+   内容表面（.shell__body）保持纸底本色，与背景之间靠留白与线稿距离自然分层，
+   不给内容区加不透明白矩形。
+   关掉 L2/L3（两条 background 置 none），页面仍完整可用——背景只是氛围。 */
+/* L2 构图网格已退役：每页改用独立背景插画（PageArt），网格不再需要。
+   保留 body::after 选择器做空占位，避免旧快照类测试误报结构变化。 */
+body::after {
+  content: none;
+}
+
+.shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.shell::before,
+.shell::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  z-index: 2147483645;
+  pointer-events: none;
+  background-image: url('../../../docs/design/sketch-svg/sketch-margin-draft.svg');
+  background-repeat: repeat-y;
+  background-size: 220px auto;
+  color: var(--pr-ink);
+  opacity: var(--pr-bg-draft-opacity);
+}
+
+.shell::before {
+  left: 0;
+}
+
+.shell::after {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* 四角构图标记：贴在内容版心之外，窄屏自动隐藏，不挤内容、不产横向滚动。 */
+.shell__body {
+  position: relative;
+}
+
+.shell__body::before,
+.shell__body::after {
+  content: '';
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  z-index: 2147483645;
+  pointer-events: none;
+  background-image: url('../../../docs/design/sketch-svg/sketch-corner-mark.svg');
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: var(--pr-ink);
+  opacity: var(--pr-bg-corner-opacity);
+}
+
+.shell__body::before {
+  top: 0;
+  left: 0;
+}
+
+.shell__body::after {
+  right: 0;
+  bottom: 0;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 1100px) {
+  .shell::before,
+  .shell::after,
+  .shell__body::before,
+  .shell__body::after {
+    display: none;
+  }
+}
+
+/* 6. 微观排版与空态主行动（Phase 4）：全站只此一处定义。
+   - :focus-visible：键盘焦点统一用主题 focus 环，不用浏览器默认描边；
+   - .ed-action-link：空态与缺口位的唯一主行动样式（描边按钮，非实心），
+     让"去论文解析页 / 回汇总页"在四处空态里长成同一东西。 */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--pr-focus-ring);
+}
+
+.ed-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pr-space-1);
+  padding: var(--pr-space-1) var(--pr-space-3);
+  border: 1px solid var(--pr-primary);
+  border-radius: var(--pr-radius);
+  background: var(--pr-surface);
+  color: var(--pr-primary);
+  font-size: var(--pr-text-sm);
+  text-decoration: none;
+  box-shadow: var(--pr-shadow-paper);
+}
+
+.ed-action-link:hover {
+  background: var(--pr-primary-soft);
+}

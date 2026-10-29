@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "DOCX 上传时序",
+    "locale": "zh-CN",
+    "subtitle": "原始 DOCX 字节落盘；转换结果写 paper_text；落库失败清理已落盘文件。",
+    "output": "docs/diagrams/13-docx-upload-sequence.html",
+    "quality_profile": "standard",
+    "repository": {
+      "url": "https://github.com/aaGlaming/paper-review",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "91246a09b69c38ca1c7d643a6a6ad4db64974cce"
+    },
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "teacher",
+      "type": "external",
+      "label": "教师",
+      "sublabel": "multipart .docx",
+      "sources": [
+        {
+          "path": "frontend/src/views/论文解析.vue",
+          "line": 1,
+          "end_line": 100,
+          "label": "上传 UI"
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "type": "backend",
+      "label": "POST /api/uploads",
+      "sublabel": "鉴权与限额顺序",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 484,
+          "end_line": 625,
+          "label": "上传链路"
+        }
+      ]
+    },
+    {
+      "id": "converter",
+      "type": "backend",
+      "label": "docx_to_markdown",
+      "sublabel": "按 body 顺序转换",
+      "sources": [
+        {
+          "path": "backend/app/importing/docx_text.py",
+          "line": 1,
+          "end_line": 78,
+          "label": "纯转换器"
+        }
+      ]
+    },
+    {
+      "id": "disk",
+      "type": "database",
+      "label": "data/uploads",
+      "sublabel": "原字节 + SHA-256",
+      "sources": [
+        {
+          "path": "backend/app/api/routes.py",
+          "line": 550,
+          "end_line": 625,
+          "label": "文件落盘"
+        }
+      ]
+    },
+    {
+      "id": "mysql",
+      "type": "database",
+      "label": "review/session",
+      "sublabel": "paper_text + sections",
+      "sources": [
+        {
+          "path": "backend/app/report/models.py",
+          "line": 33,
+          "end_line": 95,
+          "label": "评审存储"
+        }
+      ]
+    },
+    {
+      "id": "log",
+      "type": "messagebus",
+      "label": "log_event",
+      "sublabel": "只写元信息",
+      "sources": [
+        {
+          "path": "backend/app/observability/logging.py",
+          "line": 1,
+          "end_line": 120,
+          "label": "日志"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "id": "upload",
+      "from": "teacher",
+      "to": "route",
+      "y": 160,
+      "label": "multipart file + contest_id",
+      "variant": "default"
+    },
+    {
+      "id": "convert",
+      "from": "route",
+      "to": "converter",
+      "y": 220,
+      "label": "raw bytes",
+      "variant": "default"
+    },
+    {
+      "id": "markdown",
+      "from": "converter",
+      "to": "route",
+      "y": 250,
+      "label": "ATX Markdown / error",
+      "variant": "default"
+    },
+    {
+      "id": "write-file",
+      "from": "route",
+      "to": "disk",
+      "y": 290,
+      "label": "校验通过后原字节",
+      "variant": "default"
+    },
+    {
+      "id": "create",
+      "from": "route",
+      "to": "mysql",
+      "y": 320,
+      "label": "review + session",
+      "variant": "default"
+    },
+    {
+      "id": "cleanup",
+      "from": "mysql",
+      "to": "disk",
+      "y": 350,
+      "label": "写库失败 → unlink",
+      "variant": "return"
+    },
+    {
+      "id": "event",
+      "from": "route",
+      "to": "log",
+      "y": 380,
+      "label": "paper_uploaded metadata only",
+      "variant": "default"
+    },
+    {
+      "id": "response",
+      "from": "route",
+      "to": "teacher",
+      "y": 410,
+      "label": "201 + sha256 + chars",
+      "variant": "return"
+    }
+  ]
+}

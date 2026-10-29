@@ -1,0 +1,276 @@
+﻿{
+    "step":  "13-resume-planting",
+    "at":  "2026-10-18T18:31:52.1113956+08:00",
+    "request":  {
+                    "method":  "POST",
+                    "url":  "http://127.0.0.1:8077/api/reviews/908cbaa1f155442e8af6b2d0bd9093a7/resume",
+                    "body":  {
+                                 "sections":  [
+                                                  {
+                                                      "title":  "农作物的种植策略优化",
+                                                      "section_type":  "未分类",
+                                                      "level":  1,
+                                                      "content":  "\u003e 本文是本项目自建的**演示样例**，用于预审功能演示。它不是官方答案，不是真实参赛论文，\n\u003e 其中的金额均为验收构造，不能当成赛题标准答案。"
+                                                  },
+                                                  {
+                                                      "title":  "摘要",
+                                                      "section_type":  "未分类",
+                                                      "level":  2,
+                                                      "content":  "本文为某乡村制定 2024～2030 年的农作物种植方案。以七年总收益最大为目标，以地块面积、\n轮作要求与销售量上限为约束，建立整数线性规划模型并求解。计算得到七年总收益为 1286 万元，\n种植方案满足地块轮作要求。"
+                                                  },
+                                                  {
+                                                      "title":  "一、模型假设",
+                                                      "section_type":  "假设",
+                                                      "level":  2,
+                                                      "content":  "1. 各地块面积与土壤条件已知，同一地块内种植均匀；\n2. 作物亩产量、种植成本与销售价格按题目给出的数据取值，不做随机化处理；\n3. 超出预期销售量的部分按滞销处理，不产生额外收益；\n4. 不考虑自然灾害与极端天气对产量的影响。"
+                                                  },
+                                                  {
+                                                      "title":  "二、模型的建立",
+                                                      "section_type":  "模型",
+                                                      "level":  2,
+                                                      "content":  "设 x(i,j,t) 为第 t 年地块 j 种植作物 i 的面积。目标函数为七年总收益最大：\n\n- 收益 = 销售量 × 销售价格 − 种植面积 × 种植成本；\n- 面积约束：同一地块同一年各作物面积之和不超过该地块面积；\n- 轮作约束：同一地块不能连续重茬，即相邻两年不得种植同类作物；\n- 销售量约束：各作物每年可销售量不超过题目给定上限。\n\n约束只包含面积、轮作与销售量三类，按题目基础设定建立模型。"
+                                                  },
+                                                  {
+                                                      "title":  "三、模型求解",
+                                                      "section_type":  "求解",
+                                                      "level":  2,
+                                                      "content":  "用分支定界法求解，决策变量取整数。求解得到 2024～2030 年各地块的种植方案，逐年给出作物\n种类与面积。方案对应的目标值见表 1。"
+                                                  },
+                                                  {
+                                                      "title":  "四、结果分析",
+                                                      "section_type":  "结果",
+                                                      "level":  2,
+                                                      "content":  "| 项目 | 数值 |\n| --- | --- |\n| 七年总收益（万元） | 974 万元 |\n| 求解状态 | 最优 |\n\n表 1 给出方案汇总。滞销情形下的结果文件为 result1_1.xlsx。"
+                                                  },
+                                                  {
+                                                      "title":  "五、模型检验",
+                                                      "section_type":  "检验",
+                                                      "level":  2,
+                                                      "content":  "改变求解器的相对间隙到 0.1% 后目标值不变；把地块面积放大 10% 后收益按比例变化，说明模型\n对数据缩放是稳健的。轮作约束逐块逐年核对，未出现连续重茬。"
+                                                  },
+                                                  {
+                                                      "title":  "参考文献",
+                                                      "section_type":  "参考文献",
+                                                      "level":  2,
+                                                      "content":  "[1] 自建演示样例用参考条目一。\n[2] 自建演示样例用参考条目二。"
+                                                  }
+                                              ]
+                             }
+                },
+    "response_status":  200,
+    "response_body":  {
+                          "review_id":  "908cbaa1f155442e8af6b2d0bd9093a7",
+                          "status":  "完成",
+                          "contest_id":  "cumcm-2024-C",
+                          "rubric_id":  "cumcm-2024-C-v1",
+                          "rubric_version":  1,
+                          "model_name":  "deepseek-flash",
+                          "source":  "model",
+                          "dimensions":  [
+                                             {
+                                                 "dimension_code":  "assumption",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "908cbaa1f155442e8af6b2d0bd9093a7-0002-00"
+                                                               ],
+                                                 "quote":  "1. 各地块面积与土壤条件已知，同一地块内种植均匀；",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "constraint_check",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "908cbaa1f155442e8af6b2d0bd9093a7-0006-00"
+                                                               ],
+                                                 "quote":  "轮作约束逐块逐年核对，未出现连续重茬。",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "modeling",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "908cbaa1f155442e8af6b2d0bd9093a7-0003-01"
+                                                               ],
+                                                 "quote":  "轮作约束：同一地块不能连续重茬，即相邻两年不得种植同类作物；",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             },
+                                             {
+                                                 "dimension_code":  "presentation",
+                                                 "band":  "证据不足",
+                                                 "chunk_ids":  [
+
+                                                               ],
+                                                 "quote":  null,
+                                                 "status":  "证据不足",
+                                                 "chat_calls":  1,
+                                                 "reason":  "模型在给定证据里没有找到可引用的原句"
+                                             },
+                                             {
+                                                 "dimension_code":  "solution",
+                                                 "band":  "不足",
+                                                 "chunk_ids":  [
+                                                                   "908cbaa1f155442e8af6b2d0bd9093a7-0004-00"
+                                                               ],
+                                                 "quote":  "求解得到 2024～2030 年各地块的种植方案",
+                                                 "status":  "不足",
+                                                 "chat_calls":  1,
+                                                 "guard":  {
+                                                               "band":  "不足",
+                                                               "downgraded":  false,
+                                                               "reasons":  [
+
+                                                                           ],
+                                                               "checked":  0,
+                                                               "skipped":  [
+
+                                                                           ]
+                                                           }
+                                             }
+                                         ],
+                          "score":  {
+                                        "total":  80,
+                                        "weight_sum":  80,
+                                        "rubric_weight_sum":  100,
+                                        "weighted":  [
+                                                         {
+                                                             "dimension_code":  "assumption",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         },
+                                                         {
+                                                             "dimension_code":  "constraint_check",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         },
+                                                         {
+                                                             "dimension_code":  "modeling",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         },
+                                                         {
+                                                             "dimension_code":  "solution",
+                                                             "band":  "不足",
+                                                             "status":  "不足",
+                                                             "weight":  20,
+                                                             "contribution":  20
+                                                         }
+                                                     ],
+                                        "excluded":  [
+                                                         {
+                                                             "dimension_code":  "presentation",
+                                                             "band":  "证据不足",
+                                                             "status":  "证据不足",
+                                                             "weight":  20,
+                                                             "contribution":  0,
+                                                             "reason":  "证据不足不参与加权"
+                                                         }
+                                                     ]
+                                    },
+                          "change_list":  [
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "数字冲突",
+                                                  "finding_kind":  "数字冲突",
+                                                  "upstream_id":  "finding:数字冲突:计算得到七年总收益",
+                                                  "target":  "计算得到七年总收益",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "char_start":  182,
+                                                                       "char_end":  189,
+                                                                       "text":  "1286 万元"
+                                                                   },
+                                                                   {
+                                                                       "char_start":  683,
+                                                                       "char_end":  689,
+                                                                       "text":  "974 万元"
+                                                                   }
+                                                               ],
+                                                  "action":  "把两处数值改成同一口径，并在正文说明取值来源"
+                                              },
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "题目约束",
+                                                  "finding_kind":  "缺少情形",
+                                                  "upstream_id":  "finding:缺少情形:cumcm-2024-C-half-price",
+                                                  "target":  "50%降价",
+                                                  "evidence":  [
+
+                                                               ],
+                                                  "action":  "补上该情形的结果文件与对应方案表"
+                                              },
+                                              {
+                                                  "section":  "题目约束与数字冲突",
+                                                  "kind":  "题目约束",
+                                                  "finding_kind":  "未提到条件",
+                                                  "upstream_id":  "finding:未提到条件:cumcm-2024-C-legume-three-years",
+                                                  "target":  "每块地三年内至少种植一次豆类",
+                                                  "evidence":  [
+
+                                                               ],
+                                                  "action":  "在假设或模型一节补上这条题目条件"
+                                              },
+                                              {
+                                                  "section":  "证据不足",
+                                                  "kind":  "证据不足",
+                                                  "upstream_id":  "dimension:presentation",
+                                                  "dimension_code":  "presentation",
+                                                  "target":  "表述与结构",
+                                                  "evidence":  [
+                                                                   {
+                                                                       "text":  "",
+                                                                       "band":  "证据不足",
+                                                                       "status":  "证据不足",
+                                                                       "chunk_ids":  [
+
+                                                                                     ]
+                                                                   }
+                                                               ],
+                                                  "action":  "在对应章节补上可引用的原句与推导，或按现有证据把这一维降到相邻档位"
+                                              }
+                                          ],
+                          "note":  "source=model：各维档位来自模型选档，引用已校验为父块原句"
+                      },
+    "notes":  "Real model, embedding retrieval, and configured rerank acceptance call."
+}
