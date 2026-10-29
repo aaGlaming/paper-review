@@ -1,299 +1,392 @@
 # paper-review
 
-竞赛论文预审工作台。把一篇数学建模竞赛论文按章节切开，依据该赛题**已发布**的量规逐维选档，每一维必须附一句能在正文里**逐字找到**的原句；再检查数字冲突、范围越界、引用与题目约束，产出可溯源、按优先级排序的修改清单。
+竞赛论文预审工作台：解析论文章节，依据已发布赛题量规逐维检索证据、选择档位、执行一致性审查，并生成可追溯的修改清单。项目是一套带人工确认、RAG 检索、专项 Agent、主评审 Agent 和 verifier 的 Agent 工作流系统，同时提供独立的评审记录问询功能。
 
-三条硬边界，写在需求里，也写在代码与验收里：
+## 项目简介
 
-1. **不输出奖项、名次、获奖概率。**验收中有一条专门扫这些字样。
-2. **引用必须是父块文本的连续子串。**对不上就判「引用失败」，该维保留档位但不进加权。
-3. **「证据不足」不换算成分数。**该维直接出局，同时返回还有多少权重没有依据；页面显示「加权未产生」而不是 0 分。
-
-> 当前分支 `V6-Phase-III-Acceptance`（Phase-3 已收口）。最近一次推送说明见 [push_V7](docs/push_version/push_V7.md)。
-
----
-
-## 1. 现状速览
-
-| 项 | 数值 | 口径 |
-|---|---:|---|
-| HTTP 接口 | **33** | 业务 17 / 问询 7 / 鉴权 4 / 用户 2 / 大屏 2 / 记录列表 1 |
-| 数据表 | **17** | 赛题目录 7 + 评审 4（含产物）+ 账号权限 2 + 问询 2 + 父块与 Agent 轨迹 2 |
-| 前端页面 | **10** | 登录、注册、解析、评分、一致性、建议、评测、记录、问询、大屏 |
-| 量规结构 | 5 维 × 4 档 | 权重合计 100，全部读数据不读代码 |
-| Agent 工具 | **6** | 只有「提交结论」能记录结果 |
-| Agent 预算闸 | **4** | 模型 12 次 / 工具 24 次 / 每维 3 步 / 总墙钟 150 s，另有连续无进展检测 |
-| 后端测试 | **472 passed** | `pytest backend/tests -q` |
-| 前端单测 | **162 passed** | 32 个文件 |
-| 浏览器端到端 | **54 passed / 0 failed** | 真起前后端，走 5173 代理 |
-| 静态门禁 | **3 个** | 日志窗口、文档编码、容器骨架（17 项） |
-
-## 2. 功能
-
-1. **账号与角色**：注册 / 登录 / 登出；学生 3 条权限，教师 7 条。问询、大屏、全员记录需要教师权限。
-2. **论文解析**：粘贴文本、载入样例，或上传 `.md` / `.docx`；生成章节树并判类型，**必须人工确认**才往下走。
-3. **分项评分**：Agent 逐维检索 → 读父块全文 → 选档 → 提交。档位只有「充分 / 基本 / 不足 / 证据不足」四值，权重与合计由代码按量规计算。
-4. **一致性审查**：数字冲突、范围越界、条件缺失、引用缺失；数字冲突按**指标**归组而不是按单位，带定位。
-5. **修改建议**：纯转写不生成，每条带指回上游的编号，顺序固定为「硬问题 → 缺证据 → 表述」。
-6. **评测对照**：12 篇有 gold 的语料、60 个维度项；分母 <5 的指标显示「样本过少」，不渲染成百分比、不画折线。
-7. **记录总览与 AI 问询**：已评记录重新切块索引后可被提问；回答里的引用必须来自本次检索结果，编造的引用会被删除并计数；统计数字一律由数据库算。
-8. **数据大屏**：四档分布、赛题分布、7 日趋势、证据不足率、热点扣分点；聚合有 60 s TTL 并返回 `cached` 标记。
-
-## 3. 页面
-
-| 路径 | 用途 | 权限 |
-|---|---|---|
-| `/login`、`/register` | 登录、注册 | 公开 |
-| `/parse` | 选赛题、输入论文（粘贴/样例/上传）、确认章节树 | 登录 |
-| `/scoring` | 量规条文、逐维档位与引用原句、Agent 轨迹 | 登录 |
-| `/consistency` | 一致性问题与正文定位 | 登录 |
-| `/suggestions` | 带来源的修改清单 | 登录 |
-| `/eval`、`/eval/:paperId` | 汇总指标、单篇 gold 逐维对照 | 公开 |
-| `/records` | 记录总览、筛选、详情抽屉 | 登录（教师看全部） |
-| `/chat` | AI 问询（记录级检索） | `chat:use` |
-| `/dashboard` | 可视化大屏 | `dashboard:view` |
-
-## 4. 架构
+### 业务流程
 
 ```text
-浏览器（Vue 3 单页应用，10 个页面）
-   │  /api 相对路径，开发期由 Vite 代理到 8077
-   ▼
-FastAPI 接入层（33 条接口，统一 /api 前缀；鉴权、权限、日志中间件、CORS 白名单）
-   │
-   ├── 评审状态图：parse → confirm（真中断）→ retrieve → score
-   │        └── score 内挂 Agent 子层：6 工具 + 4 道预算闸 + 轨迹落库 + 只降不提的自检
-   │
-   ├── 规则审查（纯函数，不调模型）：数字冲突 / 越界 / 条件缺失 / 引用缺失
-   ├── 记录级问询：定点取证 → 引用校验 → 回答（统计走数据库）
-   └── 大屏聚合：服务端 GROUP BY + 60 s TTL
-   │
-   ├── MySQL（17 张表）：赛题目录、量规、父块全文、评审存档、账号权限、问询、产物、轨迹
-   ├── Chroma（本地持久化）：短子块（≤200 字）+ 向量 + 8 个单值元数据
-   └── 唯一外部出口：对话 / 嵌入 / 重排（httpx，不发厂商 SDK）
+上传 Markdown / DOCX
+        ↓
+章节解析 → 人工确认章节类型
+        ↓
+按量规维度检索证据
+        ↓
+证据 Agent / 题目匹配 Agent / 结构 Agent
+        ↓
+主评审 Agent 选档与提交
+        ↓
+原句连续性校验 → critique → verifier 复核
+        ↓
+评审报告、修改建议、评审记录和 Agent 轨迹
 ```
 
-四个关键取舍：
+### 设计边界
 
-- **父子块双存储**：子块进向量库做召回，父块全文留 MySQL。送进模型的是段落全文而不是碎片——**引用校验需要比切片更完整的上下文才不会误杀**。
-- **人工确认用状态图的真中断**：章节未确认不进评分；恢复时从断点继续，不重跑解析。
-- **依赖全部外部注入**：检索器与模型从外面传进编排，编排模块内部不导入模型客户端、不发 HTTP。所以 472 条后端测试一次网络请求都不发；没有模型配置也是合法运行态，走确定性结构回退并标注「这是脚本自检，不是模型结果」。
-- **Agent 的自由度被关住**：工具是白名单，读原文限定在本次命中的父块里，提交只认四个合法档位；撞预算闸不崩，走一次强制补交（最多两轮），仍失败标「证据不足」并记录终止原因。
+- 引用必须是论文父块中的连续原句，不能用模型摘要冒充引用。
+- 检索不到足够证据时标记“证据不足”，不强行换算分数。
+- verifier 只能保持或向下调整主评审结果，不能越权升档。
+- 章节确认是评分前的人工中断点，确认后才开始检索和评分。
+- 在线上传支持 `.md` 和 `.docx`；PDF/OCR 在系统外完成后再导入。
+- 不输出奖项、名次和获奖概率。
 
-## 5. 环境要求
+## 技术栈
 
-- Python **3.11**（本工作区使用共享解释器，见下）
-- Node.js **22** 与 npm
-- MySQL **8.4**（`StartType=Manual`，重启机器后需手动启动）
-- Chroma 使用本地持久化目录 `chroma_data/`，不需要单独服务
-- 可选：兼容 OpenAI Chat Completions / Embeddings 的模型服务，以及独立的 Cohere 风格 rerank 服务
+| 层次 | 技术 | 用途 |
+|---|---|---|
+| 后端 | Python 3.11、FastAPI、Uvicorn、Pydantic | API、校验、健康检查、设置和异常处理 |
+| Agent 编排 | LangGraph、LangChain、LangChain Core | 章节确认中断、专项 Agent、主 Agent、工具调用和 verifier |
+| 模型接入 | OpenAI-compatible Chat / Embedding / Rerank API | 统一模型出口、工具调用、向量生成和重排 |
+| 数据访问 | SQLAlchemy、PyMySQL、MySQL 8.4 | 赛题量规、评审、用户、会话、父块、产物和轨迹 |
+| RAG | Chroma child 向量、MySQL parent 全文、三路召回、Rerank | 证据检索、父子块回填、去重和引用追踪 |
+| 前端 | Vue 3、TypeScript、Vue Router、Element Plus、ECharts | 论文解析、评分、审查、建议、记录、问询和大屏 |
+| 工程化 | Vite、Vitest、Playwright、Docker Compose | 构建、单元测试、E2E、视觉验收和部署 |
+| 可观测性 | JSON 轮转日志、Prometheus 文本指标、Agent trace | 模型调用、检索、评审、聊天、鉴权和错误追踪 |
 
-本工作区不建项目内虚拟环境，统一用：
+## 系统结构
 
-```powershell
-$py = 'D:\LEARN\AI\programs\AgentTask\env\agent-task\Scripts\python.exe'
+```mermaid
+flowchart LR
+    UI[Vue 3 评审工作台] --> API[FastAPI API]
+    API --> AUTH[注册 / 登录 / 权限]
+    API --> REVIEW[评审状态图]
+    REVIEW --> SPECIAL[专项 Agent]
+    REVIEW --> MAIN[主评审 Agent]
+    REVIEW --> VERIFY[critique + verifier]
+    SPECIAL --> RETRIEVE[三路 RAG 检索]
+    MAIN --> TOOLS[角色白名单工具]
+    RETRIEVE --> MYSQL[(MySQL parent / rubric / review)]
+    RETRIEVE --> CHROMA[(Chroma child vectors)]
+    MAIN --> MODEL[OpenAI-compatible Chat API]
+    API --> TRACE[评审记录 / 会话 / 产物 / Agent 轨迹]
 ```
 
-依赖见 [backend/requirements.txt](backend/requirements.txt)（含 `langgraph` / `langchain` / `chromadb`；不引厂商 SDK、不用 alembic），前端由 `frontend/package-lock.json` 锁定。
+## 目录结构
 
-## 6. 本地启动
-
-### 1）启动 MySQL 并确认 3306 可连
-
-```powershell
-net start MySQL84
-# 无管理员权限时用：
-# "D:/MySQL/Server8.4/bin/mysqld.exe" --defaults-file="D:/MySQL/my.ini"
+```text
+paper-review/
+├── backend/
+│   ├── app/
+│   │   ├── api/               FastAPI 应用、评审、认证、聊天、设置和大屏接口
+│   │   ├── agent/             Agent 上下文、工具、提示词、模型适配、运行器和轨迹
+│   │   ├── graph/             章节解析、人工确认、检索、评分状态图
+│   │   ├── retrieve/          父子块模型、三路召回和 Rerank
+│   │   ├── scoring/           选档、引用校验、降档守卫和加权汇总
+│   │   ├── report/            评审报告、修改清单、评测和产物
+│   │   ├── importing/         赛题包、DOCX、样例和数据库导入
+│   │   ├── chat/              记录问询、会话、分析和摘要
+│   │   ├── auth/              用户、Token、角色和权限
+│   │   ├── llm/               唯一模型 HTTP 出口：Chat、Embedding、Rerank
+│   │   ├── observability/     JSON 日志和指标
+│   │   └── settings/          首次配置和运行时配置
+│   ├── tests/                 Agent、RAG、报告、认证、设置和 API 测试
+│   ├── requirements.txt       后端锁定依赖
+│   ├── Dockerfile             后端镜像
+│   └── docker-entrypoint.py  容器启动和非 root 用户切换
+├── frontend/
+│   ├── src/views/             解析、评分、审查、建议、评测、记录、问询、设置和大屏
+│   ├── src/components/        导航、阶段条、维度卡、证据、轨迹、产物和聊天组件
+│   ├── src/api/               API 类型和请求封装
+│   ├── src/composables/       登录、主题、评审流和结果结构
+│   ├── tests/unit/             Vitest 单元测试
+│   ├── tests/e2e/              Playwright 浏览器验收
+│   ├── Dockerfile              Nginx 前端镜像
+│   └── nginx.conf              `/api` 反向代理和静态资源配置
+├── data/
+│   ├── contests/               赛题、量规、约束、陷阱和优秀样例
+│   ├── samples/                论文样例和评测输入
+│   └── eval/                   Gold 数据与评测样例
+├── docs/                       项目事实、版本记录、面试材料、架构图和验收记录
+├── scripts/                    OCR、索引、批处理、评测和运维检查
+├── compose.yaml                frontend / backend / mysql 编排
+├── deployment-state/           容器首次配置状态
+└── .env.example                数据库、认证、Chat、Embedding、Rerank 配置模板
 ```
 
-### 2）准备环境变量
+## 快速开始
+
+### 本地运行
+
+#### 环境要求
+
+- Python 3.11+
+- Node.js 22+
+- MySQL 8.4+
+- 可选：Chroma 持久化目录或 Chroma 服务
+- 一个 OpenAI-compatible Chat 服务，以及可选的 Embedding 和 Rerank 服务
+
+#### 1. 安装依赖和配置
 
 ```powershell
 Copy-Item .env.example .env
+$py = 'D:\LEARN\AI\programs\AgentTask\env\agent-task\Scripts\python.exe'
+& $py -m pip install -r backend/requirements.txt
+Set-Location frontend
+npm ci
+Set-Location ..
 ```
 
-至少填 `MYSQL_DSN` 与 `AUTH_SECRET`。**`AUTH_SECRET` 少于 32 字符会直接拒绝签发 token**，登录、上传、问询、大屏都会不可用。`.env` 不入库，仓库里只有 `.env.example`。
+编辑 `.env`：
 
-### 3）幂等建表（应用启动不会自动建表）
+| 变量 | 说明 |
+|---|---|
+| `MYSQL_DSN` | MySQL SQLAlchemy 连接串 |
+| `AUTH_SECRET` | Token 密钥；生产环境使用随机长密钥 |
+| `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | Chat 和工具调用服务 |
+| `EMBEDDING_BASE_URL` / `EMBEDDING_API_KEY` / `EMBEDDING_MODEL` | 向量服务；地址可回落到 Chat 地址 |
+| `RERANK_BASE_URL` / `RERANK_API_KEY` / `RERANK_MODEL` | 可选重排服务 |
+
+配置界面也可以在首次启动后通过 `/setup` 写入本机 `.env`，密钥不会回显到 API、日志和代码。
+
+#### 2. 显式建表
+
+应用启动不会隐式建表。先启动 MySQL，再执行以下一次性初始化：
 
 ```powershell
-& $py -c "from backend.app.importing.db import create_schema; from backend.app.report.models import create_report_schema; from backend.app.report.artifact_models import create_artifact_schema; from backend.app.retrieve.models import create_parent_schema; from backend.app.agent.trace import create_agent_trace_schema; from backend.app.auth.models import create_auth_schema; from backend.app.chat.models import create_chat_schema; [f() for f in (create_schema, create_report_schema, create_artifact_schema, create_parent_schema, create_agent_trace_schema, create_auth_schema, create_chat_schema)]; print('tables ready')"
+$env:PYTHONPATH = (Get-Location).Path
+& $py -c "from backend.app.importing.db import create_schema; from backend.app.auth.models import create_auth_schema; from backend.app.retrieve.models import create_parent_schema; from backend.app.report.models import create_report_schema; from backend.app.report.artifact_models import create_artifact_schema; from backend.app.chat.models import create_chat_schema; from backend.app.agent.trace import create_agent_trace_schema; create_schema(); create_auth_schema(); create_parent_schema(); create_report_schema(); create_artifact_schema(); create_chat_schema(); create_agent_trace_schema()"
 ```
 
-七个建表函数都是幂等的，重复执行是空操作。项目没有迁移工具，加列走幂等 DDL。
-
-### 4）导入并发布赛题
-
-```powershell
-$base = 'http://127.0.0.1:8077/api'
-foreach ($id in @('cumcm-2024-A','cumcm-2024-C','cumcm-2025-A')) {
-  $body = @{ package_dir = "data/contests/$id" } | ConvertTo-Json
-  Invoke-RestMethod -Method Post -Uri "$base/imports" -ContentType 'application/json' -Body $body
-  Invoke-RestMethod -Method Post -Uri "$base/contests/$id/publish"
-}
-```
-
-`data/contests/` 下的 `fixture-extra` 与 `probe-critique-acceptance` 是测试夹具，不要导入。`GET /api/contests` 默认只返回 published。
-
-### 5）启动后端（8077，**没有 `--reload`**）
+#### 3. 启动后端
 
 ```powershell
 & $py -m uvicorn backend.app.api.app:app --host 127.0.0.1 --port 8077
 ```
 
-**改过后端代码必须手动重启**，否则你测的是旧进程——这个项目曾因此出现连续六个版本的假绿灯。
+后端地址：`http://127.0.0.1:8077`；接口文档：`http://127.0.0.1:8077/docs`。
 
-自检：`GET /health` 返回版本与运行时长；`GET /readyz` 检查 MySQL 与 Chroma，任一不可用返回 503；`GET /metrics` 暴露计数。
-
-### 6）启动前端（5173）
+#### 4. 启动前端
 
 ```powershell
 Set-Location frontend
-npm ci
 npm run dev
 ```
 
-打开 <http://127.0.0.1:5173>。前端一律走相对路径 `/api`，由 Vite 代理到 8077；**不要直连 8077 访问页面**，端到端测试同理。
+前端地址：`http://127.0.0.1:5173`。Vite 将 `/api` 代理到 `http://127.0.0.1:8077`。
 
-### 7）关于账号
+健康检查：
 
-注册出来的账号默认是 `student`（`review:create` / `review:read:own` / `eval:view`）。问询、大屏、全员记录需要 `teacher` 角色。仓库**不提供用户管理接口**，开发期按 `scripts/promote_e2e_teacher.py` 的做法手动提权——该脚本是本地测试夹具，只针对 `e2e_teacher`，不是通用管理工具。
+```powershell
+Invoke-RestMethod http://127.0.0.1:8077/health
+Invoke-RestMethod http://127.0.0.1:8077/readyz
+```
 
-## 7. 模型配置
+`/readyz` 会检查 MySQL 和 Chroma；模型路径是否启用由 `LLM_*`、`EMBEDDING_*` 和 `RERANK_*` 配置决定。未配置模型时，部分评审和评测功能可以走确定性回退。
 
-模型服务不是跑通前端、跑确定性回退所必需的。配置写在本机环境或项目根 `.env`，**不要把密钥写进 README、夹具或日志**。
+#### 5. 导入赛题和样例
 
-| 环境变量 | 用途 |
-|---|---|
-| `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` | 对话模型（Chat Completions 兼容） |
-| `EMBEDDING_MODEL` | 嵌入模型名称；必需 |
-| `EMBEDDING_BASE_URL` / `EMBEDDING_API_KEY` | 嵌入服务独立地址与密钥；缺省回落 `LLM_*` |
-| `RERANK_BASE_URL` / `RERANK_API_KEY` / `RERANK_MODEL` | 重排服务 |
-| `MYSQL_DSN` | MySQL 连接串 |
-| `AUTH_SECRET` | token 签名密钥，**≥32 字符** |
-| `AUTH_TOKEN_TTL_HOURS` | token 时效，默认 8 小时 |
-| `CORS_ALLOW_ORIGINS` | 允许的前端源，逗号分隔；**禁止 `*`** |
+赛题包位于 `data/contests/`。导入后通过管理接口或前端发布赛题和量规：
 
-真实选档要求 `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL`、`EMBEDDING_MODEL` 四项齐全；缺任一项走确定性结构回退，响应里带回 `source` 标注。重排是独立配置。评测汇总默认 deterministic，只有显式请求 `GET /api/eval/summary?force=model` 才会跑模型评测并产生调用。
+```powershell
+& $py scripts/check_eval_gold.py
+```
 
-## 8. API
+完整的导入、发布和首次配置步骤见 [PROJECT_DOC.md](docs/version/Final_version/PROJECT_DOC.md)。
 
-所有业务接口前缀 `/api`；`/health`、`/readyz`、`/metrics` 在根路径。
+### Docker 部署运行
 
-| 方法与路径 | 说明 | 鉴权 |
+#### 1. 准备环境变量
+
+```powershell
+Copy-Item .env.example .env
+# 编辑 .env，至少填写 MySQL、AUTH_SECRET 和模型服务配置
+```
+
+#### 2. 构建并启动
+
+```powershell
+docker compose up -d --build frontend backend mysql
+docker compose ps
+docker compose logs -f backend
+```
+
+容器职责：
+
+| 容器 | 端口 / 访问方式 | 说明 |
 |---|---|---|
-| `POST /api/auth/register` · `login` · `logout` · `GET me` | 注册、登录、登出、当前用户 | 公开 / Bearer |
-| `GET /api/contests` | 赛题列表，默认只返回 published | 公开 |
-| `GET /api/contests/{id}/rubric` | 当前已发布量规及各档说明 | 公开 |
-| `GET /api/samples` | 样例与评测稿（演示稿与真实论文并列） | 公开 |
-| `GET /api/eval/summary` | 汇总指标；默认 deterministic，`?force=model` 跑模型 | 公开 |
-| `GET /api/eval/papers/{paper_id}` | 单篇 gold 与逐维差异 | 公开 |
-| `POST /api/reviews` | 创建评审，返回待确认章节树；赛题无已发布量规返回 **422** | Bearer |
-| `POST /api/uploads` | 上传 `.md` / `.docx` 建评审（20 MB / 200,000 字符） | `review:create` |
-| `POST /api/reviews/{id}/resume` | 提交确认后的章节树，继续评审并落存档 | Bearer |
-| `GET /api/reviews/{id}` | 评审存档或待确认会话 | Bearer + 归属校验 |
-| `GET /api/reviews/{id}/agent-steps` | Agent 轨迹（工具序列与成败） | Bearer + 归属校验 |
-| `GET` / `POST /api/reviews/{id}/artifacts[/extract]` | 三类产物读取与确定性抽取 | Bearer + 归属校验 |
-| `GET /api/reviews` | 记录总览列表（分页、筛选） | 登录（教师看全部） |
-| `GET /api/users`、`/api/users/{id}` | 用户与权限 | `review:read:all` |
-| `GET /api/chat/sessions` 等 7 条 | 会话、消息、聚合统计、检索问询 | `chat:use` |
-| `GET /api/dashboard/summary`、`/trend` | 大屏聚合与趋势（60 s TTL） | `dashboard:view` |
-| `POST /api/imports`、`publish`、`archive`、`rubrics`、`rubrics/{id}/publish` | 赛题目录与量规版本管理 | 公开（仅限本地开发） |
+| `frontend` | 宿主机 `80` | Nginx 静态资源和 `/api` 代理 |
+| `backend` | Compose 内部 `8077` | FastAPI、Agent、RAG 和设置接口 |
+| `mysql` | Compose 内部 `3306` | 业务库和评审数据 |
 
-约定：
+#### 3. 建表和首次配置
 
-- 未登录 **401**，权限不足 **403**，赛题不可评 **422**，文件类型不支持 **415**，超限 **413**。
-- 上传只收 `.md` 与 `.docx`。**PDF 在扩展名校验处直接 415**，提示先在外部转成文本——真实论文是扫描件，OCR 在上游离线做一次，`data/samples/*.md` 就是那份产物。
-- 子路径不要挂成 `/reviews/upload` 这类形式：`GET /reviews/{review_id}` 会把 `upload` 当编号吃掉，返回 **405 而不是 404**。新增子路径用独立前缀，或声明在动态路由之前。
-
-示例：创建一次演示稿评审
+Compose 不会自动建表，也不会自动导入或发布赛题量规。容器启动后执行：
 
 ```powershell
-$body = @{ sample_id = 'bench-dragon'; contest_id = 'cumcm-2024-A' } | ConvertTo-Json
-$created = Invoke-RestMethod -Method Post -Uri "$base/reviews" -ContentType 'application/json' -Body $body -Headers @{ Authorization = "Bearer $token" }
-$resume = @{ sections = $created.sections } | ConvertTo-Json -Depth 20
-Invoke-RestMethod -Method Post -Uri "$base/reviews/$($created.review_id)/resume" -ContentType 'application/json' -Body $resume -Headers @{ Authorization = "Bearer $token" }
+docker compose exec backend python -c "from backend.app.importing.db import create_schema; from backend.app.auth.models import create_auth_schema; from backend.app.retrieve.models import create_parent_schema; from backend.app.report.models import create_report_schema; from backend.app.report.artifact_models import create_artifact_schema; from backend.app.chat.models import create_chat_schema; from backend.app.agent.trace import create_agent_trace_schema; create_schema(); create_auth_schema(); create_parent_schema(); create_report_schema(); create_artifact_schema(); create_chat_schema(); create_agent_trace_schema()"
 ```
 
-## 9. 测试与门禁
+然后打开 `http://127.0.0.1`，进入 `/setup` 完成首次配置，或使用接口导入并发布赛题。
 
-四道自动门禁加三个静态检查，全部在项目根目录或 `frontend/` 下执行：
+#### 4. 停止和清理
 
 ```powershell
-# 后端：472 passed
-$bt = ".pytest_tmp/run-" + (Get-Date -Format 'HHmmss')
-& $py -X utf8 -m pytest backend/tests -q --basetemp=$bt
-
-# 前端：构建 + 单测（162 passed）
-Set-Location frontend
-npm run build
-npx vitest run --reporter=dot
-
-# 浏览器端到端：54 passed（需 MySQL 与 8077 可用；从 5173 进才吃到代理）
-npx playwright test --reporter=list
-Set-Location ..
-
-# 三个静态门禁，均要求 EXIT=0
-& $py -X utf8 scripts/check_logs.py
-& $py -X utf8 scripts/check_docs_encoding.py docs --strict
-& $py -X utf8 scripts/check_container_skeleton.py
+docker compose down
+# 删除持久化数据时才使用：
+docker compose down -v
 ```
 
-注意三点：
+Compose 卷包括 MySQL、Chroma、日志、上传文件和部署状态；删除卷会清空相应数据。
 
-- **每次都换一个新的 basetemp 目录**。复用旧的 `pytest-of-<user>` 会在 session 开始时触发批量清理，本机安全策略会直接杀掉进程，表现为「N 个点全过但没有汇总行、退出码 1」。
-- 后端测试用隔离的小库与假的模型，**不发一次网络请求**；端到端则会写真实表，接口没有删除路径，这是挂账的取舍而不是漏做。
-- 端到端登录态由 `global-setup` 注册固定账号并写 `storageState`；账号已存在则改登录，产物在 `frontend/tests/e2e/.auth/`（不入库）。
+## 页面与路由
 
-## 10. 项目结构
+### 前端页面路由
 
-```text
-backend/app/
-  api/           路由与应用装配（含鉴权、日志、CORS、健康检查）
-  agent/         Agent 子层：工具注册、预算闸、轨迹、prompt、runner、自检
-  auth/          账号、权限、token
-  chat/          记录级问询：会话、检索、回答与引用校验、聚合统计
-  graph/         评审状态图：解析 → 确认 → 检索 → 评分
-  importing/     赛题数据包导入、docx 转换、产物抽取、字符区间
-  llm/           对话 / 嵌入 / 重排的唯一 HTTP 客户端
-  observability/ 日志、指标、评审编号绑定
-  retrieve/      父子块、三路召回、重排
-  review/        数字、引用、范围等一致性检查
-  scoring/       选档解析、逐字引用校验、降档守卫、加权合计
-  report/        量规、评测、修改清单、评审存档、大屏聚合、产物模型
-backend/tests/   后端测试（472）
-frontend/src/    Vue 页面、组件、组合式函数、API 类型
-frontend/tests/  前端单测（162）与端到端（54）
-data/            赛题包、真实论文正文、评测样例、上传落盘
-docs/            计划、进度、裁决、验收、版本记录、面试材料
-scripts/         回填、重建索引、门禁检查、一次性测量
-logs/  chroma_data/     运行时产物（不入库）
-```
+| 页面 | 前端路由 | 主要用途 | 权限 |
+|---|---|---|---|
+| 首次配置 | `/setup` | 写入数据库、认证和模型配置 | 公开初始化入口 |
+| 登录 | `/login` | 用户登录和 Token 恢复 | 公开 |
+| 注册 | `/register` | 创建普通用户 | 公开，后端控制 |
+| 论文解析 | `/parse` | 上传论文、解析章节、人工确认章节类型 | 登录 |
+| 分项评分 | `/scoring` | 展示各量规维度、证据、档位和加权结果 | 登录 |
+| 一致性审查 | `/consistency` | 展示跨章节冲突、数字冲突和结构问题 | 登录 |
+| 修改建议 | `/suggestions` | 展示可追溯修改清单和证据依据 | 登录 |
+| 评测对照 | `/eval`、`/eval/:paperId` | 查看 Gold、系统结果和逐维差异 | 登录 |
+| 记录总览 | `/records` | 查看历史评审、筛选和详情抽屉 | `review:read:all` |
+| AI 问询 | `/chat` | 以评审记录为范围进行问询、分析和摘要 | `chat:use` |
+| 数据大屏 | `/dashboard` | 评审量、趋势、维度和系统指标 | `dashboard:view` |
 
-## 11. 已知边界
+### 页面与接口对照
 
-不写「全部通过」，这些是有意留下的：
+| 页面 | 调用接口 | 方法 | 说明 |
+|---|---|---|---|
+| 首次配置 | `/api/setup/status` | GET | 查询是否完成首次配置 |
+| 首次配置 | `/api/setup/config` | POST | 使用 bootstrap token 保存初始配置 |
+| 设置 | `/api/settings/config` | GET / PUT | 读取或更新运行配置 |
+| 登录 / 注册 | `/api/auth/register`、`/login`、`/logout`、`/me` | POST / GET | 用户注册、登录、退出和当前用户 |
+| 论文解析 | `/api/samples` | GET | 加载示例论文 |
+| 论文解析 | `/api/uploads` | POST | 上传 `.md` / `.docx` 文件 |
+| 论文解析 | `/api/reviews` | POST | 创建评审、解析章节并停在人工确认点 |
+| 论文解析 | `/api/reviews/{review_id}/resume` | POST | 提交确认后的章节树，继续检索和评分 |
+| 分项评分 | `/api/reviews/{review_id}` | GET | 读取评审报告、档位、引用和汇总 |
+| 分项评分 | `/api/reviews/{review_id}/agent-steps` | GET | 查看 Agent 步骤和工具轨迹 |
+| 一致性审查 | `/api/reviews/{review_id}` | GET | 读取评审中的一致性结果和修改清单 |
+| 修改建议 | `/api/reviews/{review_id}/artifacts` | GET | 读取评审产物 |
+| 修改建议 | `/api/reviews/{review_id}/artifacts/extract` | POST | 从论文中提取并保存可回定位产物 |
+| 记录总览 | `/api/reviews` | GET | 按赛题、用户、归属和分页读取评审 |
+| 评测对照 | `/api/eval/summary`、`/api/eval/papers/{paper_id}` | GET | 读取评测汇总和单篇逐维差异 |
+| 赛题管理 | `/api/contests`、`/{contest_id}/rubric` | GET | 读取赛题和当前已发布量规 |
+| 赛题管理 | `/api/imports` | POST | 导入赛题包 |
+| 赛题管理 | `/api/contests/{contest_id}/publish`、`/archive` | POST | 发布或归档赛题 |
+| 量规管理 | `/api/contests/{contest_id}/rubrics` | POST | 从当前量规复制草稿 |
+| 量规管理 | `/api/rubrics/{rubric_id}/publish` | POST | 发布指定版本量规 |
+| AI 问询 | `/api/chat/sessions` | GET / POST / DELETE | 查询、新建和删除问询会话 |
+| AI 问询 | `/api/chat/sessions/{session_id}/messages` | GET / POST | 读取历史消息和发送问题 |
+| AI 问询 | `/api/chat/analytics`、`/summary` | POST | 执行记录分析和摘要 |
+| 数据大屏 | `/api/dashboard/summary`、`/trend` | GET | 读取汇总指标和趋势 |
+| 健康检查 | `/health`、`/readyz`、`/metrics` | GET | 存活、依赖就绪和 Prometheus 指标 |
 
-1. **容器化是非验收项。**`compose.yaml` 四个服务每个都标了 `UNVERIFIED`，`backend/Dockerfile` 首行也标了；开发机没有 Docker，**镜像从未构建**，`frontend/` 没有 Dockerfile，`chromadb/chroma:1.5.9` 这个 tag 未验证。
-2. **不做在线 PDF 解析、不做在线 OCR。**真实扫描件靠离线 OCR 转成 Markdown 后上传，运行时只收 `.md` / `.docx`。
-3. **检查点放在内存。**进程重启靠数据库快照回写，不支持多副本；换持久化检查点只需替换装配处传入的对象。
-4. **评测集小且偏斜。**12 篇 / 60 个维度项，「基本」占多数，档位一致率不宜当作模型能力结论；标注集扩容列入下一期。
-5. **`run_eval()` 不注入 Agent 链路。**评测数字不覆盖工具调用、自检降档与预算终止，这些由轨迹表单独观察。
-6. **不做内容级「选错题」判定。**只保证无已发布量规的赛题不出结果，不保证论文与题目匹配。
-7. **无租户概念。**单实例、单一数据域；多用户权限已有，多租户明确不做。
+所有接口都可以通过 `/docs` 和 `/openapi.json` 查看机器可读契约。认证接口返回 Token，受保护接口使用 `Authorization: Bearer <token>`。
 
-## 12. 文档索引
+## 核心能力
 
-| 文档 | 内容 |
-|---|---|
-| [推送说明 V7](docs/push_version/push_V7.md) | 三期改动范围、接口与数据现状、已知边界、怎么验 |
-| [开发进度](docs/plan/progress.md) | 每个版本的命令、退出码与末行 |
-| [实现裁决](docs/plan/findings.md) | 冲突时的裁决记录与原因 |
-| [验收报告](docs/plan/acceptance/) | 首期 18 条、各阶段报告、三期总验收 |
-| [面试手册](docs/interview/项目面试手册.md) / [自测清单](docs/interview/项目自测问题清单.md) | 讲解口径与自测题（**首期视角，体量数字以 README 与本文件为准**） |
-| [全面问题清单](docs/questions/项目全面问题清单.md) | 282 题，覆盖到当前版本 |
-| [口头讲解逐字稿](docs/项目讲解逐字稿.md) | 4 分半主稿 + 60 秒版 + 打断速答 |
-| [命名规范](docs/version/v1.0.2_命名规范.md) | 版本号与文件命名 |
+### 评审状态图
 
-## 13. 数据快照（开发库，非承诺值）
+固定流程为 `parse → confirm → retrieve → score → report`：
 
-截至 Phase-3 收口：`review` 262、`review_dimension` 1300、`review_session` 388、`review_artifact` 24、`chat_message` / `chat_session` 33 / 61、`user` 6、`paper_parent` 12299、`agent_step` 6700；向量库 29676 条（`paper_child` 29031 + `review_record` 645），覆盖 260 个评审、8457 个父块。这些数字会随本地实验变动，**不要拿来当断言基线**。
+- `parse` 按 ATX 标题切分章节并识别假设、模型、求解、结果、检验和参考文献。
+- `confirm` 通过 LangGraph `interrupt()` 暂停，等待用户确认章节类型。
+- `retrieve` 按量规维度检索父块，记录命中、证据不足、查询和检索轮次。
+- `score` 由模型选择档位，确定性代码校验 JSON、引用、档位枚举和权重。
+- `critique` 检查引用、档位和跨维度问题；`verifier` 只能保持或降档。
+
+### 多 Agent 与工具契约
+
+- `evidence_agent`：为维度准备经过原文校验的证据包。
+- `topic_fit_agent`：判断论文与赛题要求的匹配情况。
+- `coherence_agent`：发现跨章节、数字和论证结构问题。
+- `review_agent`：根据证据和量规逐维提交档位。
+- `verifier_agent`：复核主评审结果，只允许保持、降档或标记证据不足。
+- 工具按角色白名单注册，参数通过 Pydantic schema 校验，并保留 Agent 步骤和调用摘要。
+
+### RAG 检索
+
+- 子块向量存入 Chroma，父块全文存入 MySQL `paper_parent`。
+- 三路召回后合并去重，按评审、维度、章节类型和量规过滤。
+- 可配置 Rerank，最终最多回填 4 个父块。
+- 引用必须是父块 `content` 的连续子串，避免生成不存在的证据。
+- 没有模型或外部依赖时，部分评测使用 `source=deterministic` 的结构化回退，回退结果不等同于模型准确率。
+
+### 数据、权限和可观测性
+
+- MySQL 保存赛题包、量规、评审、章节快照、聊天、产物、用户和 Agent 轨迹。
+- 旧评审绑定当时的赛题和量规版本，不因后续量规发布而回写。
+- 支持学生、教师等权限边界，教师可以读取全量评审和管理赛题量规。
+- JSON 日志按模块轮转，指标覆盖评审、模型调用、检索、认证、聊天和错误。
+- `/readyz` 返回 MySQL、Chroma 和集合数量检查结果，便于容器健康检查。
+
+## 视觉设计
+
+前端采用“手稿式研究工作台”方向，把论文阅读、证据定位和评审判断放在同一视觉上下文中：
+
+- 使用纸张底色、照片背景、线稿插图和轻量阴影，弱化传统后台的冷硬表格感。
+- 通过靛蓝、墨黑和暖灰构成主色，绿色表示已完成，橙色表示待确认，红色表示冲突、失败或证据风险。
+- 通过阶段条、编号动效、维度卡片和证据抽屉体现评审进度。
+- 保留 `prefers-reduced-motion` 处理，减少动画对可访问性的影响。
+- 主题变量集中在 `frontend/src/styles/tokens.css` 和 `frontend/src/styles/sketch.css`，组件不直接散落颜色值。
+
+## 页面设计
+
+### 论文解析
+
+左侧展示章节树，右侧展示章节内容和类型选择；上传后先完成解析，用户确认章节类型后才进入评分。
+
+### 分项评分
+
+以维度卡片展示量规、证据原文、引用位置、当前档位、状态和权重。证据不足明确显示原因，不用空分数伪装成完成。
+
+### 一致性审查
+
+按冲突类型、严重程度和涉及章节列出问题，支持从问题跳回原文片段。
+
+### 修改建议
+
+每条建议关联评审维度、证据、章节和可执行修改动作，重点展示“为什么要改”和“改哪里”。
+
+### 记录总览
+
+教师视角支持按赛题、用户、归属和时间分页筛选；详情抽屉展示报告、阶段、Agent 轨迹、产物和状态变化。
+
+### AI 问询
+
+问询范围绑定评审记录和赛题，支持会话历史、记录级回答、分析和摘要，避免脱离评审证据泛化回答。
+
+### 数据大屏
+
+通过评审数量、维度分布、趋势和运行指标展示系统使用情况；普通读取不隐式触发新的模型调用。
+
+## 模型来源与配置
+
+项目只在 `backend/app/llm/client.py` 统一发起模型 HTTP 请求，业务模块通过环境变量选择供应商和模型：
+
+| 能力 | 环境变量 | 请求接口 | 说明 |
+|---|---|---|---|
+| Chat / 工具调用 | `LLM_BASE_URL`、`LLM_API_KEY`、`LLM_MODEL` | `/chat/completions` | 使用 OpenAI-compatible 请求和工具调用格式 |
+| Embedding | `EMBEDDING_BASE_URL`、`EMBEDDING_API_KEY`、`EMBEDDING_MODEL` | `/embeddings` | 地址和密钥为空时可回落到 Chat 配置 |
+| Rerank | `RERANK_BASE_URL`、`RERANK_API_KEY`、`RERANK_MODEL` | `/rerank` | 可选；未配置时不强行伪装为真实重排 |
+
+代码中的 `DeepSeekChatModel` 是 LangChain 适配器名称，实际模型由 `LLM_MODEL` 决定。项目可以接入 DeepSeek、OpenAI、Azure OpenAI、私有模型网关或其他兼容服务；仓库默认模板不包含真实模型地址和密钥。
+
+## 版本控制
+
+- Git 仓库：[aaGlaming/paper-review](https://github.com/aaGlaming/paper-review)
+- 当前前端包版本：`0.9.0`；后端 FastAPI 应用版本：`0.3.0`。
+- 推荐提交格式：`feat:`、`fix:`、`docs:`、`test:`、`refactor:`、`chore:`。
+- 评审状态、章节类型、档位词表和 API 路径属于冻结契约，修改时需同步更新前端类型、后端校验和测试。
+- `.env`、数据库密码、模型密钥、Chroma 数据、运行日志和上传文件不得提交。
+- 评审算法、量规、提示词、模型配置和评测结果需要保留版本来源，避免把历史评审误读为新量规结果。
+- 推送前至少检查后端测试、前端 `npm run build`、单元测试、E2E 验收和 `/readyz` 依赖状态。
+
+## 相关文档
+
+- [详细项目文档](docs/version/Final_version/PROJECT_DOC.md)
+- [项目事实清单](docs/项目事实清单.md)
+- [项目讲解逐字稿](docs/项目讲解逐字稿.md)
+- [Archify 架构图索引](docs/version/Final_version/archify/INDEX.md)
+- [部署运维手册](docs/腾讯云Docker-Compose运维手册.md)
+- [评测与验收记录](docs/plan/acceptance/)
+
+## License
+
+仓库当前未提供独立 `LICENSE` 文件，使用和再分发前请先确认授权范围。
